@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNG Dahlonega Campus Vision Plan</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+
+<style>
+  :root {
+    --navy:      #0a2240;
+    --navy-mid:  #0d2d54;
+    --gold:      #c9a84c;
+    --gold-light:#e8d49a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Lato',sans-serif; font-weight:300;
+    background:var(--navy); color:#fff;
+    height:100vh; display:flex; flex-direction:column; overflow:hidden;
+  }
+  header {
+    background:var(--navy); border-bottom:2px solid var(--gold);
+    padding:0 24px; height:60px; display:flex;
+    align-items:center; justify-content:space-between;
+    flex-shrink:0; z-index:1000;
+  }
+  .header-left { display:flex; align-items:center; gap:14px; }
+  .wordmark {
+    font-family:'Cormorant Garamond',serif; font-size:13px;
+    font-weight:600; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--gold-light); line-height:1.3;
+  }
+  .wordmark span {
+    display:block; font-size:10px; font-weight:400;
+    letter-spacing:.18em; color:var(--gold); opacity:.85;
+  }
+  .dvdr { width:1px; height:32px; background:var(--gold); opacity:.4; }
+  .map-title {
+    font-family:'Cormorant Garamond',serif; font-size:17px;
+    font-weight:400; font-style:italic; color:#fff; letter-spacing:.02em;
+  }
+  .badge {
+    background:var(--gold); color:var(--navy);
+    font-size:10px; font-weight:700; letter-spacing:.12em;
+    text-transform:uppercase; padding:3px 10px; border-radius:2px;
+  }
+  .label-bar { display:flex; height:32px; flex-shrink:0; z-index:900; pointer-events:none; }
+  .lbl {
+    flex:1; display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:700; letter-spacing:.18em;
+    text-transform:uppercase; gap:8px; background:var(--navy-mid);
+  }
+  .lbl.left  { border-bottom:3px solid #888; color:#b0c0d0; }
+  .lbl.right { border-bottom:3px solid var(--gold); color:var(--gold-light); }
+  .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  #map { flex:1; width:100%; }
+
+  /* Legend */
+  .legend {
+    background:rgba(10,34,64,.93); border:1px solid rgba(201,168,76,.4);
+    border-radius:4px; padding:12px 16px; min-width:205px;
+    backdrop-filter:blur(4px);
+  }
+  .legend h4 {
+    font-family:'Cormorant Garamond',serif; font-size:13px; font-weight:600;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--gold);
+    margin-bottom:10px; padding-bottom:6px;
+    border-bottom:1px solid rgba(201,168,76,.3);
+  }
+  .li { display:flex; align-items:center; gap:9px; margin-bottom:7px; font-size:11px; font-weight:300; color:#d0dce8; letter-spacing:.04em; }
+  .sw { width:16px; height:14px; border-radius:2px; flex-shrink:0; border:1px solid rgba(255,255,255,.25); }
+  .sw.hatch {
+    background: repeating-linear-gradient(45deg,#4a7ab5,#4a7ab5 3px,rgba(255,255,255,.2) 3px,rgba(255,255,255,.2) 6px);
+  }
+  .ln { margin-top:10px; padding-top:8px; border-top:1px solid rgba(201,168,76,.2); font-size:9.5px; color:rgba(201,168,76,.7); font-style:italic; line-height:1.5; }
+
+  /* Swipe hint */
+  .hint {
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    z-index:800; pointer-events:none;
+    background:rgba(10,34,64,.88); border:1px solid rgba(201,168,76,.5);
+    border-radius:20px; padding:5px 16px; font-size:11px;
+    color:var(--gold-light); letter-spacing:.06em; white-space:nowrap;
+    transition:opacity 1.5s;
+  }
+
+  /* Leaflet overrides */
+  .leaflet-control-attribution { background:rgba(10,34,64,.75)!important; color:rgba(255,255,255,.5)!important; font-size:9px!important; }
+  .leaflet-control-attribution a { color:rgba(201,168,76,.8)!important; }
+  .leaflet-control-zoom a { background:rgba(10,34,64,.9)!important; color:var(--gold)!important; border-color:rgba(201,168,76,.3)!important; }
+  .leaflet-sbs-divider { background:var(--gold)!important; width:3px!important; box-shadow:0 0 12px rgba(201,168,76,.6)!important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="wordmark">University of North Georgia <span>Facilities GIS · Dahlonega Campus</span></div>
+    <div class="dvdr"></div>
+    <div class="map-title">Campus Vision Plan — Existing vs. Proposed</div>
+  </div>
+  <div class="badge">Draft · Illustrative</div>
+</header>
+
+<div class="label-bar">
+  <div class="lbl left"> <div class="dot" style="background:#888;"></div> Existing Conditions </div>
+  <div class="lbl right"><div class="dot" style="background:#1a3d6e;"></div> Vision Plan Buildout </div>
+</div>
+
+<div id="map"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-side-by-side/2.2.0/leaflet-side-by-side.min.js"></script>
+<script>
+// ─── Spatial reference ────────────────────────────────────────────────────────
+// Anchor: Lipp Livsey Drill Field ≈ 34.5300, -83.9867
+// Confirmed from public trail data (34°31.8'N 83°59.2'W)
+// All footprints estimated visually from vision plan image against road geometry
+// (Morrison Moore Pkwy, Barlow Rd, Harney Rd visible in plan).
+// NO internal GIS data used. Public-facing safe.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const map = L.map('map', { center:[34.5290,-83.9865], zoom:15 });
+
+const osmA = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  { attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors', maxZoom:20 });
+const osmB = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  { attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors', maxZoom:20, opacity:0.65 });
+osmA.addTo(map); osmB.addTo(map);
+
+// Helper: rectangle from center + half-extents
+function R(lat,lng,dlat,dlng){
+  return { type:"Polygon", coordinates:[[
+    [lng-dlng, lat-dlat],[lng+dlng, lat-dlat],
+    [lng+dlng, lat+dlat],[lng-dlng, lat+dlat],[lng-dlng, lat-dlat]
+  ]]};
+}
+// GeoJSON feature shorthand
+function F(name,cat,status,note,lat,lng,dlat,dlng){
+  return { type:"Feature",
+    properties:{ name, cat, status, note },
+    geometry: R(lat,lng,dlat,dlng) };
+}
+
+// ─── EXISTING BUILDINGS ───────────────────────────────────────────────────────
+const existing = { type:"FeatureCollection", features:[
+  F("William J. 'Lipp' Livsey Drill Field","open","existing","Iconic military drill field — campus centerpiece and spatial anchor. Public trail confirmed at 34°31.8'N 83°59.2'W.",34.5300,-83.9860,0.0013,0.0020),
+  F("Price Memorial Hall","landmark","existing","Historic crown of campus — built 1878 on original U.S. Mint foundation. Gold dome visible from downtown Dahlonega.",34.5318,-83.9862,0.0004,0.0005),
+  F("Stewart Hall","academic","existing","Academic building — northwest of drill field.",34.5308,-83.9878,0.0004,0.0007),
+  F("Vickery Hall","academic","existing","Georgia Appalachian Studies Center — historic building on National Register of Historic Places.",34.5312,-83.9856,0.0004,0.0005),
+  F("Rogers Hall","academic","existing","Academic building — north campus.",34.5316,-83.9844,0.0004,0.0006),
+  F("Dunlap Hall","academic","existing","Academic — business, mathematics, English, modern languages. Named for former Board of Regents chairman Edgar Brown Dunlap.",34.5305,-83.9847,0.0004,0.0006),
+  F("Nix Center","student","existing","Student center / services — northeast core.",34.5316,-83.9836,0.0003,0.0005),
+  F("STEM I (Health & Natural Sciences)","academic","existing","~55,000 sq ft science complex — west campus.",34.5300,-83.9892,0.0006,0.0009),
+  F("STEM II","academic","existing","Recent STEM complex addition.",34.5309,-83.9898,0.0004,0.0006),
+  F("Lewis Hall","housing","existing","Residence hall — 206 residents, built 1952. Located on Lewis Circle.",34.5298,-83.9864,0.0004,0.0005),
+  F("Military Leadership Center","admin","existing","ROTC / Corps of Cadets administrative hub.",34.5296,-83.9853,0.0003,0.0005),
+  F("Wynne-Mathews Center","academic","existing","Academic / student services building — central campus.",34.5298,-83.9840,0.0003,0.0005),
+  F("Student Pavilion","student","existing","Student services and gathering space.",34.5295,-83.9828,0.0004,0.0005),
+  F("Gaillard Hall","housing","existing","Residence hall — built 1955 at site of former cattle field.",34.5291,-83.9852,0.0004,0.0006),
+  F("Liberty Hall","academic","existing","Academic building — east-central campus.",34.5284,-83.9835,0.0004,0.0006),
+  F("Donovan Hall","housing","existing","Residence hall — south campus.",34.5284,-83.9860,0.0004,0.0006),
+  F("Memorial Hall","athletic","existing","Gym / athletic facility — east campus.",34.5308,-83.9820,0.0005,0.0008),
+  F("Owen Hall","housing","existing","Cadet residence hall — east campus.",34.5275,-83.9820,0.0005,0.0008),
+  F("Bob Stein Stadium","athletic","existing","Football stadium — south campus.",34.5250,-83.9883,0.0007,0.0012),
+  F("Soccer Complex","athletic","existing","Soccer fields — south campus.",34.5244,-83.9860,0.0005,0.0010),
+  F("Recreation Field","athletic","existing","Multi-use recreation field — southwest campus.",34.5238,-83.9935,0.0007,0.0013),
+  F("Physical Plant Facilities","support","existing","Facilities management / physical plant operations.",34.5218,-83.9950,0.0006,0.0010),
+]};
+
+// ─── VISION PLAN FEATURES ─────────────────────────────────────────────────────
+// Existing buildings retained + new/renovated additions
+const vision = { type:"FeatureCollection", features:[
+  // Retain all existing (will style lighter)
+  ...existing.features,
+
+  // ── NEW BUILDINGS (navy solid — matches vision plan legend) ───────────────
+  F("Hotel, Conference Center & Parking Garage","new","proposed","Major mixed-use gateway — NE corner along GA-400 corridor. Significant revenue generator and visitor arrival point.",34.5312,-83.9805,0.0008,0.0013),
+  F("National Security Center","new","proposed","New academic facility supporting national security and intelligence studies programs — east campus.",34.5278,-83.9816,0.0006,0.0010),
+  F("Welcome Center","new","proposed","Campus admissions / visitor gateway — east entrance off Morrison Moore Pkwy. First impression for prospective students.",34.5288,-83.9806,0.0004,0.0007),
+  F("Downtown Office Building","new","proposed","Off-campus satellite in downtown Dahlonega. Community engagement, continuing education, and town-gown presence.",34.5342,-83.9838,0.0004,0.0006),
+  F("Institute for Peak Performance","new","proposed","New research / applied science facility adjacent to STEM complex. Performance science and industry partnership focus.",34.5313,-83.9882,0.0004,0.0006),
+  F("Lot 30 Parking Garage","new","proposed","Multi-level parking structure — NW campus. Consolidates surface lots to reclaim land for academic / green use.",34.5322,-83.9904,0.0004,0.0006),
+  F("Housing A","new","proposed","New residential complex — northwest zone near STEM corridor.",34.5309,-83.9912,0.0005,0.0007),
+  F("Housing B","new","proposed","New residential complex — southwest zone near athletic fields.",34.5237,-83.9920,0.0006,0.0009),
+  F("Housing C","new","proposed","New residential complex — central campus south of drill field.",34.5281,-83.9852,0.0004,0.0006),
+  F("Housing D","new","proposed","New residential complex — northwest perimeter.",34.5326,-83.9917,0.0005,0.0007),
+  F("Greek Leadership Center","new","proposed","Dedicated facility for fraternity and sorority life — south campus near Morrison Moore Pkwy.",34.5254,-83.9848,0.0004,0.0007),
+  F("Greek Commons","new","proposed","Outdoor gathering and programming space adjacent to Greek Leadership Center.",34.5249,-83.9861,0.0004,0.0007),
+  F("Recreation Support Facility","new","proposed","New indoor recreation and wellness facility — SW athletic zone.",34.5229,-83.9932,0.0006,0.0009),
+
+  // ── RENOVATED BUILDINGS (hatched — matches vision plan legend) ────────────
+  F("Memorial Hall (Renovation)","reno","proposed","Significant renovation of existing gym / athletic facility.",34.5308,-83.9820,0.0006,0.0009),
+  F("Student Pavilion (Renovation)","reno","proposed","Renovation and expansion of student services pavilion.",34.5295,-83.9828,0.0005,0.0007),
+  F("Wynne-Mathews Center (Renovation)","reno","proposed","Academic renovation — central campus.",34.5298,-83.9840,0.0004,0.0006),
+  F("Owen Hall (Renovation)","reno","proposed","Cadet housing renovation.",34.5275,-83.9820,0.0006,0.0009),
+]};
+
+// ─── STYLES ───────────────────────────────────────────────────────────────────
+function sExist(f){
+  const c = f.properties.cat;
+  if(c==="open")     return { fillColor:'#5a9e6e', color:'#3a7e4e', weight:1, fillOpacity:.30, dashArray:'4,4' };
+  if(c==="landmark") return { fillColor:'#8b5e3c', color:'#5c3d22', weight:2, fillOpacity:.82 };
+  if(c==="housing")  return { fillColor:'#6a8fb5', color:'#3a5f85', weight:1.5, fillOpacity:.70 };
+  if(c==="athletic") return { fillColor:'#7a9e6a', color:'#4a6e3a', weight:1.5, fillOpacity:.65 };
+  if(c==="support")  return { fillColor:'#888880', color:'#555550', weight:1.5, fillOpacity:.65 };
+  if(c==="student")  return { fillColor:'#a07850', color:'#705030', weight:1.5, fillOpacity:.70 };
+  return { fillColor:'#c8c3bc', color:'#8a8580', weight:1.5, fillOpacity:.72 };
+}
+
+function sVision(f){
+  const s = f.properties.status, c = f.properties.cat;
+  if(s==="proposed"){
+    if(c==="new")  return { fillColor:'#1a3d6e', color:'#0a2240', weight:2.5, fillOpacity:.90 };
+    if(c==="reno") return { fillColor:'#4a7ab5', color:'#2a5a95', weight:2, fillOpacity:.78 };
+    if(c==="greenspace") return { fillColor:'#5a9e6e', color:'#3a7e4e', weight:1.5, fillOpacity:.55 };
+  }
+  // retained existing — muted
+  const b = sExist(f);
+  return { ...b, fillOpacity: b.fillOpacity * 0.6, weight:1 };
+}
+
+// ─── POPUP ────────────────────────────────────────────────────────────────────
+function mkPopup(f){
+  const p = f.properties;
+  const badges = {
+    new:     { bg:'#1a3d6e', label:'New Building' },
+    reno:    { bg:'#4a7ab5', label:'Renovation' },
+    existing:{ bg:'#666',    label:'Existing' },
+    landmark:{ bg:'#8b5e3c', label:'Historic Landmark' },
+    open:    { bg:'#5a9e6e', label:'Open Space' },
+  };
+  const bk = badges[p.status==="proposed" ? p.cat : (p.cat==="landmark"?"landmark":p.cat==="open"?"open":"existing")];
+  const badge = bk ? `<span style="background:${bk.bg};color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:.1em;text-transform:uppercase;">${bk.label}</span>` : '';
+  return `<div style="font-family:'Lato',sans-serif;min-width:200px;max-width:250px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:#0a2240;margin-bottom:5px;line-height:1.3;">${p.name}</div>
+    <div style="margin-bottom:6px;">${badge}</div>
+    ${p.note?`<div style="font-size:11px;color:#444;font-style:italic;margin-top:5px;border-top:1px solid #eee;padding-top:5px;line-height:1.5;">${p.note}</div>`:''}
+    <div style="font-size:9px;color:#bbb;margin-top:6px;font-style:italic;">Footprint illustrative · pending georeferencing</div>
+  </div>`;
+}
+
+// ─── BUILD LAYERS ─────────────────────────────────────────────────────────────
+const existLayer = L.geoJSON(existing, {
+  style: sExist,
+  onEachFeature:(f,l)=>{
+    l.bindPopup(mkPopup(f));
+    l.on('mouseover',function(){ this.setStyle({weight:3,fillOpacity:Math.min((sExist(f).fillOpacity||.7)+.15,1)}); });
+    l.on('mouseout', function(){ this.setStyle(sExist(f)); });
+  }
+}).addTo(map);
+
+const visionLayer = L.geoJSON(vision, {
+  style: sVision,
+  onEachFeature:(f,l)=>{
+    l.bindPopup(mkPopup(f));
+    l.on('mouseover',function(){ this.setStyle({weight:3}); });
+    l.on('mouseout', function(){ this.setStyle(sVision(f)); });
+  }
+}).addTo(map);
+
+// ─── SWIPE ────────────────────────────────────────────────────────────────────
+L.control.sideBySide([osmA, existLayer],[osmB, visionLayer]).addTo(map);
+
+// ─── LEGEND ───────────────────────────────────────────────────────────────────
+L.control({ position:'bottomright' }).onAdd = function(){
+  const d = L.DomUtil.create('div','legend');
+  d.innerHTML = `
+    <h4>Vision Plan Legend</h4>
+    <div class="li"><div class="sw" style="background:#1a3d6e;"></div>New Building (proposed)</div>
+    <div class="li"><div class="sw hatch"></div>Renovated Building</div>
+    <div class="li"><div class="sw" style="background:#c8c3bc;"></div>Existing Building (retained)</div>
+    <div class="li"><div class="sw" style="background:#8b5e3c;"></div>Historic Landmark</div>
+    <div class="li"><div class="sw" style="background:#6a8fb5;"></div>Residential Housing</div>
+    <div class="li"><div class="sw" style="background:#7a9e6a;"></div>Athletic / Recreation</div>
+    <div class="li"><div class="sw" style="background:#a07850;"></div>Student Services</div>
+    <div class="li"><div class="sw" style="background:#5a9e6e;border:1px dashed #3a7e4e;"></div>Open Space / Drill Field</div>
+    <div class="ln">⚠ Illustrative mock-up only.<br>Footprints estimated from vision plan<br>image — pending georeferencing.<br>Public-facing · OSM basemap only.</div>`;
+  return d;
+}.addTo(map);
+
+// ─── HINT ─────────────────────────────────────────────────────────────────────
+const h = document.createElement('div');
+h.className='hint'; h.innerHTML='⟵ &nbsp;Drag gold bar to compare&nbsp; ⟶';
+document.getElementById('map').appendChild(h);
+setTimeout(()=>{ h.style.opacity='0'; }, 5000);
+</script>
+</body>
+</html>
