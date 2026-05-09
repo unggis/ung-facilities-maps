@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNG Campus MMM Map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --navy:   #003366;
+  --gold:   #C9A84C;
+  --gold-lt:#e8d49a;
+  --parch:  #faf7f2;
+  --sand:   #c9b99a;
+  --stone:  #8a7a6a;
+}
+html, body { height:100%; overflow:hidden; }
+body {
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  background: var(--navy);
+}
+#map { width:100%; height:100vh; background:#e8e0d0; }
+.osm-tiles { filter: sepia(0.3) brightness(0.97) contrast(0.92); }
+
+/* ── Campus panel ── */
+.campus-panel {
+  position: absolute;
+  top: 12px; left: 12px;
+  z-index: 1000;
+  background: rgba(0,30,70,0.94);
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 3px;
+  padding: 10px 10px 8px;
+  min-width: 120px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+.campus-panel-title {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sand);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 0.5px solid rgba(201,168,76,0.25);
+}
+.campus-btn {
+  display: block; width: 100%;
+  background: var(--navy);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 2px;
+  color: var(--parch);
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  margin-bottom: 5px;
+  text-align: left;
+  letter-spacing: 0.02em;
+  transition: background 0.15s, border-color 0.15s;
+}
+.campus-btn:last-child { margin-bottom: 0; }
+.campus-btn:hover { background: rgba(201,168,76,0.15); border-color: var(--gold); color: var(--gold-lt); }
+.campus-btn.active { background: var(--gold); border-color: var(--gold); color: var(--navy); font-weight: 700; }
+
+/* ── Legend ── */
+.legend {
+  position: absolute;
+  bottom: 20px; right: 12px;
+  z-index: 1000;
+  background: rgba(0,30,70,0.92);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 3px;
+  padding: 10px 14px;
+  font-size: 0.72rem;
+  color: var(--sand);
+  pointer-events: none;
+}
+.legend-title {
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--gold);
+  font-size: 0.82rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.legend-row { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+.legend-row:last-child { margin-bottom:0; }
+.legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; border:1.5px solid rgba(255,255,255,0.3); }
+
+/* ── Markers ── */
+.campus-marker { display:flex; flex-direction:column; align-items:center; }
+.marker-dot { width:28px; height:28px; border-radius:50%; position:relative; z-index:2; box-shadow:0 3px 12px rgba(0,0,0,0.6); }
+.marker-dot.active  { background:radial-gradient(circle at 35% 35%,#fff8dc,#C9A84C 60%,#a07830); border:2.5px solid #fff8dc; }
+.marker-dot.inactive{ background:radial-gradient(circle at 35% 35%,#9a8a6a,#5a4a30); border:2px solid #a09070; }
+.marker-pulse { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:28px; height:28px; border-radius:50%; z-index:1; }
+.marker-pulse.active   { animation:pulseGold   1.8s ease-out infinite; }
+.marker-pulse.inactive { animation:pulseBronze 2.8s ease-out infinite; }
+.marker-label { margin-top:6px; font-family:'Lato',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; white-space:nowrap; padding:3px 9px; border-radius:2px; }
+.marker-label.active   { color:#fff8dc; background:rgba(0,20,60,0.92); border:1px solid rgba(201,168,76,0.8); text-shadow:0 1px 4px rgba(0,0,0,0.9); box-shadow:0 2px 8px rgba(0,0,0,0.5),0 0 12px rgba(201,168,76,0.2); }
+.marker-label.inactive { color:#c9b99a; background:rgba(0,15,40,0.88); border:1px solid rgba(120,100,70,0.5); text-shadow:0 1px 3px rgba(0,0,0,0.8); }
+
+@keyframes pulseGold {
+  0%   { box-shadow:0 0 0 0 rgba(201,168,76,0.9); opacity:1; }
+  50%  { box-shadow:0 0 0 28px rgba(201,168,76,0.15); opacity:0.6; }
+  100% { box-shadow:0 0 0 40px rgba(201,168,76,0); opacity:0; }
+}
+@keyframes pulseBronze {
+  0%   { box-shadow:0 0 0 0 rgba(160,140,100,0.7); opacity:1; }
+  50%  { box-shadow:0 0 0 20px rgba(160,140,100,0.1); opacity:0.5; }
+  100% { box-shadow:0 0 0 30px rgba(160,140,100,0); opacity:0; }
+}
+
+/* ── Popup ── */
+.leaflet-popup-content-wrapper { background:var(--navy); border:1px solid var(--gold); border-radius:3px; padding:0; box-shadow:0 4px 20px rgba(0,0,0,0.5); min-width:220px; }
+.leaflet-popup-content { margin:0; }
+.leaflet-popup-tip { background:var(--gold); }
+.leaflet-popup-close-button { color:var(--gold) !important; top:6px !important; right:8px !important; }
+.popup-inner { padding:14px 16px 12px; }
+.popup-campus { font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--sand); margin-bottom:4px; }
+.popup-title  { font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:600; color:var(--gold); margin-bottom:6px; }
+.popup-desc   { font-size:0.78rem; color:var(--sand); line-height:1.5; margin-bottom:12px; }
+.popup-btn { display:inline-block; background:var(--gold); color:var(--navy); padding:6px 14px; border-radius:2px; font-size:0.72rem; font-weight:700; font-family:'Lato',sans-serif; letter-spacing:0.05em; text-decoration:none; text-transform:uppercase; }
+.popup-btn:hover { background:var(--gold-lt); }
+.popup-btn-disabled { display:inline-block; color:var(--stone); padding:6px 14px; border:0.5px solid rgba(138,122,106,0.3); border-radius:2px; font-size:0.72rem; font-family:'Lato',sans-serif; letter-spacing:0.05em; text-transform:uppercase; cursor:not-allowed; }
+.popup-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
+.popup-tag  { font-size:0.62rem; padding:2px 7px; border-radius:20px; background:rgba(201,168,76,0.1); color:var(--gold-lt); border:0.5px solid rgba(201,168,76,0.2); }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="campus-panel">
+  <div class="campus-panel-title">Campus</div>
+  <button class="campus-btn" onclick="flyTo('blueridge')">Blue Ridge</button>
+  <button class="campus-btn" onclick="flyTo('cumming')">Cumming</button>
+  <button class="campus-btn" onclick="flyTo('dahlonega')">Dahlonega</button>
+  <button class="campus-btn" onclick="flyTo('gainesville')">Gainesville</button>
+  <button class="campus-btn" onclick="flyTo('oconee')">Oconee</button>
+</div>
+
+<div class="legend">
+  <div class="legend-title">Monuments, Markers &amp; Memorials</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#C9A84C;"></div><span>Active — viewer available</span></div>
+  <div class="legend-row"><div class="legend-dot" style="background:#5a4a30;"></div><span>Coming soon</span></div>
+</div>
+
+<script>
+const CAMPUSES = {
+  dahlonega:   { name:'Dahlonega Campus',   lat:34.5297,  lng:-83.9849,  zoom:16, active:true,
+    tags:['Walkway of Service','Monuments','Historic Markers'],
+    desc:'The main campus in the foothills of the Blue Ridge Mountains. Home to Price Memorial Hall and the Walkway of Service.',
+    btnText:'Open Viewer', btnUrl:'https://www.smackdownbbq.com/walkway.html' },
+  gainesville: { name:'Gainesville Campus', lat:34.23474, lng:-83.86722, zoom:16, active:false,
+    tags:['Documentation in progress'],
+    desc:'Documentation for the Gainesville campus is currently in progress.' },
+  cumming:     { name:'Cumming Campus',     lat:34.22394, lng:-84.10806, zoom:16, active:false,
+    tags:['Documentation in progress'],
+    desc:'Documentation for the Cumming campus is currently in progress.' },
+  blueridge:   { name:'Blue Ridge Campus',  lat:34.88866, lng:-84.29174, zoom:16, active:false,
+    tags:['Documentation in progress'],
+    desc:'Documentation for the Blue Ridge campus is currently in progress.' },
+  oconee:      { name:'Oconee Campus',      lat:33.86621, lng:-83.42595, zoom:16, active:false,
+    tags:['Documentation in progress'],
+    desc:'Documentation for the Oconee campus is currently in progress.' },
+};
+
+const map = L.map('map', {
+  center: [34.3408, -83.9439],
+  zoom: 9, minZoom: 7, maxZoom: 18,
+  attributionControl: true,
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 18,
+  attribution: 'Leaflet | &copy; OpenStreetMap contributors | John Segars, UNG Facilities GIS',
+  className: 'osm-tiles',
+}).addTo(map);
+
+const markers = {};
+
+Object.entries(CAMPUSES).forEach(([key, c]) => {
+  const cls = c.active ? 'active' : 'inactive';
+  const shortName = c.name.replace(' Campus','');
+
+  const icon = L.divIcon({
+    html: `<div class="campus-marker">
+      <div style="position:relative;width:28px;height:28px;">
+        <div class="marker-pulse ${cls}"></div>
+        <div class="marker-dot ${cls}"></div>
+      </div>
+      <div class="marker-label ${cls}">${shortName}</div>
+    </div>`,
+    className: '',
+    iconSize: [120,56], iconAnchor: [60,14], popupAnchor: [0,-18],
+  });
+
+  const marker = L.marker([c.lat, c.lng], { icon }).addTo(map);
+
+  const tagsHtml = c.tags.map(t => `<span class="popup-tag">${t}</span>`).join('');
+  const btnHtml  = c.active
+    ? `<a class="popup-btn" href="${c.btnUrl}" target="_blank">${c.btnText} &#8599;</a>`
+    : `<span class="popup-btn-disabled">Coming Soon</span>`;
+
+  marker.bindPopup(L.popup({ maxWidth:280 }).setContent(`
+    <div class="popup-inner">
+      <div class="popup-campus">University of North Georgia</div>
+      <div class="popup-title">${c.name}</div>
+      <div class="popup-tags">${tagsHtml}</div>
+      <div class="popup-desc">${c.desc}</div>
+      ${btnHtml}
+    </div>`));
+
+  markers[key] = marker;
+});
+
+function flyTo(key) {
+  const c = CAMPUSES[key];
+  if (!c) return;
+  document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
+  const idx = ['blueridge','cumming','dahlonega','gainesville','oconee'].indexOf(key);
+  if (idx >= 0) document.querySelectorAll('.campus-btn')[idx].classList.add('active');
+  map.flyTo([c.lat, c.lng], c.zoom, { animate:true, duration:1.2 });
+  setTimeout(() => markers[key].openPopup(), 1300);
+}
+</script>
+</body>
+</html>

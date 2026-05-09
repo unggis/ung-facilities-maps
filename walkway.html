@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Walkway of Service — University of North Georgia</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --navy:   #003366;
+  --gold:   #C9A84C;
+  --gold-lt:#e8d49a;
+  --parch:  #faf7f2;
+  --sand:   #c9b99a;
+  --brick-named: #c17a42;
+  --brick-empty: #4e2810;
+  --mortar: #6b5a4e;
+}
+body {
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  background: var(--navy);
+  color: var(--parch);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+header {
+  background: var(--navy);
+  border-bottom: 2px solid var(--gold);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
+header p {
+  font-size: 0.72rem;
+  color: var(--sand);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+.header-hint {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.82rem;
+  color: var(--sand);
+  font-style: italic;
+  text-align: right;
+}
+
+/* ── Main layout ── */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Left panel — map ── */
+.map-panel {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.osm-tiles { filter: sepia(0.4) brightness(0.95) contrast(0.9); }
+#map {
+  flex: 1;
+  background: linear-gradient(160deg, #e8e0d0 0%, #ddd4c0 50%, #d4cab8 100%);
+}
+
+/* ── Search bar ── */
+.search-bar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  display: flex;
+  gap: 6px;
+}
+.search-bar input {
+  background: rgba(0,20,50,0.92);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  color: var(--parch);
+  padding: 7px 12px;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.82rem;
+  width: 210px;
+  outline: none;
+}
+.search-bar input::placeholder { color: var(--sand); }
+.search-bar button {
+  background: var(--gold);
+  border: none;
+  border-radius: 3px;
+  color: var(--navy);
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  letter-spacing: 0.04em;
+}
+.search-bar button:hover { background: var(--gold-lt); }
+
+/* ── Search results dropdown ── */
+#search-results {
+  position: absolute;
+  top: 48px;
+  right: 12px;
+  z-index: 1000;
+  background: rgba(0,20,50,0.97);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  max-height: 220px;
+  overflow-y: auto;
+  display: none;
+  min-width: 280px;
+}
+.result-item {
+  padding: 8px 14px;
+  cursor: pointer;
+  border-bottom: 0.5px solid rgba(201,168,76,0.2);
+  transition: background 0.15s;
+}
+.result-item:hover { background: rgba(201,168,76,0.12); }
+.result-item:last-child { border-bottom: none; }
+.result-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  color: var(--gold);
+  font-weight: 600;
+}
+.result-detail {
+  font-size: 0.68rem;
+  color: var(--sand);
+  margin-top: 1px;
+}
+.no-results {
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  color: var(--sand);
+  font-style: italic;
+}
+
+/* ── Legend ── */
+.legend {
+  position: absolute;
+  bottom: 20px;
+  left: 12px;
+  z-index: 1000;
+  background: rgba(0,20,50,0.9);
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: var(--sand);
+  pointer-events: none;
+}
+.legend-row { display:flex; align-items:center; gap:7px; margin-bottom:3px; }
+.legend-row:last-child { margin-bottom:0; }
+.swatch { width:20px; height:11px; border-radius:1px; flex-shrink:0; }
+
+/* ── Right panel — detail ── */
+.detail-panel {
+  width: 320px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #f5f0e8 0%, #ede6d6 100%);
+  border-left: 2px solid var(--gold);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+.detail-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+.detail-panel > * { position: relative; z-index: 1; }
+
+.detail-header {
+  background: var(--navy);
+  border-bottom: 1px solid rgba(201,168,76,0.3);
+  padding: 16px 20px 14px;
+  flex-shrink: 0;
+}
+.detail-header h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 2px;
+}
+.detail-header p {
+  font-size: 0.7rem;
+  color: var(--sand);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ── Empty state ── */
+.detail-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 24px;
+  text-align: center;
+  gap: 14px;
+}
+.detail-empty .icon {
+  font-size: 2.5rem;
+  opacity: 0.3;
+}
+.detail-empty p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-style: italic;
+  color: #6b5a3e;
+  line-height: 1.5;
+}
+
+/* ── Brick detail card ── */
+.detail-card {
+  flex: 1;
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.brick-visual {
+  margin: 20px 20px 0;
+  background: var(--brick-named);
+  border-radius: 4px;
+  padding: 20px 16px;
+  border: 1px solid rgba(201,168,76,0.2);
+  position: relative;
+  overflow: hidden;
+}
+.brick-visual::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,245,220,0.3), transparent);
+}
+.brick-visual.available {
+  background: var(--brick-empty);
+}
+.brick-lname {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: rgba(255,245,220,0.95);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.brick-fname {
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  font-size: 0.9rem;
+  color: rgba(232,212,154,0.9);
+  margin-top: 5px;
+  letter-spacing: 0.06em;
+}
+.brick-dates {
+  font-family: 'Lato', sans-serif;
+  font-size: 0.78rem;
+  color: rgba(232,212,154,0.7);
+  margin-top: 8px;
+  letter-spacing: 0.04em;
+}
+.brick-grid {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 0.62rem;
+  color: rgba(255,245,220,0.4);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.brick-available-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: rgba(200,175,145,0.6);
+}
+
+.detail-body {
+  padding: 16px 20px;
+  flex: 1;
+}
+.detail-field {
+  margin-bottom: 14px;
+}
+.detail-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8a6e45;
+  margin-bottom: 3px;
+}
+.detail-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  color: #2a1f0e;
+}
+.detail-divider {
+  border: none;
+  border-top: 0.5px solid rgba(139,110,69,0.3);
+  margin: 14px 0;
+}
+
+.detail-status {
+  display: inline-block;
+  font-size: 0.66rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+.status-ok { background: rgba(40,100,60,0.12); color: #2a6b3a; border: 0.5px solid #4a9a6a; }
+.status-warn { background: rgba(160,80,0,0.12); color: #8a4a00; border: 0.5px solid #c07020; }
+.status-info { background: rgba(0,30,80,0.08); color: #1a3a6a; border: 0.5px solid rgba(0,50,120,0.3); }
+
+/* ── Nav between matches ── */
+.match-nav {
+  padding: 10px 20px;
+  background: rgba(0,10,30,0.5);
+  border-top: 0.5px solid rgba(201,168,76,0.2);
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.match-nav span {
+  font-size: 0.72rem;
+  color: var(--sand);
+}
+.match-nav .nav-btns { display:flex; gap:8px; }
+.match-nav button {
+  background: transparent;
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 3px;
+  color: var(--gold);
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+}
+.match-nav button:hover { background: rgba(201,168,76,0.1); }
+
+/* ── Leaflet popup override ── */
+.leaflet-popup-content-wrapper {
+  background: var(--navy);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  padding: 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.leaflet-popup-content { margin: 10px 14px; font-size: 0.8rem; color: var(--sand); }
+.leaflet-popup-tip { background: var(--gold); }
+.leaflet-popup-close-button { color: var(--gold) !important; }
+
+/* ── Table button ── */
+.table-btn {
+  position: absolute;
+  bottom: 110px;
+  left: 12px;
+  z-index: 1000;
+  background: rgba(0,20,50,0.92);
+  border: 1px solid var(--gold);
+  border-radius: 3px;
+  color: var(--gold);
+  padding: 7px 14px;
+  font-size: 0.78rem;
+  font-family: 'Lato', sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+.table-btn:hover { background: rgba(201,168,76,0.15); }
+
+/* ── Honoree modal ── */
+.table-modal {
+  display: none;
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(900px, 95vw);
+  max-height: 80vh;
+  background: rgba(0,15,40,0.98);
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+  z-index: 2000;
+  flex-direction: column;
+}
+.table-modal.open { display: flex; }
+.modal-header { padding: 14px 20px; border-bottom: 1px solid rgba(201,168,76,0.3); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.modal-header h3 { font-family:'Cormorant Garamond',serif; font-size:1.2rem; color:var(--gold); font-weight:600; }
+.modal-header p { font-size:0.7rem; color:var(--sand); margin-top:2px; }
+.modal-close { background:transparent; border:1px solid rgba(201,168,76,0.4); border-radius:3px; color:var(--gold); padding:4px 10px; cursor:pointer; font-size:0.8rem; font-family:'Lato',sans-serif; }
+.modal-close:hover { background:rgba(201,168,76,0.1); }
+.modal-search { padding:10px 20px; border-bottom:1px solid rgba(201,168,76,0.15); flex-shrink:0; }
+.modal-search input { background:rgba(0,20,50,0.8); border:1px solid rgba(201,168,76,0.4); border-radius:3px; color:var(--parch); padding:6px 12px; font-size:0.8rem; width:100%; outline:none; font-family:'Lato',sans-serif; }
+.modal-search input::placeholder { color:var(--sand); }
+.modal-table-wrap { overflow-y:auto; flex:1; }
+table.honoree-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+.honoree-table thead th { background:var(--navy); color:var(--gold); padding:8px 14px; text-align:left; font-weight:700; letter-spacing:0.04em; font-size:0.72rem; text-transform:uppercase; position:sticky; top:0; cursor:pointer; user-select:none; border-bottom:1px solid rgba(201,168,76,0.3); }
+.honoree-table thead th:hover { background:rgba(0,30,80,0.95); }
+.honoree-table thead th.sorted-asc::after { content:' ↑'; }
+.honoree-table thead th.sorted-desc::after { content:' ↓'; }
+.honoree-table tbody tr { border-bottom:0.5px solid rgba(201,168,76,0.08); cursor:pointer; transition:background 0.12s; }
+.honoree-table tbody tr:hover { background:rgba(201,168,76,0.1); }
+.honoree-table tbody tr.active-row { background:rgba(201,168,76,0.2); }
+.honoree-table td { padding:7px 14px; color:var(--parch); }
+.honoree-table td.td-name { font-family:'Cormorant Garamond',serif; font-size:0.95rem; color:var(--gold); font-weight:600; }
+.honoree-table td.td-grid { font-size:0.7rem; color:var(--sand); }
+.modal-footer { padding:8px 20px; border-top:1px solid rgba(201,168,76,0.15); font-size:0.68rem; color:var(--sand); flex-shrink:0; }
+
+/* ── Brick labels (zoom 27+) ── */
+.brick-label {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  pointer-events: none;
+}
+.brick-label::before { display: none !important; } /* hide tooltip arrow */
+.brick-label-name {
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: rgba(255,245,220,0.95);
+  text-align: center;
+  line-height: 1.2;
+  text-shadow: 0 0 2px rgba(0,0,0,0.9);
+  white-space: nowrap;
+}
+.brick-label-dates {
+  font-family: 'Lato', sans-serif;
+  font-weight: 300;
+  font-size: 9px;
+  color: rgba(232,212,154,0.85);
+  text-align: center;
+  line-height: 1.2;
+  text-shadow: 0 0 2px rgba(0,0,0,0.9);
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Walkway of Service</h1>
+    <p>University of North Georgia &nbsp;·&nbsp; Dahlonega Campus</p>
+  </div>
+  <div class="header-hint" style="text-align:right;">
+    Search a name or click any brick<br>
+    <span id="load-status" style="font-size:0.65rem;color:var(--sand);">Loading data...</span>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- Left: Map -->
+  <div class="map-panel">
+    <div id="map"></div>
+
+    <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,20,50,0.85);border:1px solid rgba(201,168,76,0.5);border-radius:20px;padding:4px 14px;font-size:0.85rem;color:var(--gold);pointer-events:none;font-family:'Cormorant Garamond',serif;font-style:italic;letter-spacing:0.04em;">&#8595; Price Memorial Hall Entrance</div>
+    <div style="position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(0,20,50,0.75);border:1px solid rgba(201,168,76,0.3);border-radius:20px;padding:4px 14px;font-size:0.85rem;color:var(--sand);pointer-events:none;font-family:'Cormorant Garamond',serif;font-style:italic;letter-spacing:0.04em;">Steps up to Walkway &#8593;</div>
+
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search by last name…" autocomplete="off"/>
+      <button onclick="doSearch()">Find</button>
+    </div>
+    <div id="search-results"></div>
+
+    <div class="legend">
+      <div class="legend-row"><div class="swatch" style="background:#c17a42;border:1px solid #7a4820;"></div><span>Dedicated Brick</span></div>
+      <div class="legend-row"><div class="swatch" style="background:#4e2810;border:1px solid #3a1e08;"></div><span>Available</span></div>
+      <div class="legend-row"><div class="swatch" style="background:#2a1608;border:1px solid #C9A84C;"></div><span>Service Plaque</span></div>
+    </div>
+
+    <button class="table-btn" onclick="openTable()">&#9776; All Honorees</button>
+    <button class="table-btn" id="osm-toggle" onclick="toggleOSM()" style="bottom:150px;">&#127758; Hide Map</button>
+
+    <!-- Honoree modal -->
+    <div class="table-modal" id="honoree-modal">
+      <div class="modal-header">
+        <div><h3>Honorees — Walkway of Service</h3><p id="modal-count"></p></div>
+        <button class="modal-close" onclick="closeTable()">Close ✕</button>
+      </div>
+      <div class="modal-search">
+        <input type="text" id="table-search" placeholder="Filter by name…" oninput="filterTable()" autocomplete="off"/>
+      </div>
+      <div class="modal-table-wrap">
+        <table class="honoree-table">
+          <thead><tr>
+            <th onclick="sortTable('lname')" id="th-lname">Last Name</th>
+            <th onclick="sortTable('fname')" id="th-fname">First Name</th>
+            <th onclick="sortTable('from')"  id="th-from">From</th>
+            <th onclick="sortTable('to')"    id="th-to">To</th>
+            <th onclick="sortTable('grid')"  id="th-grid">Grid</th>
+          </tr></thead>
+          <tbody id="honoree-tbody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+
+  </div><!-- end map-panel -->
+
+  <!-- Right: Detail panel -->
+  <div class="detail-panel">
+    <div class="detail-header">
+      <h2>Brick Detail</h2>
+      <p>Select a brick to view information</p>
+    </div>
+
+    <div class="detail-empty" id="detail-empty">
+      <div class="icon">
+        <svg width="60" height="80" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:0.25;">
+          <polygon points="30,0 33,20 27,20" fill="#C9A84C"/>
+          <rect x="27" y="18" width="6" height="8" fill="#C9A84C"/>
+          <rect x="22" y="26" width="16" height="4" fill="#C9A84C"/>
+          <rect x="18" y="30" width="24" height="30" fill="#C9A84C"/>
+          <rect x="14" y="58" width="32" height="4" fill="#C9A84C"/>
+          <rect x="10" y="62" width="40" height="18" fill="#C9A84C"/>
+          <rect x="16" y="66" width="8" height="14" fill="rgba(0,20,50,0.5)"/>
+          <rect x="36" y="66" width="8" height="14" fill="rgba(0,20,50,0.5)"/>
+          <rect x="26" y="34" width="8" height="10" fill="rgba(0,20,50,0.5)"/>
+        </svg>
+      </div>
+      <p>Search for a name above or click any brick on the map to view its dedication details.</p>
+    </div>
+
+    <div class="detail-card" id="detail-card">
+      <div class="brick-visual" id="brick-visual">
+        <div class="brick-grid" id="brick-grid"></div>
+        <div class="brick-lname" id="brick-lname"></div>
+        <div class="brick-fname" id="brick-fname"></div>
+        <div class="brick-dates" id="brick-dates"></div>
+      </div>
+      <div class="detail-body">
+        <div class="detail-field" id="field-name">
+          <div class="detail-label">Name</div>
+          <div class="detail-value" id="detail-name"></div>
+        </div>
+        <div class="detail-field" id="field-dates">
+          <div class="detail-label">Years of Service</div>
+          <div class="detail-value" id="detail-dates"></div>
+        </div>
+        <hr class="detail-divider">
+        <div class="detail-field">
+          <div class="detail-label">Grid Position</div>
+          <div class="detail-value" id="detail-grid"></div>
+        </div>
+        <div class="detail-field" id="field-status">
+          <div class="detail-label">Record Status</div>
+          <div class="detail-value" id="detail-status"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="match-nav" id="match-nav">
+      <span id="match-count"></span>
+      <div class="nav-btns">
+        <button onclick="prevMatch()">&#8592; Prev</button>
+        <button onclick="nextMatch()">Next &#8594;</button>
+      </div>
+    </div>
+  </div><!-- end detail-panel -->
+
+</div><!-- end main -->
+
+<script>
+// ── Map setup ─────────────────────────────────────────────────────────────────
+const MIN_LNG = -83.98702959, MIN_LAT = 34.53019601;
+const MAX_LNG = -83.98699552, MAX_LAT = 34.53026232;
+
+const map = L.map('map', {
+  center: [(MIN_LAT+MAX_LAT)/2, (MIN_LNG+MAX_LNG)/2],
+  zoom: 20,
+  minZoom: 17,
+  maxZoom: 30,
+  maxBounds: [[MIN_LAT-0.0002, MIN_LNG-0.0002],[MAX_LAT+0.0002, MAX_LNG+0.0002]],
+  maxBoundsViscosity: 1.0,
+  attributionControl: false,
+});
+
+const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 30,
+  attribution: '&copy; OpenStreetMap contributors',
+  className: 'osm-tiles',
+}).addTo(map);
+
+// ── Brick styling ─────────────────────────────────────────────────────────────
+function getBrickStyleAtZoom(feature, zoom) {
+  const bs     = feature.properties.BrickSize || '';
+  const lname  = feature.properties.LNAME;
+  const named  = lname && lname !== '<Null>' && lname !== 'null';
+  const plaque = bs === 'Plaque';
+  const half   = bs === 'Half';
+
+  if (plaque) return { fillColor:'#2a1608', fillOpacity:1, color:'#C9A84C', weight:1.5, opacity:1 };
+
+  if (zoom >= 24) {
+    // All bricks same light brown at high zoom
+    return { fillColor:'#c17a42', fillOpacity:1, color:'#7a4820', weight:0.8, opacity:0.9 };
+  }
+
+  if (named)  return { fillColor:'#c17a42', fillOpacity:1, color:'#7a4820', weight:0.8, opacity:0.9 };
+  return { fillColor: half ? '#5a2e14' : '#4e2810', fillOpacity:1, color:'#3a1e08', weight:0.8, opacity:0.9 };
+}
+
+function getBrickStyle(feature) {
+  return getBrickStyleAtZoom(feature, map.getZoom());
+}
+
+function getHighlightStyle() {
+  return { fillColor:'#C9A84C', fillOpacity:0.7, color:'#fff8dc', weight:2, opacity:1 };
+}
+
+// ── Update brick colors on zoom ───────────────────────────────────────────────
+function updateBrickColors() {
+  if (!geoLayer) return;
+  const zoom = map.getZoom();
+  geoLayer.eachLayer(layer => {
+    if (layer === activeLayer) return;
+    layer.setStyle(getBrickStyleAtZoom(layer.feature, zoom));
+  });
+}
+
+// ── Brick labels (zoom 27+) ───────────────────────────────────────────────────
+function updateBrickLabels() {
+  if (!geoLayer) return;
+  const show = map.getZoom() >= 27;
+  geoLayer.eachLayer(layer => {
+    const tt = layer.getTooltip();
+    if (!tt) return;
+    if (show) {
+      layer.openTooltip();
+    } else {
+      layer.closeTooltip();
+    }
+  });
+}
+
+// ── Zoom indicator + combined zoom handler ────────────────────────────────────
+const zoomDiv = L.control({ position: 'bottomright' });
+zoomDiv.onAdd = function() {
+  const div = L.DomUtil.create('div');
+  div.style.cssText = 'background:rgba(0,20,50,0.92);border:1px solid #C9A84C;border-radius:3px;padding:4px 10px;font-size:0.75rem;color:#C9A84C;font-family:Lato,sans-serif;';
+  div.id = 'zoom-indicator';
+  div.textContent = 'Zoom: ' + map.getZoom().toFixed(1);
+  return div;
+};
+zoomDiv.addTo(map);
+
+map.on('zoom zoomend', function() {
+  updateBrickColors();
+  updateBrickLabels();
+  const el = document.getElementById('zoom-indicator');
+  if (el) el.textContent = 'Zoom: ' + map.getZoom().toFixed(1);
+});
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let geoLayer = null;
+let activeLayer = null;
+let matchedLayers = [];
+let currentIdx = 0;
+
+function clearActive() {
+  if (activeLayer) {
+    activeLayer.setStyle(getBrickStyle(activeLayer.feature));
+    activeLayer = null;
+  }
+}
+
+// ── Show detail panel ─────────────────────────────────────────────────────────
+function showDetail(props) {
+  const lname  = (props.LNAME || '').replace('<Null>','').trim();
+  const fname  = (props.FNAME || '').replace('<Null>','').trim();
+  const mname  = (props.MNAME || '').replace('<Null>','').trim();
+  const df     = props.svcdatefromTXT;
+  const dt     = props.svcdatetoTXT;
+  const concat = props.CONCAT || '';
+  const status = props.STATUS || '';
+  const bs     = props.BrickSize || '';
+  const named  = !!lname;
+  const isPlaque = bs === 'Plaque';
+
+  const visual = document.getElementById('brick-visual');
+
+  if (isPlaque) {
+    visual.className = 'brick-visual';
+    visual.style.background = '#2a1608';
+    visual.style.border = '1.5px solid #C9A84C';
+    document.getElementById('brick-grid').textContent = concat;
+    document.getElementById('brick-lname').innerHTML = '<span style="font-size:1.1rem;letter-spacing:0.06em;">WALKWAY OF SERVICE</span>';
+    document.getElementById('brick-fname').textContent = 'July 6, 1999';
+    document.getElementById('brick-dates').textContent = 'University of North Georgia';
+    document.getElementById('field-name').style.display = 'none';
+    document.getElementById('field-dates').style.display = 'none';
+    document.getElementById('detail-grid').textContent = 'Service Plaque \u00b7 ' + concat;
+    document.getElementById('detail-status').innerHTML = `
+      <div style="font-family:'Cormorant Garamond',serif;font-size:0.95rem;color:#2a1f0e;line-height:1.7;margin-top:4px;">
+        This walkway is dedicated to the many retirees of North Georgia College &amp; State University.
+        They gave of themselves in the name of education, and on their shoulders, the history of this great university was built.
+        <br><br>
+        <span style="color:#8a6020;font-weight:600;">Sherman B. Day</span><br>
+        <span style="font-size:0.85rem;color:#6b5a3e;">President, 1999</span>
+      </div>`;
+    document.getElementById('field-status').querySelector('.detail-label').textContent = 'Dedication';
+    document.getElementById('field-status').style.display = 'block';
+    document.getElementById('detail-empty').style.display = 'none';
+    document.getElementById('detail-card').style.display = 'flex';
+    return;
+  }
+
+  visual.className = 'brick-visual' + (named ? '' : ' available');
+  visual.style.background = '';
+  visual.style.border = '';
+  document.getElementById('brick-grid').textContent = concat;
+
+  if (named) {
+    document.getElementById('brick-lname').textContent = lname.toUpperCase();
+    const fn = [fname, mname ? mname[0]+'.' : ''].filter(Boolean).join(' ');
+    document.getElementById('brick-fname').textContent = fn || '';
+    const dates = df && dt ? df + ' – ' + dt : df || dt || '';
+    document.getElementById('brick-dates').textContent = dates;
+  } else {
+    document.getElementById('brick-lname').innerHTML = '<span class="brick-available-text">Available</span>';
+    document.getElementById('brick-fname').textContent = '';
+    document.getElementById('brick-dates').textContent = '';
+  }
+
+  if (named) {
+    const fullName = [fname, mname, lname].filter(Boolean).join(' ');
+    document.getElementById('detail-name').textContent = fullName;
+    document.getElementById('field-name').style.display = 'block';
+  } else {
+    document.getElementById('field-name').style.display = 'none';
+  }
+
+  if (df || dt) {
+    const dates = df && dt ? df + ' – ' + dt : df || dt;
+    document.getElementById('detail-dates').textContent = dates;
+    document.getElementById('field-dates').style.display = 'block';
+  } else {
+    document.getElementById('field-dates').style.display = 'none';
+  }
+
+  document.getElementById('detail-grid').textContent =
+    'Column ' + (props.X || '') + ', Row ' + (props.Y || '') + ' · ' + concat;
+
+  if (status) {
+    let cls = 'status-info';
+    if (status.includes('OK')) cls = 'status-ok';
+    else if (status.includes('Needs')) cls = 'status-warn';
+    document.getElementById('detail-status').innerHTML =
+      '<span class="detail-status ' + cls + '">' + status + '</span>';
+    document.getElementById('field-status').querySelector('.detail-label').textContent = 'Record Status';
+    document.getElementById('field-status').style.display = 'block';
+  } else {
+    document.getElementById('field-status').style.display = 'none';
+  }
+
+  document.getElementById('detail-empty').style.display = 'none';
+  document.getElementById('detail-card').style.display = 'flex';
+}
+
+// ── Load GeoJSON ──────────────────────────────────────────────────────────────
+fetch('https://www.smackdownbbq.com/ServiceGridOUTjson.geojson')
+  .then(r => r.json())
+  .then(WALKWAY_DATA => {
+
+    geoLayer = L.geoJSON(WALKWAY_DATA, {
+      style: getBrickStyle,
+      onEachFeature: (feature, layer) => {
+
+        // Hover highlight
+        layer.on('mouseover', function() {
+          if (this !== activeLayer)
+            this.setStyle({ fillColor:'#d4944e', fillOpacity:0.9, color:'#C9A84C', weight:1.5, opacity:1 });
+        });
+        layer.on('mouseout', function() {
+          if (this !== activeLayer)
+            this.setStyle(getBrickStyle(feature));
+        });
+
+        // Click to select
+        layer.on('click', function() {
+          clearActive();
+          activeLayer = this;
+          this.setStyle(getHighlightStyle());
+          showDetail(feature.properties);
+          matchedLayers = [];
+          document.getElementById('match-nav').style.display = 'none';
+          document.getElementById('search-results').style.display = 'none';
+        });
+
+        // ── Permanent label for named bricks (shown at zoom 27+) ──────────────
+        const lname = (feature.properties.LNAME || '').replace('<Null>','').trim();
+        const fname = (feature.properties.FNAME || '').replace('<Null>','').trim();
+        const df    = feature.properties.svcdatefromTXT || '';
+        const dt    = feature.properties.svcdatetoTXT   || '';
+
+        if (lname && feature.properties.BrickSize !== 'Plaque') {
+          const nameLine = [fname ? fname[0]+'.' : '', lname].filter(Boolean).join(' ');
+          const dateLine = df && dt ? df + '–' + dt : df || dt || '';
+          const content  =
+            '<div class="brick-label-name">' + nameLine + '</div>' +
+            (dateLine ? '<div class="brick-label-dates">' + dateLine + '</div>' : '');
+
+          layer.bindTooltip(content, {
+            permanent:   true,
+            direction:   'center',
+            className:   'brick-label',
+            interactive: false,
+          });
+          layer.closeTooltip(); // hidden until zoom >= 27
+        }
+
+      } // end onEachFeature
+    }).addTo(map);
+
+    map.fitBounds(geoLayer.getBounds(), { padding: [20,20] });
+
+    document.getElementById('load-status').textContent =
+      '✓ Data loaded (' + WALKWAY_DATA.features.length + ' bricks)';
+    document.getElementById('load-status').style.color = '#7ecf9a';
+
+  })
+  .catch(err => {
+    alert('Failed to load walkway data: ' + err.message);
+    console.error(err);
+  });
+
+// ── Search ────────────────────────────────────────────────────────────────────
+function doSearch() {
+  const q = document.getElementById('search-input').value.trim().toLowerCase();
+  const resultsDiv = document.getElementById('search-results');
+
+  clearActive();
+  matchedLayers = [];
+  currentIdx = 0;
+
+  if (!q) { resultsDiv.style.display = 'none'; return; }
+
+  geoLayer.eachLayer(layer => {
+    const p = layer.feature.properties;
+    const ln = (p.LNAME || '').toLowerCase();
+    const fn = (p.FNAME || '').toLowerCase();
+    if (ln.includes(q) || fn.includes(q)) matchedLayers.push(layer);
+  });
+
+  if (!matchedLayers.length) {
+    resultsDiv.style.display = 'block';
+    resultsDiv.innerHTML = '<div class="no-results">No results for "' + q + '"</div>';
+    return;
+  }
+
+  resultsDiv.style.display = 'block';
+  resultsDiv.innerHTML = matchedLayers.map((layer, i) => {
+    const p = layer.feature.properties;
+    const ln = (p.LNAME || '').replace('<Null>','');
+    const fn = (p.FNAME || '').replace('<Null>','');
+    const df = p.svcdatefromTXT, dt = p.svcdatetoTXT;
+    const dates = df && dt ? df + '–' + dt : df || dt || '';
+    return '<div class="result-item" onclick="selectMatch(' + i + ')">' +
+      '<div class="result-name">' + ln.toUpperCase() + (fn ? ', ' + fn : '') + '</div>' +
+      '<div class="result-detail">Grid ' + p.CONCAT + (dates ? ' · ' + dates : '') + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+function selectMatch(idx) {
+  currentIdx = idx;
+  const layer = matchedLayers[idx];
+  clearActive();
+  activeLayer = layer;
+  layer.setStyle(getHighlightStyle());
+  layer.bringToFront();
+
+  const coords = layer.feature.geometry.coordinates[0];
+  const lats = coords.map(c => c[1]);
+  const lngs = coords.map(c => c[0]);
+  map.setView(
+    [(Math.min(...lats)+Math.max(...lats))/2, (Math.min(...lngs)+Math.max(...lngs))/2],
+    24, { animate:true }
+  );
+
+  showDetail(layer.feature.properties);
+  document.getElementById('search-results').style.display = 'none';
+
+  if (matchedLayers.length > 1) {
+    document.getElementById('match-nav').style.display = 'flex';
+    document.getElementById('match-count').textContent =
+      (idx+1) + ' of ' + matchedLayers.length + ' results';
+  } else {
+    document.getElementById('match-nav').style.display = 'none';
+  }
+}
+
+function nextMatch() {
+  currentIdx = (currentIdx+1) % matchedLayers.length;
+  selectMatch(currentIdx);
+}
+function prevMatch() {
+  currentIdx = (currentIdx-1+matchedLayers.length) % matchedLayers.length;
+  selectMatch(currentIdx);
+}
+
+document.getElementById('search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+map.on('click', () => {
+  document.getElementById('search-results').style.display = 'none';
+});
+
+document.getElementById('search-input').addEventListener('input', e => {
+  if (!e.target.value.trim()) {
+    document.getElementById('search-results').style.display = 'none';
+    matchedLayers = [];
+    document.getElementById('match-nav').style.display = 'none';
+  }
+});
+
+// ── OSM basemap toggle ────────────────────────────────────────────────────────
+let osmVisible = true;
+function toggleOSM() {
+  osmVisible = !osmVisible;
+  const btn = document.getElementById('osm-toggle');
+  if (osmVisible) {
+    osmLayer.addTo(map);
+    btn.innerHTML = '&#127758; Hide Map';
+  } else {
+    map.removeLayer(osmLayer);
+    btn.innerHTML = '&#127758; Show Map';
+  }
+}
+
+// ── Honoree table ─────────────────────────────────────────────────────────────
+let tableData = [];
+let tableSortCol = 'lname';
+let tableSortDir = 1;
+let activeTableRow = null;
+
+function buildTableData() {
+  tableData = [];
+  geoLayer.eachLayer(layer => {
+    const p = layer.feature.properties;
+    const lname = (p.LNAME || '').replace('<Null>','').trim();
+    if (!lname || p.BrickSize === 'Plaque') return;
+    tableData.push({
+      lname: lname,
+      fname: (p.FNAME || '').replace('<Null>','').trim(),
+      from:  p.svcdatefromTXT || '',
+      to:    p.svcdatetoTXT || '',
+      grid:  p.CONCAT || '',
+      layer: layer,
+    });
+  });
+  tableData.sort((a,b) => a.lname.localeCompare(b.lname));
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('honoree-tbody');
+  tbody.innerHTML = '';
+  data.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td class="td-name">' + row.lname + '</td>' +
+      '<td>' + row.fname + '</td>' +
+      '<td>' + row.from + '</td>' +
+      '<td>' + row.to + '</td>' +
+      '<td class="td-grid">' + row.grid + '</td>';
+    tr.addEventListener('click', () => {
+      if (activeTableRow) activeTableRow.classList.remove('active-row');
+      tr.classList.add('active-row');
+      activeTableRow = tr;
+      selectFromTable(row.layer);
+    });
+    tbody.appendChild(tr);
+  });
+  document.getElementById('modal-footer').textContent = data.length + ' honorees shown';
+}
+
+function filterTable() {
+  const q = document.getElementById('table-search').value.trim().toLowerCase();
+  const filtered = q
+    ? tableData.filter(r => r.lname.toLowerCase().includes(q) || r.fname.toLowerCase().includes(q))
+    : tableData;
+  renderTable(filtered);
+}
+
+function sortTable(col) {
+  if (tableSortCol === col) { tableSortDir *= -1; } else { tableSortCol = col; tableSortDir = 1; }
+  ['lname','fname','from','to','grid'].forEach(c => {
+    document.getElementById('th-' + c).className =
+      c === col ? (tableSortDir === 1 ? 'sorted-asc' : 'sorted-desc') : '';
+  });
+  tableData.sort((a,b) => String(a[col]||'').localeCompare(String(b[col]||'')) * tableSortDir);
+  filterTable();
+}
+
+function selectFromTable(layer) {
+  clearActive();
+  activeLayer = layer;
+  layer.setStyle(getHighlightStyle());
+  layer.bringToFront();
+  const coords = layer.feature.geometry.coordinates[0];
+  const lats = coords.map(c => c[1]);
+  const lngs = coords.map(c => c[0]);
+  map.setView(
+    [(Math.min(...lats)+Math.max(...lats))/2, (Math.min(...lngs)+Math.max(...lngs))/2],
+    24, { animate:true }
+  );
+  showDetail(layer.feature.properties);
+  matchedLayers = [];
+  document.getElementById('match-nav').style.display = 'none';
+}
+
+function openTable() {
+  if (!tableData.length) buildTableData();
+  renderTable(tableData);
+  document.getElementById('modal-count').textContent = tableData.length + ' dedicated bricks';
+  document.getElementById('honoree-modal').classList.add('open');
+  document.getElementById('table-search').value = '';
+  document.getElementById('table-search').focus();
+}
+
+function closeTable() {
+  document.getElementById('honoree-modal').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTable(); });
+
+</script>
+</body>
+</html>

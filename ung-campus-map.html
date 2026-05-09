@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>UNG Campus Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
+  <style>
+    .building-tooltip {
+      background: #003366;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .building-tooltip::before {
+      border-top-color: #003366;
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;">
+  <div style="background:#003366; color:#ffffff; text-align:center; padding:8px; font-family:Arial; font-size:14px; font-weight:bold; border-radius:6px 6px 0 0;">
+    UNG Campus Life Safety &amp; Building Map
+  </div>
+  <div id="ungmap" style="height:430px; width:100%; border-radius:0 0 6px 6px;"></div>
+  <script>
+    var map = L.map('ungmap', { maxZoom: 21 }).setView([34.53, -83.98], 15);
+
+    map.createPane('buildings');
+    map.getPane('buildings').style.zIndex = 400;
+
+    map.createPane('lifesafety');
+    map.getPane('lifesafety').style.zIndex = 450;
+
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors | John Segars, UNG Facilities GIS',
+      maxZoom: 19
+    });
+
+    var esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, GeoEye, Earthstar Geographics',
+      maxZoom: 21
+    });
+
+    var esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Labels &copy; Esri',
+      maxZoom: 21
+    });
+
+    var imagery = L.layerGroup([esriImagery, esriLabels]);
+
+    osm.addTo(map);
+
+    var baseMaps = {
+      'Street Map': osm,
+      'Satellite': imagery
+    };
+
+    L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+
+    // Building Footprints
+    L.esri.featureLayer({
+      url: 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Building_Footprints_2_view/FeatureServer/5',
+      pane: 'buildings',
+      style: {
+        color: '#003366',
+        weight: 1.5,
+        fillColor: '#C8952A',
+        fillOpacity: 0.4
+      },
+      onEachFeature: function(feature, layer) {
+        var props = feature.properties;
+        var label = (props.Building || 'Building');
+        if (props.campus) label += ' — ' + props.campus;
+        layer.bindTooltip(label, {
+          permanent: false,
+          sticky: true,
+          direction: 'top',
+          className: 'building-tooltip'
+        });
+        layer.on('click', function(e) {
+          var point = e.latlng;
+          var closest = null;
+          var closestDist = Infinity;
+          map.eachLayer(function(l) {
+            if (l instanceof L.Marker && !(l instanceof L.CircleMarker)) {
+              var dist = map.distance(point, l.getLatLng());
+              if (dist < closestDist) {
+                closestDist = dist;
+                closest = l;
+              }
+            }
+          });
+          if (closest && closestDist < 50) {
+            closest.openPopup();
+          }
+        });
+      }
+    }).addTo(map);
+
+    // Life Safety lookup tables
+    var deviceTypes = {
+      0: 'Fire Hydrant',
+      1: 'Stand Pipe',
+      2: 'AED',
+      3: 'Stairway Gurney',
+      4: 'Call Box',
+      5: 'Fire Extinguisher',
+      6: 'Fire Department Connection'
+    };
+
+    var floorTypes = {
+      0: 'Crawlspace',
+      1: 'Basement',
+      2: '1st Level',
+      3: '2nd Level',
+      4: '3rd Level',
+      5: '4th Level',
+      6: '5th Level',
+      7: '6th Level'
+    };
+
+    // SVG Icons
+    var deviceSVGs = {
+      0: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10" fill="#cc0000"/><text x="12" y="16" text-anchor="middle" font-size="11" fill="white" font-family="Arial">H</text></svg>',
+      1: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="4" fill="#8b0000"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">SP</text></svg>',
+      2: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="4" fill="#006400"/><text x="12" y="16" text-anchor="middle" font-size="8" fill="white" font-family="Arial">AED</text></svg>',
+      3: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><polygon points="12,2 22,22 2,22" fill="#6a0dad"/><text x="12" y="19" text-anchor="middle" font-size="8" fill="white" font-family="Arial">SG</text></svg>',
+      4: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10" fill="#0057b8"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">CB</text></svg>',
+      5: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="4" fill="#ff6600"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">FE</text></svg>',
+      6: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><polygon points="12,2 22,22 2,22" fill="#990000"/><text x="12" y="19" text-anchor="middle" font-size="7" fill="white" font-family="Arial">FDC</text></svg>'
+    };
+
+    function makeIcon(key) {
+      var svg = deviceSVGs[key] !== undefined ? deviceSVGs[key] : deviceSVGs[0];
+      return L.divIcon({
+        html: svg,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+        popupAnchor: [0, -14],
+        className: ''
+      });
+    }
+
+    var deviceIcons = {
+      0: makeIcon(0),
+      1: makeIcon(1),
+      2: makeIcon(2),
+      3: makeIcon(3),
+      4: makeIcon(4),
+      5: makeIcon(5),
+      6: makeIcon(6)
+    };
+
+    // Life Safety Features
+    L.esri.featureLayer({
+      url: 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Life_Safety_view/FeatureServer/28',
+      pane: 'lifesafety',
+      pointToLayer: function(feature, latlng) {
+        var icon = deviceIcons[feature.properties.DeviceType] !== undefined ? deviceIcons[feature.properties.DeviceType] : makeIcon(0);
+        return L.marker(latlng, { icon: icon });
+      },
+      onEachFeature: function(feature, layer) {
+        var props = feature.properties;
+        var deviceLabel = deviceTypes[props.DeviceType] || 'Life Safety Device';
+        var popup = '<strong>' + deviceLabel + '</strong>';
+        if (props.Building) popup += '<br>Building: ' + props.Building;
+        if (props.Floor !== null && props.Floor !== undefined) popup += '<br>Floor: ' + (floorTypes[props.Floor] || props.Floor);
+        if (props.Notes) popup += '<br>Notes: ' + props.Notes;
+        layer.bindPopup(popup);
+      }
+    }).addTo(map);
+
+    // Legend
+    var legend = L.control({ position: 'bottomright' });
+
+    legend.onAdd = function(map) {
+      var div = L.DomUtil.create('div', 'legend');
+      div.style.background = 'white';
+      div.style.padding = '10px';
+      div.style.borderRadius = '6px';
+      div.style.boxShadow = '0 1px 4px rgba(0,0,0,0.3)';
+      div.style.lineHeight = '1.8';
+      div.style.fontSize = '12px';
+
+      function svgIcon(svg) {
+        return '<span style="display:inline-block;vertical-align:middle;margin-right:6px;">' + svg + '</span>';
+      }
+
+      div.innerHTML = '<strong style="display:block;margin-bottom:6px;">Life Safety</strong>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="#cc0000"/><text x="12" y="16" text-anchor="middle" font-size="11" fill="white" font-family="Arial">H</text></svg>') + ' Fire Hydrant<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#8b0000"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">SP</text></svg>') + ' Stand Pipe<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#006400"/><text x="12" y="16" text-anchor="middle" font-size="8" fill="white" font-family="Arial">AED</text></svg>') + ' AED<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><polygon points="12,2 22,22 2,22" fill="#6a0dad"/><text x="12" y="19" text-anchor="middle" font-size="8" fill="white" font-family="Arial">SG</text></svg>') + ' Stairway Gurney<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="#0057b8"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">CB</text></svg>') + ' Call Box<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#ff6600"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">FE</text></svg>') + ' Fire Extinguisher<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><polygon points="12,2 22,22 2,22" fill="#990000"/><text x="12" y="19" text-anchor="middle" font-size="7" fill="white" font-family="Arial">FDC</text></svg>') + ' Fire Dept Connection<br><br>' +
+        '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
+        '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
+
+      return div;
+    };
+
+    legend.addTo(map);
+
+    // Campus Bookmarks
+    var campuses = {
+      'Dahlonega':   [34.5297, -83.9849],
+      'Gainesville': [34.23474, -83.86722],
+      'Oconee':      [33.86621, -83.42595],
+      'Blue Ridge':  [34.88866, -84.29174],
+      'Cumming':     [34.22394, -84.10806]
+    };
+
+    var bookmarkControl = L.control({ position: 'topleft' });
+
+    bookmarkControl.onAdd = function(map) {
+      var div = L.DomUtil.create('div');
+      div.style.background = 'white';
+      div.style.padding = '8px';
+      div.style.borderRadius = '6px';
+      div.style.boxShadow = '0 1px 4px rgba(0,0,0,0.3)';
+      div.style.fontSize = '12px';
+
+      var label = document.createElement('strong');
+      label.textContent = 'Campus';
+      label.style.display = 'block';
+      label.style.marginBottom = '6px';
+      div.appendChild(label);
+
+      Object.keys(campuses).forEach(function(name) {
+        var btn = document.createElement('button');
+        btn.textContent = name;
+        btn.style.display = 'block';
+        btn.style.width = '100%';
+        btn.style.marginBottom = '4px';
+        btn.style.padding = '4px 8px';
+        btn.style.background = '#003366';
+        btn.style.color = '#ffffff';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '3px';
+        btn.style.cursor = 'pointer';
+        btn.style.textAlign = 'left';
+        btn.onmouseover = function() { this.style.background = '#C8952A'; };
+        btn.onmouseout = function() { this.style.background = '#003366'; };
+        btn.onclick = function() {
+          map.setView(campuses[name], 15);
+        };
+        div.appendChild(btn);
+      });
+
+      return div;
+    };
+
+    bookmarkControl.addTo(map);
+  </script>
+</body>
+</html>
