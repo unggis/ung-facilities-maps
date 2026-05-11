@@ -628,12 +628,6 @@ function getBrickStyleAtZoom(feature, zoom) {
   const half   = bs === 'Half';
 
   if (plaque) return { fillColor:'#2a1608', fillOpacity:1, color:'#C9A84C', weight:1.5, opacity:1 };
-
-  if (zoom >= 24) {
-    // All bricks same light brown at high zoom
-    return { fillColor:'#c17a42', fillOpacity:1, color:'#7a4820', weight:0.8, opacity:0.9 };
-  }
-
   if (named)  return { fillColor:'#c17a42', fillOpacity:1, color:'#7a4820', weight:0.8, opacity:0.9 };
   return { fillColor: half ? '#5a2e14' : '#4e2810', fillOpacity:1, color:'#3a1e08', weight:0.8, opacity:0.9 };
 }
