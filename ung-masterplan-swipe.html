@@ -4,10 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UNG Dahlonega Campus Vision Plan</title>
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
-
 <style>
   :root {
     --navy:      #0a2240;
@@ -21,7 +19,6 @@
     background:var(--navy); color:#fff;
     height:100vh; display:flex; flex-direction:column; overflow:hidden;
   }
-
   header {
     background:var(--navy); border-bottom:2px solid var(--gold);
     padding:0 24px; height:60px; display:flex;
@@ -48,13 +45,16 @@
     font-size:10px; font-weight:700; letter-spacing:.12em;
     text-transform:uppercase; padding:3px 10px; border-radius:2px;
   }
-
-  /* ── Toggle bar ── */
   .toggle-bar {
     display:flex; height:40px; flex-shrink:0;
     background:var(--navy-mid);
     border-bottom:1px solid rgba(201,168,76,.25);
     align-items:center; justify-content:center; gap:0; z-index:900;
+  }
+  .toggle-label {
+    font-size:10px; font-weight:400; letter-spacing:.12em;
+    text-transform:uppercase; color:rgba(201,168,76,.6);
+    padding-right:16px; white-space:nowrap; font-style:italic;
   }
   .toggle-btn {
     height:28px; padding:0 32px;
@@ -64,21 +64,14 @@
     transition:all .2s ease; display:flex; align-items:center; gap:8px;
     background:rgba(255,255,255,.05); color:#9ab0c8;
   }
-  .toggle-btn:first-child { border-radius:3px 0 0 3px; }
-  .toggle-btn:last-child  { border-radius:0 3px 3px 0; border-left:none; }
-
-  .toggle-btn.active:first-child {
-    background:rgba(100,120,150,.35); color:#fff;
-    border-color:#6688aa;
-  }
-  .toggle-btn.active:last-child {
+  .toggle-btn:first-of-type { border-radius:3px 0 0 3px; }
+  .toggle-btn:last-of-type  { border-radius:0 3px 3px 0; border-left:none; }
+  .toggle-btn.active {
     background:var(--navy); color:var(--gold);
     border-color:var(--gold);
     box-shadow:0 0 10px rgba(201,168,76,.25);
   }
   .toggle-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-
-  /* Flash label on switch */
   #viewLabel {
     position:absolute; top:50%; left:50%;
     transform:translate(-50%,-50%);
@@ -94,14 +87,11 @@
     backdrop-filter:blur(4px);
   }
   #viewLabel.show { opacity:1; }
-
   #map { flex:1; width:100%; position:relative; }
-
-  /* Legend */
   .legend {
     background:rgba(10,34,64,.93);
     border:1px solid rgba(201,168,76,.4);
-    border-radius:4px; padding:12px 16px; min-width:205px;
+    border-radius:4px; padding:12px 16px; min-width:210px;
     backdrop-filter:blur(4px);
   }
   .legend h4 {
@@ -110,33 +100,25 @@
     margin-bottom:10px; padding-bottom:6px;
     border-bottom:1px solid rgba(201,168,76,.3);
   }
-  .li { display:flex; align-items:center; gap:9px; margin-bottom:7px; font-size:11px; font-weight:300; color:#d0dce8; letter-spacing:.04em; }
-  .sw { width:16px; height:14px; border-radius:2px; flex-shrink:0; border:1px solid rgba(255,255,255,.25); }
-  .sw.hatch { background:repeating-linear-gradient(45deg,#4a7ab5,#4a7ab5 3px,rgba(255,255,255,.2) 3px,rgba(255,255,255,.2) 6px); }
+  .li { display:flex; align-items:center; gap:9px; margin-bottom:6px; font-size:11px; font-weight:300; color:#d0dce8; letter-spacing:.03em; }
+  .sw { width:16px; height:12px; border-radius:2px; flex-shrink:0; }
   .ln { margin-top:10px; padding-top:8px; border-top:1px solid rgba(201,168,76,.2); font-size:9.5px; color:rgba(201,168,76,.7); font-style:italic; line-height:1.5; }
-
-  .toggle-label {
-    font-size:10px; font-weight:400; letter-spacing:.12em;
-    text-transform:uppercase; color:rgba(201,168,76,.6);
-    padding-right:16px; white-space:nowrap;
-    font-style:italic;
-  }
-
   .leaflet-control-attribution { background:rgba(10,34,64,.75)!important; color:rgba(255,255,255,.5)!important; font-size:9px!important; }
   .leaflet-control-attribution a { color:rgba(201,168,76,.8)!important; }
   .leaflet-control-zoom a { background:rgba(10,34,64,.9)!important; color:var(--gold)!important; border-color:rgba(201,168,76,.3)!important; }
-  .leaflet-control-zoom a:hover { background:var(--navy-mid)!important; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="header-left">
-    <div class="wordmark">University of North Georgia <span>Facilities GIS · Dahlonega Campus</span></div>
+    <div class="wordmark">University of North Georgia
+      <span>Facilities GIS &nbsp;·&nbsp; Dahlonega Campus</span>
+    </div>
     <div class="dvdr"></div>
     <div class="map-title">Campus Vision Plan — Existing vs. Proposed</div>
   </div>
-  <div class="badge">Draft · Illustrative</div>
+  <div class="badge">Draft &middot; Illustrative</div>
 </header>
 
 <div class="toggle-bar">
@@ -157,174 +139,144 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
+const MP_DATA = {"type":"FeatureCollection","features":[{"type":"Feature","id":1,"geometry":{"type":"Polygon","coordinates":[[[-83.98308913531743,34.52962172983591],[-83.98299444106124,34.529708487995286],[-83.98356025725349,34.53025245704953],[-83.98366538521874,34.53019612850862],[-83.98395458224964,34.52999235053019],[-83.98336781259603,34.52942662737746],[-83.98308913531743,34.52962172983591]]]},"properties":{"OBJECTID":1,"Shape_Length":837.1133643589552,"Shape_Area":41052.50332988475,"BLDG_NAME":"Hotel, Conf. Center & Parking Garage","STATUS":"New","CATEGORY":"Parking","NOTES":null}},{"type":"Feature","id":2,"geometry":{"type":"Polygon","coordinates":[[[-83.98308913531743,34.52962172983591],[-83.98302621812488,34.52958253267449],[-83.9827265072768,34.52979063896678],[-83.98287320299501,34.52992989829847],[-83.9829079054502,34.529894589337765],[-83.98332391819898,34.53029120687724],[-83.98327131228602,34.530338922235025],[-83.9836118730316,34.53065661447278],[-83.98391158479986,34.530448506040244],[-83.98366538521874,34.53019612850862],[-83.98356025725349,34.53025245704953],[-83.98299444106124,34.529708487995286],[-83.98308913531743,34.52962172983591]]]},"properties":{"OBJECTID":2,"Shape_Length":1171.8645356852148,"Shape_Area":36061.893650891296,"BLDG_NAME":"Hotel, Conf. Center & Parking Garage","STATUS":"New","CATEGORY":"Student Services","NOTES":null}},{"type":"Feature","id":3,"geometry":{"type":"Polygon","coordinates":[[[-83.98337233287985,34.526063827666086],[-83.98318539601836,34.52599947797897],[-83.98309902018646,34.52616485966759],[-83.98280248582002,34.52606831012519],[-83.98262753882189,34.52641864657323],[-83.98281017563504,34.526482990637966],[-83.98274970080928,34.52660391813147],[-83.9830526594208,34.526712935868005],[-83.98313676128836,34.52654216589872],[-83.98307888565202,34.526520768262635],[-83.98317610302607,34.526314470156244],[-83.98323625816552,34.52633947553661],[-83.98337233287985,34.526063827666086]]]},"properties":{"OBJECTID":3,"Shape_Length":862.8041421632503,"Shape_Area":29428.55929852864,"BLDG_NAME":"National Security Center","STATUS":"New","CATEGORY":"Speciality Military Program","NOTES":null}},{"type":"Feature","id":4,"geometry":{"type":"Polygon","coordinates":[[[-83.98053915183657,34.52656771464923],[-83.98020296811146,34.526654101551166],[-83.98039089870932,34.52713233282579],[-83.98029098633964,34.52720604466583],[-83.98045864417446,34.52735837432522],[-83.98070577548263,34.52718495242906],[-83.9805904995661,34.527084842711524],[-83.98071659400563,34.52704158491683],[-83.98053915183657,34.52656771464923]]]},"properties":{"OBJECTID":4,"Shape_Length":773.8913337824468,"Shape_Area":25797.838837696894,"BLDG_NAME":"Welcome Center","STATUS":"New","CATEGORY":"Student Services","NOTES":null}},{"type":"Feature","id":5,"geometry":{"type":"Polygon","coordinates":[[[-83.98633135549021,34.53197147294449],[-83.98625381547862,34.53202830881259],[-83.98623019159015,34.53201403676824],[-83.9861569638323,34.53206553911408],[-83.98618488580918,34.53208159806874],[-83.98609873129774,34.532143760036],[-83.98634124432704,34.53237191896646],[-83.98641878076415,34.532316862684276],[-83.98644240585962,34.53233113469341],[-83.98652639729683,34.53227430912593],[-83.98651050848275,34.53224963754255],[-83.98657815034443,34.532208536850554],[-83.98633135549021,34.53197147294449]]]},"properties":{"OBJECTID":5,"Shape_Length":445.7626770524093,"Shape_Area":11000.939965569596,"BLDG_NAME":"Downtown Office Building","STATUS":"Renovation","CATEGORY":"Administration","NOTES":null}},{"type":"Feature","id":6,"geometry":{"type":"Polygon","coordinates":[[[-83.9900419566716,34.529293007953136],[-83.99001202205633,34.529434672650616],[-83.98928124216701,34.52932733250093],[-83.9892313408475,34.52956707380892],[-83.9902847110991,34.52972665880977],[-83.9903678527901,34.5293370818848],[-83.9900419566716,34.529293007953136]]]},"properties":{"OBJECTID":6,"Shape_Length":930.3423587819319,"Shape_Area":34119.46502728067,"BLDG_NAME":"Institute for Peak Performance","STATUS":"New","CATEGORY":"Academic","NOTES":null}},{"type":"Feature","id":7,"geometry":{"type":"Polygon","coordinates":[[[-83.99219234494082,34.529804527899756],[-83.99072760902432,34.529789392220415],[-83.99071637775391,34.5301369718708],[-83.99219161996557,34.530152123604324],[-83.99219234494082,34.529804527899756]]]},"properties":{"OBJECTID":7,"Shape_Length":1138.5447638133392,"Shape_Area":56010.90797969376,"BLDG_NAME":"Lot 30 Parking Garage","STATUS":"New","CATEGORY":"Parking","NOTES":null}},{"type":"Feature","id":8,"geometry":{"type":"Polygon","coordinates":[[[-83.99158491262119,34.52905198171075],[-83.99158459435002,34.52920405518584],[-83.99213580925365,34.52922222402834],[-83.99225123676419,34.52925714787329],[-83.99268634668617,34.529566260832716],[-83.99280209205361,34.52944911158555],[-83.9923617136132,34.52914868238045],[-83.99232068780307,34.52911850510463],[-83.99228886899103,34.529098305705716],[-83.99224935901391,34.52908407794916],[-83.99220269954405,34.52907307740549],[-83.99214564418922,34.529071128799366],[-83.99158491262119,34.52905198171075]]]},"properties":{"OBJECTID":8,"Shape_Length":900.5804687096836,"Shape_Area":21542.742063784473,"BLDG_NAME":"Housing A","STATUS":"New","CATEGORY":"Housing","NOTES":null}},{"type":"Feature","id":9,"geometry":{"type":"Polygon","coordinates":[[[-83.99336364904299,34.52984842825043],[-83.9934431654982,34.529782845682035],[-83.99329977121835,34.529663763984644],[-83.99314450413455,34.5298011918384],[-83.99320299386329,34.52984976436202],[-83.9931575525143,34.52988880510409],[-83.99356322084412,34.530220987724995],[-83.99406873900266,34.5297946805447],[-83.9939423280253,34.529688137905204],[-83.99355987454378,34.53001138167294],[-83.99336364904299,34.52984842825043]]]},"properties":{"OBJECTID":9,"Shape_Length":900.0780716454713,"Shape_Area":21089.500328047263,"BLDG_NAME":"Housing D","STATUS":"New","CATEGORY":"Housing","NOTES":null}},{"type":"Feature","id":10,"geometry":{"type":"Polygon","coordinates":[[[-83.99387685674141,34.52917580618714],[-83.9933776150532,34.52960255877405],[-83.99350199364869,34.52970484564113],[-83.99388004490088,34.52938903984226],[-83.99415658441988,34.529612671511124],[-83.99427896746076,34.529509733131846],[-83.99387685674141,34.52917580618714]]]},"properties":{"OBJECTID":10,"Shape_Length":771.3148119665559,"Shape_Area":17880.44448450977,"BLDG_NAME":"Housing D","STATUS":"New","CATEGORY":"Housing","NOTES":null}},{"type":"Feature","id":11,"geometry":{"type":"Polygon","coordinates":[[[-83.99430650768286,34.52447209854255],[-83.99358852471637,34.52438505355228],[-83.99355800174756,34.52452265876406],[-83.99359648255947,34.52452005915227],[-83.99359573483203,34.524553995771974],[-83.99424759235993,34.524631562334335],[-83.99424811404646,34.524608870335584],[-83.99428330257463,34.52461233144044],[-83.99430650768286,34.52447209854255]]]},"properties":{"OBJECTID":11,"Shape_Length":562.2502863639872,"Shape_Area":13032.114363792949,"BLDG_NAME":"Housing B","STATUS":"New","CATEGORY":"Housing","NOTES":null}},{"type":"Feature","id":12,"geometry":{"type":"Polygon","coordinates":[[[-83.9921449111047,34.524092439387154],[-83.99207950972963,34.524222640507965],[-83.99211818400607,34.52423743149864],[-83.9921011064891,34.52425983116916],[-83.99254048114813,34.52441166147876],[-83.99255291525785,34.52438861413135],[-83.99258541075706,34.52439634880566],[-83.99264746947586,34.52426882203987],[-83.9921449111047,34.524092439387154]]]},"properties":{"OBJECTID":12,"Shape_Length":451.0097927026143,"Shape_Area":9805.308716245227,"BLDG_NAME":"Housing B","STATUS":"New","CATEGORY":"Housing","NOTES":null}},{"type":"Feature","id":13,"geometry":{"type":"Polygon","coordinates":[[[-83.99277063845413,34.52429218063013],[-83.99275177353876,34.524429902308505],[-83.99277886301512,34.52443186296583],[-83.99277725923677,34.52445876903219],[-83.99342967075593,34.52453529766206],[-83.99343436582559,34.524510958156206],[-83.99346609470122,34.524515488327246],[-83.99349116290539,34.52437200906546],[-83.99277063845413,34.52429218063013]]]},"properties":{"OBJECTID":13,"Shape_Length":557.2784904281159,"Shape_Area":13043.345749360069,"BLDG_NAME":"Housing B","STATUS":"New","CATEGORY":"Housing","NOTES":null}},{"type":"Feature","id":14,"geometry":{"type":"Polygon","coordinates":[[[-83.98778073349489,34.52792357054373],[-83.98790755444062,34.527999520929114],[-83.98815915648323,34.527723713152376],[-83.98815682392424,34.52743286948965],[-83.9874155991032,34.527434228011714],[-83.98727647436706,34.52758799816554],[-83.98738464609916,34.527659984669356],[-83.98748621014224,34.527556532974266],[-83.98772539860492,34.52756177179345],[-83.98772962380045,34.527589396731926],[-83.98780506924301,34.52759121746301],[-83.98780513194623,34.52756188858062],[-83.9880088892282,34.52756463087308],[-83.98800864392362,34.52767950052646],[-83.98792760389634,34.527766286128276],[-83.98790220172876,34.5277404459106],[-83.98784717749332,34.52780441994317],[-83.98787662654772,34.52782309522877],[-83.98778073349489,34.52792357054373]]]},"properties":{"OBJECTID":14,"Shape_Length":1019.3898142900553,"Shape_Area":20775.245728627706,"BLDG_NAME":"Housing C","STATUS":"New","CATEGORY":"Housing","NOTES":null}},{"type":"Feature","id":15,"geometry":{"type":"Polygon","coordinates":[[[-83.98771134085091,34.52447004451079],[-83.98771677121587,34.52469245945558],[-83.98778469385562,34.52469011486533],[-83.9877933491594,34.524785444948215],[-83.98809160486847,34.52478343727872],[-83.98810057870766,34.524729681488445],[-83.98815078429463,34.524727310792414],[-83.98815086251189,34.52469065057302],[-83.98809770987798,34.52469022578444],[-83.98809798558699,34.52456103961991],[-83.988159997943,34.5245611302625],[-83.98816038038488,34.52451563987535],[-83.98810564198169,34.52451414444474],[-83.98810427760243,34.52438018942214],[-83.98800388249644,34.52437759853234],[-83.98799788774375,34.52441913916557],[-83.9879242684181,34.524418934991175],[-83.98792320797993,34.52445132677265],[-83.98778963611775,34.524449529193284],[-83.98778955576918,34.52446112742327],[-83.98771113868406,34.52446372800598],[-83.98771134085091,34.52447004451079]]]},"properties":{"OBJECTID":15,"Shape_Length":587.6324912407406,"Shape_Area":14846.730090557563,"BLDG_NAME":"Greek Leadership Center","STATUS":"New","CATEGORY":"Student Services","NOTES":null}},{"type":"Feature","id":16,"geometry":{"type":"Polygon","coordinates":[[[-83.9888653682011,34.52409615340506],[-83.98871527195345,34.52414999313671],[-83.9887526177495,34.52422012265968],[-83.98870783743877,34.52423307119617],[-83.98875238147127,34.524331241974316],[-83.98878385321913,34.52432027636753],[-83.98879589527807,34.524345320732145],[-83.98895445659794,34.524292493932485],[-83.98894490047296,34.524271433511764],[-83.98897629799978,34.524259490474826],[-83.98893416024976,34.52416732935653],[-83.98890027678044,34.52417528935492],[-83.9888653682011,34.52409615340506]]]},"properties":{"OBJECTID":16,"Shape_Length":296.9074141666647,"Shape_Area":4580.68832350506,"BLDG_NAME":"Greek Commons","STATUS":"New","CATEGORY":"Student Services","NOTES":null}},{"type":"Feature","id":17,"geometry":{"type":"Polygon","coordinates":[[[-83.9890631502994,34.524369734836384],[-83.98922412439808,34.52431991513556],[-83.98921450360623,34.52429387361796],[-83.9892399191617,34.524286902846534],[-83.98920142220119,34.52418874103056],[-83.98916511202363,34.52419969971426],[-83.98912898984717,34.52412256440266],[-83.98897889797252,34.524174402137966],[-83.98901085241874,34.524248485118164],[-83.98897629799978,34.524259490474826],[-83.98901842521694,34.52435665602613],[-83.98905352317736,34.52434669633627],[-83.9890631502994,34.524369734836384]]]},"properties":{"OBJECTID":17,"Shape_Length":295.4184125045496,"Shape_Area":4644.319118371893,"BLDG_NAME":"Greek Commons","STATUS":"New","CATEGORY":"Student Services","NOTES":null}},{"type":"Feature","id":18,"geometry":{"type":"Polygon","coordinates":[[[-83.9892399191617,34.524286902846534],[-83.98928326003544,34.52438206774298],[-83.98931714676105,34.52437310783244],[-83.98932556377795,34.52439614455488],[-83.98949138055482,34.5243443292062],[-83.98947932980899,34.52432328864882],[-83.98950959127976,34.5243123210992],[-83.9894722945991,34.524218165762555],[-83.98943804601319,34.524228296295554],[-83.9893974417085,34.52415298649488],[-83.98924856540049,34.524201823286454],[-83.98928106360533,34.524276951874015],[-83.9892399191617,34.524286902846534]]]},"properties":{"OBJECTID":18,"Shape_Length":295.50102344665765,"Shape_Area":4604.151366069646,"BLDG_NAME":"Greek Commons","STATUS":"New","CATEGORY":"Student Services","NOTES":null}},{"type":"Feature","id":19,"geometry":{"type":"Polygon","coordinates":[[[-83.98388986474156,34.52911904451521],[-83.98403322349745,34.528842156499294],[-83.98312037490088,34.528488503331104],[-83.98298221962771,34.5287589538907],[-83.98336247325524,34.52890981312389],[-83.9832931718098,34.52899141314549],[-83.9834188798758,34.52901830188279],[-83.98336824003039,34.52908389331366],[-83.98357572689083,34.52915509096816],[-83.98356011037714,34.52917440022363],[-83.98368979307395,34.52921755665489],[-83.98377056451912,34.52907590384352],[-83.98388986474156,34.52911904451521]]]},"properties":{"OBJECTID":19,"Shape_Length":965.1866978591516,"Shape_Area":39927.365746177726,"BLDG_NAME":"Memorial Hall","STATUS":"Renovation","CATEGORY":"Athletics and Recreation","NOTES":null}},{"type":"Feature","id":20,"geometry":{"type":"Polygon","coordinates":[[[-83.99066054311272,34.528390049917476],[-83.99066176521234,34.52843308499385],[-83.99061817143343,34.528435661882035],[-83.99061876277392,34.52851028158087],[-83.99065885212846,34.52850826671264],[-83.99065750092876,34.52860270491804],[-83.9910442585223,34.528590373199876],[-83.99111380967085,34.52884179880913],[-83.99130594905904,34.52880770533322],[-83.99116418371356,34.52833707247476],[-83.99101359960386,34.528358337053476],[-83.99102129588836,34.528401309314006],[-83.99066054311272,34.528390049917476]]]},"properties":{"OBJECTID":20,"Shape_Length":719.12619524099,"Shape_Area":18323.239841173847,"BLDG_NAME":"STEM I","STATUS":"NEW","CATEGORY":"Academic","NOTES":null}},{"type":"Feature","id":21,"geometry":{"type":"Polygon","coordinates":[[[-83.98223701071144,34.528797165171476],[-83.98214990140188,34.52892497774234],[-83.98201839999945,34.529015917692384],[-83.98240717962798,34.529417864101816],[-83.98242840374004,34.529396864948936],[-83.98252561921484,34.52948814933081],[-83.98258075029429,34.52945668478051],[-83.98260823869418,34.52947600568235],[-83.98268037001579,34.529418275938845],[-83.98227890905785,34.52900404306946],[-83.98227355658872,34.52897761259608],[-83.98226913300512,34.52895577507818],[-83.98231293561383,34.528939245616066],[-83.98235527551442,34.52894631990676],[-83.98280808559315,34.529122268452625],[-83.98286547261375,34.52902771184914],[-83.98281514559692,34.52900924915415],[-83.982829552176,34.528990851434564],[-83.98279262411491,34.528978780996],[-83.98281483146769,34.52894350733661],[-83.9823810657837,34.52877459793926],[-83.98234705865521,34.528830632454444],[-83.98223701071144,34.528797165171476]]]},"properties":{"OBJECTID":21,"Shape_Length":1089.108468306926,"Shape_Area":26384.25565574728,"BLDG_NAME":"Cottrell Center","STATUS":"Existing","CATEGORY":"Academic","NOTES":null}}]};
 
-const map = L.map('map', { center:[34.5295,-83.9868], zoom:16 });
+const map = L.map('map', { center:[34.5295, -83.9868], zoom:16 });
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
-  maxZoom:20
+const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors | John Segars, UNG Facilities GIS',
+  maxZoom:20,
+  className:'osm-tiles'
 }).addTo(map);
 
-// Helper: GeoJSON rectangle from center + half-extents
-function R(lat,lng,dlat,dlng){
-  return { type:"Polygon", coordinates:[[
-    [lng-dlng,lat-dlat],[lng+dlng,lat-dlat],
-    [lng+dlng,lat+dlat],[lng-dlng,lat+dlat],[lng-dlng,lat-dlat]
-  ]]};
-}
-function F(name,cat,status,note,lat,lng,dlat,dlng){
-  return { type:"Feature", properties:{name,cat,status,note}, geometry:R(lat,lng,dlat,dlng) };
-}
+// ── Color scheme ──────────────────────────────────────────────────────────────
+function getStyle(feature, mode) {
+  const status = (feature.properties.STATUS || '').toLowerCase();
+  const cat    = (feature.properties.CATEGORY || '').toLowerCase();
 
-// ── Existing buildings ────────────────────────────────────────────────────────
-const existingFeatures = [
-  F("William J. 'Lipp' Livsey Drill Field","open","existing","Iconic military drill field — campus centerpiece. Confirmed anchor: 34°31.8'N 83°59.2'W.",34.5300,-83.9860,0.0013,0.0020),
-  F("Price Memorial Hall","landmark","existing","Historic crown of campus — built 1878 on original U.S. Mint foundation.",34.5318,-83.9862,0.0004,0.0005),
-  F("Stewart Hall","academic","existing","Academic building — northwest of drill field.",34.5308,-83.9878,0.0004,0.0007),
-  F("Vickery Hall","academic","existing","Georgia Appalachian Studies Center — National Register of Historic Places.",34.5312,-83.9856,0.0004,0.0005),
-  F("Rogers Hall","academic","existing","Academic building — north campus.",34.5316,-83.9844,0.0004,0.0006),
-  F("Dunlap Hall","academic","existing","Academic — business, mathematics, English, modern languages.",34.5305,-83.9847,0.0004,0.0006),
-  F("Nix Center","student","existing","Student center / services.",34.5316,-83.9836,0.0003,0.0005),
-  F("STEM I (Health & Natural Sciences)","academic","existing","~55,000 sq ft science complex — west campus.",34.5300,-83.9892,0.0006,0.0009),
-  F("STEM II","academic","existing","Recent STEM complex addition.",34.5309,-83.9898,0.0004,0.0006),
-  F("Lewis Hall","housing","existing","Residence hall — 206 residents, built 1952.",34.5298,-83.9864,0.0004,0.0005),
-  F("Military Leadership Center","admin","existing","ROTC / Corps of Cadets administrative hub.",34.5296,-83.9853,0.0003,0.0005),
-  F("Wynne-Mathews Center","academic","existing","Academic / student services — central campus.",34.5298,-83.9840,0.0003,0.0005),
-  F("Student Pavilion","student","existing","Student services and gathering space.",34.5295,-83.9828,0.0004,0.0005),
-  F("Gaillard Hall","housing","existing","Residence hall — built 1955.",34.5291,-83.9852,0.0004,0.0006),
-  F("Liberty Hall","academic","existing","Academic building — east-central campus.",34.5284,-83.9835,0.0004,0.0006),
-  F("Donovan Hall","housing","existing","Residence hall — south campus.",34.5284,-83.9860,0.0004,0.0006),
-  F("Memorial Hall","athletic","existing","Gym / athletic facility — east campus.",34.5308,-83.9820,0.0005,0.0008),
-  F("Owen Hall","housing","existing","Cadet residence hall — east campus.",34.5275,-83.9820,0.0005,0.0008),
-  F("Bob Stein Stadium","athletic","existing","Football stadium — south campus.",34.5250,-83.9883,0.0007,0.0012),
-  F("Soccer Complex","athletic","existing","Soccer fields — south campus.",34.5244,-83.9860,0.0005,0.0010),
-  F("Recreation Field","athletic","existing","Multi-use recreation field — southwest.",34.5238,-83.9935,0.0007,0.0013),
-  F("Physical Plant Facilities","support","existing","Facilities management / physical plant.",34.5218,-83.9950,0.0006,0.0010),
-];
+  if (mode === 'existing') {
+    // All shown as existing — grey/neutral
+    if (cat.includes('housing'))    return { fillColor:'#6a8fb5', color:'#3a5f85', weight:1.5, fillOpacity:.72 };
+    if (cat.includes('athletic') || cat.includes('recreation')) return { fillColor:'#7a9e6a', color:'#4a6e3a', weight:1.5, fillOpacity:.65 };
+    if (cat.includes('parking'))    return { fillColor:'#888880', color:'#555550', weight:1.5, fillOpacity:.60 };
+    if (cat.includes('student'))    return { fillColor:'#a07850', color:'#705030', weight:1.5, fillOpacity:.72 };
+    if (cat.includes('admin'))      return { fillColor:'#7060a0', color:'#504080', weight:1.5, fillOpacity:.72 };
+    if (cat.includes('military') || cat.includes('special')) return { fillColor:'#7060a0', color:'#504080', weight:1.5, fillOpacity:.72 };
+    return { fillColor:'#c8c3bc', color:'#8a8580', weight:1.5, fillOpacity:.72 };
+  }
 
-// ── Vision plan additions ─────────────────────────────────────────────────────
-const visionAdditions = [
-  F("Hotel, Conference Center & Parking Garage","new","proposed","Major mixed-use gateway — NE corner along GA-400 corridor.",34.5312,-83.9805,0.0008,0.0013),
-  F("National Security Center","new","proposed","New academic facility — national security and intelligence studies.",34.5278,-83.9816,0.0006,0.0010),
-  F("Welcome Center","new","proposed","Campus admissions / visitor gateway — east entrance.",34.5288,-83.9806,0.0004,0.0007),
-  F("Downtown Office Building","new","proposed","Off-campus satellite in downtown Dahlonega — community engagement.",34.5342,-83.9838,0.0004,0.0006),
-  F("Institute for Peak Performance","new","proposed","Research / applied science — adjacent to STEM complex.",34.5313,-83.9882,0.0004,0.0006),
-  F("Lot 30 Parking Garage","new","proposed","Multi-level parking structure — NW campus.",34.5322,-83.9904,0.0004,0.0006),
-  F("Housing A","new","proposed","New residential complex — northwest zone.",34.5309,-83.9912,0.0005,0.0007),
-  F("Housing B","new","proposed","New residential complex — southwest zone near athletic fields.",34.5237,-83.9920,0.0006,0.0009),
-  F("Housing C","new","proposed","New residential complex — central campus south of drill field.",34.5281,-83.9852,0.0004,0.0006),
-  F("Housing D","new","proposed","New residential complex — northwest perimeter.",34.5326,-83.9917,0.0005,0.0007),
-  F("Greek Leadership Center","new","proposed","Dedicated facility for fraternity and sorority life — south campus.",34.5254,-83.9848,0.0004,0.0007),
-  F("Greek Commons","new","proposed","Outdoor gathering space adjacent to Greek Leadership Center.",34.5249,-83.9861,0.0004,0.0007),
-  F("Recreation Support Facility","new","proposed","New indoor recreation / wellness facility — SW athletic zone.",34.5229,-83.9932,0.0006,0.0009),
-  F("Memorial Hall (Renovation)","reno","proposed","Significant renovation of existing gym / athletic facility.",34.5308,-83.9820,0.0006,0.0009),
-  F("Student Pavilion (Renovation)","reno","proposed","Renovation and expansion of student services pavilion.",34.5295,-83.9828,0.0005,0.0007),
-  F("Wynne-Mathews Center (Renovation)","reno","proposed","Academic renovation — central campus.",34.5298,-83.9840,0.0004,0.0006),
-  F("Owen Hall (Renovation)","reno","proposed","Cadet housing renovation.",34.5275,-83.9820,0.0006,0.0009),
-];
-
-// ── Styles ────────────────────────────────────────────────────────────────────
-function sExist(f){
-  const c = f.properties.cat;
-  if(c==="open")     return { fillColor:'#5a9e6e', color:'#3a7e4e', weight:1, fillOpacity:.28, dashArray:'4,4' };
-  if(c==="landmark") return { fillColor:'#8b5e3c', color:'#5c3d22', weight:2, fillOpacity:.82 };
-  if(c==="housing")  return { fillColor:'#6a8fb5', color:'#3a5f85', weight:1.5, fillOpacity:.72 };
-  if(c==="athletic") return { fillColor:'#7a9e6a', color:'#4a6e3a', weight:1.5, fillOpacity:.65 };
-  if(c==="support")  return { fillColor:'#888880', color:'#555550', weight:1.5, fillOpacity:.65 };
-  if(c==="student")  return { fillColor:'#a07850', color:'#705030', weight:1.5, fillOpacity:.72 };
-  if(c==="admin")    return { fillColor:'#7060a0', color:'#504080', weight:1.5, fillOpacity:.72 };
-  return { fillColor:'#c8c3bc', color:'#8a8580', weight:1.5, fillOpacity:.72 };
-}
-function sVisionRetained(f){ const b=sExist(f); return {...b, fillOpacity:b.fillOpacity*0.5, weight:1}; }
-function sProposed(f){
-  if(f.properties.cat==='new')  return { fillColor:'#1a3d6e', color:'#0a2240', weight:2.5, fillOpacity:.92 };
-  if(f.properties.cat==='reno') return { fillColor:'#4a7ab5', color:'#2a5a95', weight:2,   fillOpacity:.80 };
-  return { fillColor:'#5a9e6e', color:'#3a7e4e', weight:1.5, fillOpacity:.55 };
+  // Vision mode
+  if (status === 'new' || status === 'new ') {
+    if (cat.includes('housing'))    return { fillColor:'#1a5c8e', color:'#0a3c6e', weight:2, fillOpacity:.88 };
+    if (cat.includes('parking'))    return { fillColor:'#3a3a5e', color:'#1a1a3e', weight:2, fillOpacity:.85 };
+    if (cat.includes('student'))    return { fillColor:'#8e4a1a', color:'#6e2a0a', weight:2, fillOpacity:.88 };
+    if (cat.includes('military') || cat.includes('special')) return { fillColor:'#4a1a6e', color:'#2a0a4e', weight:2, fillOpacity:.88 };
+    return { fillColor:'#1a3d6e', color:'#0a2240', weight:2, fillOpacity:.90 };
+  }
+  if (status === 'renovation') {
+    return { fillColor:'#4a7ab5', color:'#2a5a95', weight:2, fillOpacity:.82,
+             dashArray:'6,3' };
+  }
+  if (status === 'existing') {
+    return { fillColor:'#c8c3bc', color:'#8a8580', weight:1, fillOpacity:.45 };
+  }
+  return { fillColor:'#888', color:'#555', weight:1, fillOpacity:.5 };
 }
 
 // ── Popup ─────────────────────────────────────────────────────────────────────
-function popup(f, visionSide){
-  const p = f.properties;
-  let bg='#555', lbl='Existing';
-  if(visionSide && p.status==='proposed'){
-    if(p.cat==='new')  { bg='#1a3d6e'; lbl='New Building'; }
-    if(p.cat==='reno') { bg='#4a7ab5'; lbl='Renovation'; }
+function makePopup(feature, mode) {
+  const p = feature.properties;
+  const status = (p.STATUS || '').toLowerCase();
+  let badge = 'Existing';
+  let badgeBg = '#555';
+  if (mode === 'vision') {
+    if (status === 'new' || status === 'new ') { badge = 'New Building'; badgeBg = '#1a3d6e'; }
+    if (status === 'renovation') { badge = 'Renovation'; badgeBg = '#4a7ab5'; }
+    if (status === 'existing') { badge = 'Existing'; badgeBg = '#555'; }
   }
-  if(p.cat==='landmark') { bg='#8b5e3c'; lbl='Historic Landmark'; }
-  if(p.cat==='open')     { bg='#5a9e6e'; lbl='Open Space'; }
-  return `<div style="font-family:'Lato',sans-serif;min-width:200px;max-width:250px;">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:#0a2240;margin-bottom:5px;line-height:1.3;">${p.name}</div>
-    <span style="background:${bg};color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:.1em;text-transform:uppercase;">${lbl}</span>
-    ${p.note?`<div style="font-size:11px;color:#444;font-style:italic;margin-top:6px;border-top:1px solid #eee;padding-top:5px;line-height:1.5;">${p.note}</div>`:''}
-    <div style="font-size:9px;color:#bbb;margin-top:6px;font-style:italic;">Footprint illustrative · pending georeferencing</div>
+  return `<div style="font-family:'Lato',sans-serif;min-width:200px;max-width:260px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:#0a2240;margin-bottom:6px;line-height:1.3;">${p.BLDG_NAME}</div>
+    <span style="background:${badgeBg};color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:.1em;text-transform:uppercase;">${badge}</span>
+    <div style="font-size:11px;color:#555;margin-top:6px;line-height:1.5;">
+      <strong>Category:</strong> ${p.CATEGORY || '—'}<br>
+      ${p.NOTES ? '<em style='color:#888;'>' + p.NOTES + '</em>' : ''}
+    </div>
+    <div style="font-size:9px;color:#bbb;margin-top:6px;font-style:italic;border-top:1px solid #eee;padding-top:5px;">Georeferenced from campus master plan TIF</div>
   </div>`;
 }
 
-// ── Build layers ──────────────────────────────────────────────────────────────
-const existingLayer = L.geoJSON({ type:"FeatureCollection", features:existingFeatures }, {
-  style: sExist,
-  onEachFeature:(f,l)=>{
-    l.bindPopup(popup(f,false));
-    l.on('mouseover',function(){ this.setStyle({weight:3}); });
-    l.on('mouseout', function(){ this.setStyle(sExist(f)); });
+// ── Layers ────────────────────────────────────────────────────────────────────
+let currentMode = 'existing';
+
+// Existing mode — show only existing + renovation features
+const existingFeatures = MP_DATA.features.filter(f => {
+  const s = (f.properties.STATUS || '').toLowerCase();
+  return s === 'existing' || s === 'renovation';
+});
+
+// Add all for existing view with muted style
+const existingLayer = L.geoJSON(MP_DATA, {
+  style: f => getStyle(f, 'existing'),
+  onEachFeature: (f, l) => {
+    l.bindPopup(makePopup(f, 'existing'));
+    l.on('mouseover', function() { this.setStyle({ weight:3, fillOpacity:0.9 }); });
+    l.on('mouseout',  function() { this.setStyle(getStyle(f, 'existing')); });
   }
 });
 
-const visionLayer = L.geoJSON({ type:"FeatureCollection", features:[...existingFeatures,...visionAdditions] }, {
-  style:(f)=> f.properties.status==='proposed' ? sProposed(f) : sVisionRetained(f),
-  onEachFeature:(f,l)=>{
-    l.bindPopup(popup(f,true));
-    const sf = f.properties.status==='proposed' ? ()=>sProposed(f) : ()=>sVisionRetained(f);
-    l.on('mouseover',function(){ this.setStyle({weight:3}); });
-    l.on('mouseout', function(){ this.setStyle(sf()); });
+const visionLayer = L.geoJSON(MP_DATA, {
+  style: f => getStyle(f, 'vision'),
+  onEachFeature: (f, l) => {
+    l.bindPopup(makePopup(f, 'vision'));
+    l.on('mouseover', function() { this.setStyle({ weight:3, fillOpacity:0.95 }); });
+    l.on('mouseout',  function() { this.setStyle(getStyle(f, 'vision')); });
   }
 });
 
 existingLayer.addTo(map);
-let current = 'existing';
+map.fitBounds(existingLayer.getBounds(), { padding:[40,40] });
 
 // ── Toggle ────────────────────────────────────────────────────────────────────
 const lbl = document.getElementById('viewLabel');
-function flash(txt){
+function flash(txt) {
   lbl.textContent = txt;
   lbl.classList.add('show');
-  setTimeout(()=>lbl.classList.remove('show'), 1500);
+  setTimeout(() => lbl.classList.remove('show'), 1500);
 }
 
-function showExisting(){
-  if(current==='existing') return;
+function showExisting() {
+  if (currentMode === 'existing') return;
   map.removeLayer(visionLayer);
   existingLayer.addTo(map);
-  current='existing';
+  currentMode = 'existing';
   document.getElementById('btnExisting').classList.add('active');
   document.getElementById('btnVision').classList.remove('active');
   flash('Existing Conditions');
 }
 
-function showVision(){
-  if(current==='vision') return;
+function showVision() {
+  if (currentMode === 'vision') return;
   map.removeLayer(existingLayer);
   visionLayer.addTo(map);
-  current='vision';
+  currentMode = 'vision';
   document.getElementById('btnVision').classList.add('active');
   document.getElementById('btnExisting').classList.remove('active');
   flash('Vision Plan Buildout');
 }
 
 // ── Legend ────────────────────────────────────────────────────────────────────
-L.control({ position:'bottomright' }).onAdd = function(){
-  const d = L.DomUtil.create('div','legend');
+L.control({ position:'bottomright' }).onAdd = function() {
+  const d = L.DomUtil.create('div', 'legend');
   d.innerHTML = `
     <h4>Vision Plan Legend</h4>
-    <div class="li"><div class="sw" style="background:#1a3d6e;"></div>New Building (proposed)</div>
-    <div class="li"><div class="sw hatch"></div>Renovated Building</div>
-    <div class="li"><div class="sw" style="background:#c8c3bc;"></div>Existing Academic</div>
-    <div class="li"><div class="sw" style="background:#8b5e3c;"></div>Historic Landmark</div>
-    <div class="li"><div class="sw" style="background:#6a8fb5;"></div>Residential Housing</div>
-    <div class="li"><div class="sw" style="background:#7a9e6a;"></div>Athletic / Recreation</div>
-    <div class="li"><div class="sw" style="background:#a07850;"></div>Student Services</div>
-    <div class="li"><div class="sw" style="background:#5a9e6e;border:1px dashed #3a7e4e;"></div>Open Space / Drill Field</div>
-    <div class="ln">⚠ Illustrative mock-up only.<br>Footprints estimated from vision plan<br>image — pending georeferencing.<br>Public-facing · OSM basemap only.</div>`;
+    <div class="li"><div class="sw" style="background:#1a3d6e;"></div>New Building</div>
+    <div class="li"><div class="sw" style="background:#1a5c8e;"></div>New Housing</div>
+    <div class="li"><div class="sw" style="background:#8e4a1a;"></div>New Student Services</div>
+    <div class="li"><div class="sw" style="background:#4a1a6e;"></div>Military / Specialty Program</div>
+    <div class="li"><div class="sw" style="background:#3a3a5e;"></div>New Parking</div>
+    <div class="li"><div class="sw" style="background:#4a7ab5;border:1px dashed #2a5a95;"></div>Renovation</div>
+    <div class="li"><div class="sw" style="background:#c8c3bc;opacity:0.6;"></div>Existing / Context</div>
+    <div class="ln">Footprints georeferenced from<br>campus master plan TIF.<br>Draft · Illustrative only.</div>`;
   return d;
 }.addTo(map);
 
