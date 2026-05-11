@@ -653,7 +653,7 @@ function updateBrickColors() {
 // ── Brick labels (zoom 27+) ───────────────────────────────────────────────────
 function updateBrickLabels() {
   if (!geoLayer) return;
-  const show = map.getZoom() >= 27;
+  const show = map.getZoom() >= 26;
   geoLayer.eachLayer(layer => {
     const tt = layer.getTooltip();
     if (!tt) return;
