@@ -39,7 +39,7 @@
   #map{flex:1;width:100%;position:relative;}
   #viewLabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:rgba(255,255,255,.95);background:rgba(10,34,64,.84);padding:10px 28px;border-radius:4px;border:1px solid rgba(201,168,76,.45);pointer-events:none;opacity:0;transition:opacity .25s;z-index:800;white-space:nowrap;backdrop-filter:blur(4px);}
   #viewLabel.show{opacity:1;}
-  .legend{background:rgba(10,34,64,.93);border:1px solid rgba(201,168,76,.32);border-radius:4px;padding:10px 14px;min-width:195px;backdrop-filter:blur(4px);}
+  .legend{position:absolute;bottom:24px;right:10px;z-index:700;background:rgba(10,34,64,.93);border:1px solid rgba(201,168,76,.32);border-radius:4px;padding:10px 14px;min-width:195px;backdrop-filter:blur(4px);pointer-events:auto;}
   .legend h4{font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(201,168,76,.25);}
   .li{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;font-weight:300;color:#c0d0e0;}
   .sw{width:14px;height:10px;border-radius:2px;flex-shrink:0;}
@@ -303,30 +303,30 @@ function flyTo(key){
 }
 
 // ── LEGEND ────────────────────────────────────────────────────────────────────
-L.control({position:'bottomright'}).onAdd=function(){
-  var d=L.DomUtil.create('div','legend');
-  d.innerHTML=
-    '<h4>Legend</h4>'+
-    '<div class="li"><div class="sw" style="background:#c8c3bc;"></div>Academic</div>'+
-    '<div class="li"><div class="sw" style="background:#6a8fb5;"></div>Housing</div>'+
-    '<div class="li"><div class="sw" style="background:#7a9e6a;"></div>Athletic / Recreation</div>'+
-    '<div class="li"><div class="sw" style="background:#7060a0;"></div>Military</div>'+
-    '<div class="li"><div class="sw" style="background:#a07850;"></div>Administration</div>'+
-    '<div class="li"><div class="sw" style="background:#888880;"></div>Support / Facilities</div>'+
-    '<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(201,168,76,.25);">'+
-    '<div class="li"><div class="sw" style="background:#1a3d6e;"></div>New Building (Vision)</div>'+
-    '<div class="li"><div class="sw" style="background:#1a5c8e;"></div>New Housing (Vision)</div>'+
-    '<div class="li"><div class="sw" style="background:#4a7ab5;border:1px dashed #2a5a95;"></div>Renovation (Vision)</div>'+
-    '<div class="li"><div class="sw" style="background:#b8b4ae;opacity:.45;"></div>Existing Context (Vision)</div>'+
-    '</div>'+
-    '<div class="ln">'+
-    'Existing: <a href="'+EXISTING_URL+'" target="_blank">MPBUILDINGSOUTjson.geojson</a><br>'+
-    'Vision: <a href="'+VISION_URL+'" target="_blank">MPVISIONjson.geojson</a><br>'+
-    'Both fetched live from GitHub.<br>'+
-    'Draft &middot; Illustrative only.'+
-    '</div>';
-  return d;
-}.addTo(map);
+// Plain div injected into #map — no dependency on Leaflet control scaffolding
+var legendDiv = document.createElement('div');
+legendDiv.className = 'legend';
+legendDiv.innerHTML =
+  '<h4>Legend</h4>'+
+  '<div class="li"><div class="sw" style="background:#c8c3bc;"></div>Academic</div>'+
+  '<div class="li"><div class="sw" style="background:#6a8fb5;"></div>Housing</div>'+
+  '<div class="li"><div class="sw" style="background:#7a9e6a;"></div>Athletic / Recreation</div>'+
+  '<div class="li"><div class="sw" style="background:#7060a0;"></div>Military</div>'+
+  '<div class="li"><div class="sw" style="background:#a07850;"></div>Administration</div>'+
+  '<div class="li"><div class="sw" style="background:#888880;"></div>Support / Facilities</div>'+
+  '<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(201,168,76,.25);">'+
+  '<div class="li"><div class="sw" style="background:#1a3d6e;"></div>New Building (Vision)</div>'+
+  '<div class="li"><div class="sw" style="background:#1a5c8e;"></div>New Housing (Vision)</div>'+
+  '<div class="li"><div class="sw" style="background:#4a7ab5;border:1px dashed #2a5a95;"></div>Renovation (Vision)</div>'+
+  '<div class="li"><div class="sw" style="background:#b8b4ae;opacity:.45;"></div>Existing Context (Vision)</div>'+
+  '</div>'+
+  '<div class="ln">'+
+  'Existing: <a href="'+EXISTING_URL+'" target="_blank">MPBUILDINGSOUTjson.geojson</a><br>'+
+  'Vision: <a href="'+VISION_URL+'" target="_blank">MPVISIONjson.geojson</a><br>'+
+  'Both fetched live from GitHub.<br>'+
+  'Draft &middot; Illustrative only.'+
+  '</div>';
+document.getElementById('map').appendChild(legendDiv);
 
 </script>
 </body>
