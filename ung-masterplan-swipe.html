@@ -33,9 +33,9 @@
   .tog-btn:last-of-type{border-radius:0 3px 3px 0;border-left:none;}
   .tog-btn.active{background:var(--navy);color:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(201,168,76,.18);}
   .tog-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-  .campus-btn{height:24px;padding:0 11px;margin-right:3px;font-family:'Lato',sans-serif;font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;border:1px solid rgba(201,168,76,.2);border-radius:2px;cursor:pointer;transition:all .18s;background:rgba(255,255,255,.03);color:#7a90a8;white-space:nowrap;}
-  .campus-btn:hover{background:rgba(201,168,76,.1);color:var(--gold-lt);border-color:rgba(201,168,76,.48);}
-  .campus-btn.active{background:rgba(10,34,64,.85);color:var(--gold);border-color:var(--gold);}
+  .-btn{height:24px;padding:0 11px;margin-right:3px;font-family:'Lato',sans-serif;font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;border:1px solid rgba(201,168,76,.2);border-radius:2px;cursor:pointer;transition:all .18s;background:rgba(255,255,255,.03);color:#7a90a8;white-space:nowrap;}
+  .-btn:hover{background:rgba(201,168,76,.1);color:var(--gold-lt);border-color:rgba(201,168,76,.48);}
+  .-btn.active{background:rgba(10,34,64,.85);color:var(--gold);border-color:var(--gold);}
   #map{flex:1;width:100%;position:relative;}
   #viewLabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:rgba(255,255,255,.95);background:rgba(10,34,64,.84);padding:10px 28px;border-radius:4px;border:1px solid rgba(201,168,76,.45);pointer-events:none;opacity:0;transition:opacity .25s;z-index:800;white-space:nowrap;backdrop-filter:blur(4px);}
   #viewLabel.show{opacity:1;}
@@ -55,7 +55,7 @@
 
 <header>
   <div class="hd-left">
-    <div class="wordmark">University of North Georgia<span>Facilities GIS &nbsp;&middot;&nbsp; Multi-Campus</span></div>
+    <div class="wordmark">University of North Georgia<span>Facilities GIS &nbsp;&middot;&nbsp; Multi-</span></div>
     <div class="dvdr"></div>
     <div class="map-title">Campus Vision Plan &mdash; Existing vs. Proposed</div>
   </div>
@@ -81,10 +81,10 @@
   <div class="tb-sep"></div>
   <div class="tb-section">
     <span class="tb-label">Campus:</span>
+    <button class="campus-btn"        id="cb-br" onclick="flyTo('blueridge')">Blue Ridge</button>
+    <button class="campus-btn"        id="cb-cu" onclick="flyTo('cumming')">Cumming</button>
     <button class="campus-btn active" id="cb-da" onclick="flyTo('dahlonega')">Dahlonega</button>
     <button class="campus-btn"        id="cb-gv" onclick="flyTo('gainesville')">Gainesville</button>
-    <button class="campus-btn"        id="cb-cu" onclick="flyTo('cumming')">Cumming</button>
-    <button class="campus-btn"        id="cb-br" onclick="flyTo('blueridge')">Blue Ridge</button>
     <button class="campus-btn"        id="cb-oc" onclick="flyTo('oconee')">Oconee</button>
   </div>
 </div>
