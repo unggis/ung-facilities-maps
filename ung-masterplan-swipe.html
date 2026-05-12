@@ -244,14 +244,22 @@ var mpStatus=document.getElementById('statusVision');
 fetch(VISION_URL)
   .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
   .then(function(data){
-    visionLayer.addData(data);
+    if(!data||data.type!=='FeatureCollection') throw new Error('Invalid GeoJSON');
+    var n=data.features?data.features.length:0;
     mpLoaded=true;
-    var n=data.features?data.features.length:'?';
-    mpStatus.textContent='✓ Master plan loaded ('+n+' features)';
-    mpStatus.classList.add('ok');
+    if(n>0){
+      visionLayer.addData(data);
+      mpStatus.textContent='\u2713 Master plan loaded ('+n+' features)';
+      mpStatus.classList.add('ok');
+    } else {
+      // File is valid but has no features yet — Vision tab still usable (shows context)
+      mpStatus.textContent='\u25cb Master plan: no features yet';
+      mpStatus.style.color='var(--gold)';
+      mpStatus.style.borderColor='rgba(201,168,76,.5)';
+    }
   })
   .catch(function(err){
-    mpStatus.textContent='⚠ Master plan pending';
+    mpStatus.textContent='\u26a0 Master plan unavailable';
     mpStatus.classList.add('err');
     console.warn('Vision fetch failed:',err);
   });
@@ -273,7 +281,7 @@ function showExisting(){
 }
 function showVision(){
   if(currentMode==='vision')return;
-  if(!mpLoaded){flash('Master plan not yet available');return;}
+  if(!mpLoaded){flash('Master plan still loading\u2026');return;}
   if(map.hasLayer(existingLayer)) map.removeLayer(existingLayer);
   if(exLoaded) contextLayer.addTo(map);
   visionLayer.addTo(map);
