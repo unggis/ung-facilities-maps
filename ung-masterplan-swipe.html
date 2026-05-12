@@ -7,164 +7,55 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --navy:     #0a2240;
-    --navy-mid: #0d2d54;
-    --gold:     #c9a84c;
-    --gold-lt:  #e8d49a;
-    --red:      #c0392b;
-    --green:    #7ecf9a;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    font-family:'Lato',sans-serif; font-weight:300;
-    background:var(--navy); color:#fff;
-    height:100vh; display:flex; flex-direction:column; overflow:hidden;
-  }
-
-  /* ── HEADER ──────────────────────────────────────────── */
-  header {
-    background:var(--navy); border-bottom:2px solid var(--gold);
-    padding:0 20px; height:56px; flex-shrink:0; z-index:1000;
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .hd-left  { display:flex; align-items:center; gap:12px; }
-  .wordmark {
-    font-family:'Cormorant Garamond',serif; font-size:12px;
-    font-weight:600; letter-spacing:.12em; text-transform:uppercase;
-    color:var(--gold-lt); line-height:1.3;
-  }
-  .wordmark span {
-    display:block; font-size:9px; font-weight:400;
-    letter-spacing:.18em; color:var(--gold); opacity:.85;
-  }
-  .dvdr { width:1px; height:30px; background:var(--gold); opacity:.38; }
-  .map-title {
-    font-family:'Cormorant Garamond',serif; font-size:16px;
-    font-weight:400; font-style:italic; color:#fff; letter-spacing:.02em;
-  }
-  .hd-right { display:flex; align-items:center; gap:10px; }
-  .badge {
-    background:var(--gold); color:var(--navy); font-size:9px;
-    font-weight:700; letter-spacing:.12em; text-transform:uppercase;
-    padding:3px 8px; border-radius:2px;
-  }
-
-  /* load status pills */
-  .status-wrap { display:flex; flex-direction:column; gap:3px; align-items:flex-end; }
-  .load-pill {
-    font-size:8.5px; letter-spacing:.09em; text-transform:uppercase;
-    padding:2px 8px; border-radius:2px; border:1px solid rgba(201,168,76,.3);
-    color:rgba(201,168,76,.55); font-style:italic; transition:all .4s;
-    white-space:nowrap;
-  }
-  .load-pill.ok  { color:var(--green); border-color:var(--green); }
-  .load-pill.err { color:var(--red);   border-color:var(--red);   }
-
-  /* ── TOOLBAR ─────────────────────────────────────────── */
-  .toolbar {
-    display:flex; align-items:center; height:38px; flex-shrink:0;
-    background:var(--navy-mid); border-bottom:1px solid rgba(201,168,76,.2);
-    z-index:900; overflow-x:auto; overflow-y:hidden;
-  }
-  .toolbar::-webkit-scrollbar { height:2px; }
-  .toolbar::-webkit-scrollbar-thumb { background:rgba(201,168,76,.3); }
-
-  .tb-section { display:flex; align-items:center; padding:0 12px; gap:0; flex-shrink:0; }
-  .tb-sep     { width:1px; height:20px; background:rgba(201,168,76,.22); flex-shrink:0; }
-  .tb-label   {
-    font-size:9px; font-weight:400; letter-spacing:.14em;
-    text-transform:uppercase; color:rgba(201,168,76,.52);
-    padding-right:10px; white-space:nowrap; font-style:italic;
-  }
-
-  /* view toggle */
-  .tog-btn {
-    height:26px; padding:0 18px;
-    font-family:'Lato',sans-serif; font-size:9px; font-weight:700;
-    letter-spacing:.15em; text-transform:uppercase;
-    border:1px solid rgba(201,168,76,.28); cursor:pointer;
-    transition:all .2s; display:flex; align-items:center; gap:6px;
-    background:rgba(255,255,255,.04); color:#8aa0b8;
-  }
-  .tog-btn:first-of-type { border-radius:3px 0 0 3px; }
-  .tog-btn:last-of-type  { border-radius:0 3px 3px 0; border-left:none; }
-  .tog-btn.active {
-    background:var(--navy); color:var(--gold);
-    border-color:var(--gold); box-shadow:0 0 8px rgba(201,168,76,.18);
-  }
-  .tog-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-
-  /* campus fly-to */
-  .campus-btn {
-    height:24px; padding:0 11px; margin-right:3px;
-    font-family:'Lato',sans-serif; font-size:9px; font-weight:700;
-    letter-spacing:.13em; text-transform:uppercase;
-    border:1px solid rgba(201,168,76,.2); border-radius:2px; cursor:pointer;
-    transition:all .18s; background:rgba(255,255,255,.03); color:#7a90a8;
-    white-space:nowrap;
-  }
-  .campus-btn:hover  {
-    background:rgba(201,168,76,.1); color:var(--gold-lt);
-    border-color:rgba(201,168,76,.48);
-  }
-  .campus-btn.active {
-    background:rgba(10,34,64,.85); color:var(--gold); border-color:var(--gold);
-  }
-
-  /* ── MAP ─────────────────────────────────────────────── */
-  #map { flex:1; width:100%; position:relative; }
-
-  #viewLabel {
-    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    font-family:'Cormorant Garamond',serif; font-size:22px; font-style:italic;
-    color:rgba(255,255,255,.95); background:rgba(10,34,64,.84);
-    padding:10px 28px; border-radius:4px; border:1px solid rgba(201,168,76,.45);
-    pointer-events:none; opacity:0; transition:opacity .25s;
-    z-index:800; white-space:nowrap; backdrop-filter:blur(4px);
-  }
-  #viewLabel.show { opacity:1; }
-
-  /* ── LEGEND ──────────────────────────────────────────── */
-  .legend {
-    background:rgba(10,34,64,.93); border:1px solid rgba(201,168,76,.32);
-    border-radius:4px; padding:10px 14px; min-width:195px;
-    backdrop-filter:blur(4px);
-  }
-  .legend h4 {
-    font-family:'Cormorant Garamond',serif; font-size:12px; font-weight:600;
-    letter-spacing:.1em; text-transform:uppercase; color:var(--gold);
-    margin-bottom:7px; padding-bottom:5px; border-bottom:1px solid rgba(201,168,76,.25);
-  }
-  .li { display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:10px; font-weight:300; color:#c0d0e0; }
-  .sw { width:14px; height:10px; border-radius:2px; flex-shrink:0; }
-  .ln {
-    margin-top:7px; padding-top:6px; border-top:1px solid rgba(201,168,76,.18);
-    font-size:8.5px; color:rgba(201,168,76,.58); font-style:italic; line-height:1.55;
-  }
-  .ln a { color:rgba(201,168,76,.72); text-decoration:none; }
-  .ln a:hover { text-decoration:underline; }
-
-  .leaflet-control-attribution {
-    background:rgba(10,34,64,.75)!important;
-    color:rgba(255,255,255,.4)!important; font-size:8px!important;
-  }
-  .leaflet-control-attribution a { color:rgba(201,168,76,.65)!important; }
-  .leaflet-control-zoom a {
-    background:rgba(10,34,64,.9)!important;
-    color:var(--gold)!important; border-color:rgba(201,168,76,.26)!important;
-  }
+  :root{--navy:#0a2240;--navy-mid:#0d2d54;--gold:#c9a84c;--gold-lt:#e8d49a;--red:#c0392b;--green:#7ecf9a;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Lato',sans-serif;font-weight:300;background:var(--navy);color:#fff;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  header{background:var(--navy);border-bottom:2px solid var(--gold);padding:0 20px;height:56px;flex-shrink:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;}
+  .hd-left{display:flex;align-items:center;gap:12px;}
+  .wordmark{font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-lt);line-height:1.3;}
+  .wordmark span{display:block;font-size:9px;font-weight:400;letter-spacing:.18em;color:var(--gold);opacity:.85;}
+  .dvdr{width:1px;height:30px;background:var(--gold);opacity:.38;}
+  .map-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;font-style:italic;color:#fff;letter-spacing:.02em;}
+  .hd-right{display:flex;align-items:center;gap:10px;}
+  .badge{background:var(--gold);color:var(--navy);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:2px;}
+  .status-wrap{display:flex;flex-direction:column;gap:3px;align-items:flex-end;}
+  .load-pill{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;padding:2px 8px;border-radius:2px;border:1px solid rgba(201,168,76,.3);color:rgba(201,168,76,.55);font-style:italic;transition:all .4s;white-space:nowrap;}
+  .load-pill.ok{color:var(--green);border-color:var(--green);}
+  .load-pill.err{color:var(--red);border-color:var(--red);}
+  .toolbar{display:flex;align-items:center;height:38px;flex-shrink:0;background:var(--navy-mid);border-bottom:1px solid rgba(201,168,76,.2);z-index:900;overflow-x:auto;overflow-y:hidden;}
+  .toolbar::-webkit-scrollbar{height:2px;}
+  .toolbar::-webkit-scrollbar-thumb{background:rgba(201,168,76,.3);}
+  .tb-section{display:flex;align-items:center;padding:0 12px;flex-shrink:0;}
+  .tb-sep{width:1px;height:20px;background:rgba(201,168,76,.22);flex-shrink:0;}
+  .tb-label{font-size:9px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:rgba(201,168,76,.52);padding-right:10px;white-space:nowrap;font-style:italic;}
+  .tog-btn{height:26px;padding:0 18px;font-family:'Lato',sans-serif;font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;border:1px solid rgba(201,168,76,.28);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);color:#8aa0b8;}
+  .tog-btn:first-of-type{border-radius:3px 0 0 3px;}
+  .tog-btn:last-of-type{border-radius:0 3px 3px 0;border-left:none;}
+  .tog-btn.active{background:var(--navy);color:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(201,168,76,.18);}
+  .tog-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .campus-btn{height:24px;padding:0 11px;margin-right:3px;font-family:'Lato',sans-serif;font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;border:1px solid rgba(201,168,76,.2);border-radius:2px;cursor:pointer;transition:all .18s;background:rgba(255,255,255,.03);color:#7a90a8;white-space:nowrap;}
+  .campus-btn:hover{background:rgba(201,168,76,.1);color:var(--gold-lt);border-color:rgba(201,168,76,.48);}
+  .campus-btn.active{background:rgba(10,34,64,.85);color:var(--gold);border-color:var(--gold);}
+  #map{flex:1;width:100%;position:relative;}
+  #viewLabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:rgba(255,255,255,.95);background:rgba(10,34,64,.84);padding:10px 28px;border-radius:4px;border:1px solid rgba(201,168,76,.45);pointer-events:none;opacity:0;transition:opacity .25s;z-index:800;white-space:nowrap;backdrop-filter:blur(4px);}
+  #viewLabel.show{opacity:1;}
+  .legend{background:rgba(10,34,64,.93);border:1px solid rgba(201,168,76,.32);border-radius:4px;padding:10px 14px;min-width:195px;backdrop-filter:blur(4px);}
+  .legend h4{font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(201,168,76,.25);}
+  .li{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:10px;font-weight:300;color:#c0d0e0;}
+  .sw{width:14px;height:10px;border-radius:2px;flex-shrink:0;}
+  .ln{margin-top:7px;padding-top:6px;border-top:1px solid rgba(201,168,76,.18);font-size:8.5px;color:rgba(201,168,76,.58);font-style:italic;line-height:1.55;}
+  .ln a{color:rgba(201,168,76,.72);text-decoration:none;}
+  .ln a:hover{text-decoration:underline;}
+  .leaflet-control-attribution{background:rgba(10,34,64,.75)!important;color:rgba(255,255,255,.4)!important;font-size:8px!important;}
+  .leaflet-control-attribution a{color:rgba(201,168,76,.65)!important;}
+  .leaflet-control-zoom a{background:rgba(10,34,64,.9)!important;color:var(--gold)!important;border-color:rgba(201,168,76,.26)!important;}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="hd-left">
-    <div class="wordmark">
-      University of North Georgia
-      <span>Facilities GIS &nbsp;&middot;&nbsp; Multi-Campus</span>
-    </div>
+    <div class="wordmark">University of North Georgia<span>Facilities GIS &nbsp;&middot;&nbsp; Multi-Campus</span></div>
     <div class="dvdr"></div>
     <div class="map-title">Campus Vision Plan &mdash; Existing vs. Proposed</div>
   </div>
@@ -177,10 +68,7 @@
   </div>
 </header>
 
-<!-- TOOLBAR -->
 <div class="toolbar">
-
-  <!-- View toggle -->
   <div class="tb-section">
     <span class="tb-label">View:</span>
     <button class="tog-btn active" id="btnExisting" onclick="showExisting()">
@@ -190,10 +78,7 @@
       <div class="tog-dot" style="background:#c9a84c;"></div>Vision Plan
     </button>
   </div>
-
   <div class="tb-sep"></div>
-
-  <!-- Campus fly-to -->
   <div class="tb-section">
     <span class="tb-label">Campus:</span>
     <button class="campus-btn active" id="cb-da" onclick="flyTo('dahlonega')">Dahlonega</button>
@@ -202,272 +87,235 @@
     <button class="campus-btn"        id="cb-br" onclick="flyTo('blueridge')">Blue Ridge</button>
     <button class="campus-btn"        id="cb-oc" onclick="flyTo('oconee')">Oconee</button>
   </div>
-
 </div>
 
-<!-- MAP -->
 <div id="map"><div id="viewLabel"></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 
-// ═══════════════════════════════════════════════════════════════
-//  CONFIGURATION — update URLs here when files move in the repo
-// ═══════════════════════════════════════════════════════════════
-var GITHUB_BASE = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/';
-
-// Existing campus buildings (all 5 campuses, UNG Enterprise GDB export)
+// ── CONFIGURATION ────────────────────────────────────────────────────────────
+// To update data: push new GeoJSON to GitHub — no HTML changes needed.
+var GITHUB_BASE  = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/';
 var EXISTING_URL = GITHUB_BASE + 'MPBUILDINGSOUTjson.geojson';
-
-// Master plan proposed buildings (create this file in the same repo)
-// Schema: { "BLDG_NAME": "...", "STATUS": "New"|"Renovation"|"Existing", "CATEGORY": "..." }
 var VISION_URL   = GITHUB_BASE + 'MPVISIONjson.geojson';
 
-// ═══════════════════════════════════════════════════════════════
-//  CAMPUS EXTENTS
-// ═══════════════════════════════════════════════════════════════
+// ── CAMPUS EXTENTS ───────────────────────────────────────────────────────────
+// campusInt matches the Campus integer field in the GeoJSON:
+//   0 = Blue Ridge  1 = Cumming  2 = Dahlonega  3 = Gainesville  4 = Oconee
 var CAMPUSES = {
-  blueridge:  { center:[34.8890, -84.2920], zoom:16, id:'cb-br', label:'Blue Ridge'  },
-  cumming:    { center:[34.2244, -84.1078], zoom:16, id:'cb-cu', label:'Cumming'      }
-  dahlonega:  { center:[34.5281, -83.9864], zoom:16, id:'cb-da', label:'Dahlonega'   },
-  gainesville:{ center:[34.2379, -83.8653], zoom:16, id:'cb-gv', label:'Gainesville' },
-  oconee:     { center:[33.8665, -83.4258], zoom:16, id:'cb-oc', label:'Oconee'      }
+  dahlonega:   { center:[34.5281, -83.9864], zoom:16, id:'cb-da', label:'Dahlonega',   campusInt:2 },
+  gainesville: { center:[34.2379, -83.8653], zoom:16, id:'cb-gv', label:'Gainesville', campusInt:3 },
+  cumming:     { center:[34.2244, -84.1078], zoom:16, id:'cb-cu', label:'Cumming',      campusInt:1 },
+  blueridge:   { center:[34.8890, -84.2920], zoom:16, id:'cb-br', label:'Blue Ridge',  campusInt:0 },
+  oconee:      { center:[33.8665, -83.4258], zoom:16, id:'cb-oc', label:'Oconee',       campusInt:4 }
 };
 var activeCampus = 'dahlonega';
 
-// ═══════════════════════════════════════════════════════════════
-//  MAP INIT
-// ═══════════════════════════════════════════════════════════════
+// ── BUILDINGTYPE → CATEGORY ──────────────────────────────────────────────────
+// CATEGORY field is null in the GeoJSON export; BuildingType drives color instead.
+//   0 = Academic (general)   1 = Housing        2 = Athletic/Recreation
+//   3 = Administration       4 = Support/Fac.   5 = Academic (specialized)
+//   6 = Military
+function getCategory(p) {
+  var bt = p.BuildingType;
+  if (bt === 1) return 'housing';
+  if (bt === 2) return 'athletic';
+  if (bt === 3) return 'admin';
+  if (bt === 6) return 'military';
+  if (bt === 4) return 'support';
+  return 'academic';
+}
+function getCategoryLabel(p) {
+  var c = getCategory(p);
+  var labels = {housing:'Housing',athletic:'Athletic / Recreation',admin:'Administration',military:'Military',support:'Support / Facilities',academic:'Academic'};
+  return labels[c] || 'Academic';
+}
+
+// ── MAP INIT ─────────────────────────────────────────────────────────────────
 var map = L.map('map', { center:[34.5281,-83.9864], zoom:16 });
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution:'&copy; OpenStreetMap contributors | UNG Facilities GIS',
   maxZoom:20
 }).addTo(map);
 
-// ═══════════════════════════════════════════════════════════════
-//  STYLE FUNCTIONS
-// ═══════════════════════════════════════════════════════════════
+// ── STYLE FUNCTIONS ──────────────────────────────────────────────────────────
 function styleExisting(f) {
-  var c = (f.properties.CATEGORY || '').toLowerCase();
-  if (c.indexOf('housing')  >= 0) return {fillColor:'#6a8fb5',color:'#3a5f85',weight:1,fillOpacity:.75};
-  if (c.indexOf('athletic') >= 0) return {fillColor:'#7a9e6a',color:'#4a6e3a',weight:1,fillOpacity:.70};
-  if (c.indexOf('military') >= 0) return {fillColor:'#7060a0',color:'#504080',weight:1,fillOpacity:.75};
-  if (c.indexOf('admin')    >= 0) return {fillColor:'#a07850',color:'#705030',weight:1,fillOpacity:.75};
-  if (c.indexOf('support')  >= 0) return {fillColor:'#888880',color:'#555550',weight:1,fillOpacity:.65};
+  var c = getCategory(f.properties);
+  if (c==='housing')  return {fillColor:'#6a8fb5',color:'#3a5f85',weight:1,fillOpacity:.75};
+  if (c==='athletic') return {fillColor:'#7a9e6a',color:'#4a6e3a',weight:1,fillOpacity:.70};
+  if (c==='military') return {fillColor:'#7060a0',color:'#504080',weight:1,fillOpacity:.75};
+  if (c==='admin')    return {fillColor:'#a07850',color:'#705030',weight:1,fillOpacity:.75};
+  if (c==='support')  return {fillColor:'#888880',color:'#555550',weight:1,fillOpacity:.65};
   return {fillColor:'#c8c3bc',color:'#8a8580',weight:1,fillOpacity:.75};
 }
-
-// Muted context shown behind vision polygons
-function styleContext(f) {
+function styleContext() {
   return {fillColor:'#b8b4ae',color:'#8a8580',weight:0.5,fillOpacity:.26};
 }
-
 function styleVision(f) {
-  var s = (f.properties.STATUS   || '').toLowerCase().trim();
-  var c = (f.properties.CATEGORY || '').toLowerCase();
-  if (s === 'new') {
-    if (c.indexOf('housing')  >= 0) return {fillColor:'#1a5c8e',color:'#0a3c6e',weight:2,fillOpacity:.90};
-    if (c.indexOf('parking')  >= 0) return {fillColor:'#3a3a5e',color:'#1a1a3e',weight:2,fillOpacity:.88};
-    if (c.indexOf('student')  >= 0) return {fillColor:'#8e4a1a',color:'#6e2a0a',weight:2,fillOpacity:.90};
-    if (c.indexOf('military') >= 0) return {fillColor:'#4a1a6e',color:'#2a0a4e',weight:2,fillOpacity:.90};
+  var s = (f.properties.STATUS||'').toLowerCase().trim();
+  var c = (f.properties.CATEGORY||'').toLowerCase();
+  if (s==='new') {
+    if (c.indexOf('housing') >=0) return {fillColor:'#1a5c8e',color:'#0a3c6e',weight:2,fillOpacity:.90};
+    if (c.indexOf('parking') >=0) return {fillColor:'#3a3a5e',color:'#1a1a3e',weight:2,fillOpacity:.88};
+    if (c.indexOf('student') >=0) return {fillColor:'#8e4a1a',color:'#6e2a0a',weight:2,fillOpacity:.90};
+    if (c.indexOf('military')>=0) return {fillColor:'#4a1a6e',color:'#2a0a4e',weight:2,fillOpacity:.90};
     return {fillColor:'#1a3d6e',color:'#0a2240',weight:2,fillOpacity:.90};
   }
-  if (s === 'renovation') {
-    return {fillColor:'#4a7ab5',color:'#2a5a95',weight:2.5,fillOpacity:.85,dashArray:'6,3'};
-  }
-  // Fallback: treat as existing context within vision view
+  if (s==='renovation') return {fillColor:'#4a7ab5',color:'#2a5a95',weight:2.5,fillOpacity:.85,dashArray:'6,3'};
   return {fillColor:'#c8c3bc',color:'#8a8580',weight:1,fillOpacity:.38};
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  POPUP BUILDERS
-// ═══════════════════════════════════════════════════════════════
+// ── POPUPS ───────────────────────────────────────────────────────────────────
 function popupExisting(p) {
-  var h = '<div style="font-family:Lato,sans-serif;min-width:185px;">';
-  h += '<div style="font-size:14px;font-weight:600;color:#0a2240;margin-bottom:5px;">'+(p.Building||'&mdash;')+'</div>';
-  h += '<div style="font-size:11px;color:#444;line-height:1.65;">';
-  if (p.BUILDING_CODE && p.BUILDING_CODE.trim()) h += '<strong>Code:</strong> '+p.BUILDING_CODE+'<br>';
-  if (p.sqft)     h += '<strong>Sq Ft:</strong> '+Number(p.sqft).toLocaleString()+'<br>';
-  if (p.YR_CONST) h += '<strong>Year Built:</strong> '+p.YR_CONST+'<br>';
-  if (p.address)  h += '<strong>Address:</strong> '+p.address+'<br>';
-  if (p.CATEGORY) h += '<strong>Type:</strong> '+p.CATEGORY+'<br>';
-  h += '</div></div>';
+  var h='<div style="font-family:Lato,sans-serif;min-width:185px;">';
+  h+='<div style="font-size:14px;font-weight:600;color:#0a2240;margin-bottom:5px;">'+(p.Building||'&mdash;')+'</div>';
+  h+='<div style="font-size:11px;color:#444;line-height:1.65;">';
+  if(p.BUILDING_CODE&&String(p.BUILDING_CODE).trim()&&p.BUILDING_CODE!=='N/A') h+='<strong>Code:</strong> '+p.BUILDING_CODE+'<br>';
+  if(p.sqft)     h+='<strong>Sq Ft:</strong> '+Number(p.sqft).toLocaleString()+'<br>';
+  if(p.YR_CONST) h+='<strong>Year Built:</strong> '+p.YR_CONST+'<br>';
+  if(p.address)  h+='<strong>Address:</strong> '+p.address+'<br>';
+  h+='<strong>Type:</strong> '+getCategoryLabel(p)+'<br>';
+  h+='</div></div>';
   return h;
 }
-
 function popupVision(p) {
-  var s     = (p.STATUS || '').toLowerCase().trim();
-  var badge = 'Existing', bg = '#555';
-  if (s === 'new')        { badge = 'New Building'; bg = '#1a3d6e'; }
-  if (s === 'renovation') { badge = 'Renovation';   bg = '#4a7ab5'; }
-  var h = '<div style="font-family:Lato,sans-serif;min-width:200px;">';
-  h += '<div style="font-size:14px;font-weight:600;color:#0a2240;margin-bottom:6px;">'+(p.BLDG_NAME||'&mdash;')+'</div>';
-  h += '<span style="background:'+bg+';color:#fff;font-size:8px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:.1em;text-transform:uppercase;">'+badge+'</span>';
-  h += '<div style="font-size:11px;color:#444;margin-top:6px;"><strong>Category:</strong> '+(p.CATEGORY||'&mdash;')+'</div>';
-  if (s === 'new') h += '<div style="font-size:10px;color:#888;margin-top:3px;font-style:italic;">Proposed &mdash; campus master plan</div>';
-  h += '<div style="font-size:8.5px;color:#bbb;margin-top:6px;font-style:italic;border-top:1px solid #eee;padding-top:5px;">Source: UNG Facilities GIS &mdash; GitHub</div>';
-  h += '</div>';
+  var s=(p.STATUS||'').toLowerCase().trim();
+  var badge='Existing',bg='#555';
+  if(s==='new')        {badge='New Building';bg='#1a3d6e';}
+  if(s==='renovation') {badge='Renovation';  bg='#4a7ab5';}
+  var h='<div style="font-family:Lato,sans-serif;min-width:200px;">';
+  h+='<div style="font-size:14px;font-weight:600;color:#0a2240;margin-bottom:6px;">'+(p.BLDG_NAME||'&mdash;')+'</div>';
+  h+='<span style="background:'+bg+';color:#fff;font-size:8px;font-weight:700;padding:2px 8px;border-radius:2px;letter-spacing:.1em;text-transform:uppercase;">'+badge+'</span>';
+  h+='<div style="font-size:11px;color:#444;margin-top:6px;"><strong>Category:</strong> '+(p.CATEGORY||'&mdash;')+'</div>';
+  if(s==='new') h+='<div style="font-size:10px;color:#888;margin-top:3px;font-style:italic;">Proposed &mdash; campus master plan</div>';
+  h+='<div style="font-size:8.5px;color:#bbb;margin-top:6px;font-style:italic;border-top:1px solid #eee;padding-top:5px;">Source: UNG Facilities GIS &mdash; GitHub</div>';
+  h+='</div>';
   return h;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  LAYER REFERENCES
-// ═══════════════════════════════════════════════════════════════
-// Empty containers — populated by fetch
-var existingLayer = L.geoJSON(null, {
-  style: styleExisting,
-  onEachFeature: function(f, l) {
+// ── LAYERS ───────────────────────────────────────────────────────────────────
+var existingLayer = L.geoJSON(null,{
+  style:styleExisting,
+  onEachFeature:function(f,l){
     l.bindPopup(popupExisting(f.properties));
-    l.on('mouseover', function() { this.setStyle({weight:2.5,fillOpacity:.97}); });
-    l.on('mouseout',  function() { this.setStyle(styleExisting(f)); });
+    l.on('mouseover',function(){this.setStyle({weight:2.5,fillOpacity:.97});});
+    l.on('mouseout', function(){this.setStyle(styleExisting(f));});
   }
 });
-
-var contextLayer = L.geoJSON(null, {
-  style: styleContext,
-  onEachFeature: function(f, l) {
+var contextLayer = L.geoJSON(null,{
+  style:styleContext,
+  onEachFeature:function(f,l){
     l.bindPopup('<div style="font-family:Lato,sans-serif;font-size:12px;color:#333;"><strong>'+(f.properties.Building||'&mdash;')+'</strong><div style="font-size:10px;color:#888;margin-top:2px;">Existing building</div></div>');
   }
 });
-
-var visionLayer = L.geoJSON(null, {
-  style: styleVision,
-  onEachFeature: function(f, l) {
+var visionLayer = L.geoJSON(null,{
+  style:styleVision,
+  onEachFeature:function(f,l){
     l.bindPopup(popupVision(f.properties));
-    l.on('mouseover', function() { this.setStyle({weight:3.5,fillOpacity:.99}); });
-    l.on('mouseout',  function() { this.setStyle(styleVision(f)); });
+    l.on('mouseover',function(){this.setStyle({weight:3.5,fillOpacity:.99});});
+    l.on('mouseout', function(){this.setStyle(styleVision(f));});
   }
 });
 
-// ═══════════════════════════════════════════════════════════════
-//  FETCH — EXISTING BUILDINGS (GitHub)
-// ═══════════════════════════════════════════════════════════════
-var exLoaded = false;
-var exStatus = document.getElementById('statusExisting');
-
+// ── FETCH: EXISTING BUILDINGS ────────────────────────────────────────────────
+var exLoaded=false;
+var exStatus=document.getElementById('statusExisting');
 fetch(EXISTING_URL)
-  .then(function(r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  })
-  .then(function(data) {
+  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+  .then(function(data){
     existingLayer.addData(data);
-    contextLayer.addData(data);         // same polygons, muted style for vision bg
-    exLoaded = true;
-    var n = data.features ? data.features.length : '?';
-    exStatus.textContent = '\u2713 Buildings loaded (' + n + ')';
+    contextLayer.addData(data);
+    exLoaded=true;
+    var n=data.features?data.features.length:'?';
+    exStatus.textContent='✓ Buildings loaded ('+n+')';
     exStatus.classList.add('ok');
-    // Default view: show existing
     existingLayer.addTo(map);
   })
-  .catch(function(err) {
-    exStatus.textContent = '\u26a0 Buildings unavailable';
+  .catch(function(err){
+    exStatus.textContent='⚠ Buildings unavailable';
     exStatus.classList.add('err');
-    console.warn('Existing buildings fetch failed:', err);
+    console.warn('Existing fetch failed:',err);
   });
 
-// ═══════════════════════════════════════════════════════════════
-//  FETCH — VISION / MASTER PLAN (GitHub)
-// ═══════════════════════════════════════════════════════════════
-var mpLoaded = false;
-var mpStatus = document.getElementById('statusVision');
-
+// ── FETCH: VISION / MASTER PLAN ──────────────────────────────────────────────
+var mpLoaded=false;
+var mpStatus=document.getElementById('statusVision');
 fetch(VISION_URL)
-  .then(function(r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  })
-  .then(function(data) {
+  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+  .then(function(data){
     visionLayer.addData(data);
-    mpLoaded = true;
-    var n = data.features ? data.features.length : '?';
-    mpStatus.textContent = '\u2713 Master plan loaded (' + n + ' features)';
+    mpLoaded=true;
+    var n=data.features?data.features.length:'?';
+    mpStatus.textContent='✓ Master plan loaded ('+n+' features)';
     mpStatus.classList.add('ok');
   })
-  .catch(function(err) {
-    // Graceful degradation — vision tab will warn user if they try to switch
-    mpStatus.textContent = '\u26a0 Master plan pending';
+  .catch(function(err){
+    mpStatus.textContent='⚠ Master plan pending';
     mpStatus.classList.add('err');
-    console.warn('Vision GeoJSON fetch failed:', err);
+    console.warn('Vision fetch failed:',err);
   });
 
-// ═══════════════════════════════════════════════════════════════
-//  VIEW MODE
-// ═══════════════════════════════════════════════════════════════
-var currentMode = 'existing';
+// ── VIEW TOGGLE ───────────────────────────────────────────────────────────────
+var currentMode='existing';
+var lbl=document.getElementById('viewLabel');
+function flash(txt){lbl.textContent=txt;lbl.classList.add('show');setTimeout(function(){lbl.classList.remove('show');},1400);}
 
-var lbl = document.getElementById('viewLabel');
-function flash(txt) {
-  lbl.textContent = txt; lbl.classList.add('show');
-  setTimeout(function() { lbl.classList.remove('show'); }, 1400);
-}
-
-function showExisting() {
-  if (currentMode === 'existing') return;
-  if (map.hasLayer(visionLayer))  map.removeLayer(visionLayer);
-  if (map.hasLayer(contextLayer)) map.removeLayer(contextLayer);
-  if (exLoaded) existingLayer.addTo(map);
-  currentMode = 'existing';
+function showExisting(){
+  if(currentMode==='existing')return;
+  if(map.hasLayer(visionLayer))  map.removeLayer(visionLayer);
+  if(map.hasLayer(contextLayer)) map.removeLayer(contextLayer);
+  if(exLoaded) existingLayer.addTo(map);
+  currentMode='existing';
   document.getElementById('btnExisting').classList.add('active');
   document.getElementById('btnVision').classList.remove('active');
   flash('Current Buildout');
 }
-
-function showVision() {
-  if (currentMode === 'vision') return;
-  if (!mpLoaded) {
-    flash('Master plan not yet available');
-    return;
-  }
-  if (map.hasLayer(existingLayer)) map.removeLayer(existingLayer);
-  if (exLoaded) contextLayer.addTo(map);
+function showVision(){
+  if(currentMode==='vision')return;
+  if(!mpLoaded){flash('Master plan not yet available');return;}
+  if(map.hasLayer(existingLayer)) map.removeLayer(existingLayer);
+  if(exLoaded) contextLayer.addTo(map);
   visionLayer.addTo(map);
-  currentMode = 'vision';
+  currentMode='vision';
   document.getElementById('btnVision').classList.add('active');
   document.getElementById('btnExisting').classList.remove('active');
   flash('Vision Plan Buildout');
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  CAMPUS FLY-TO
-// ═══════════════════════════════════════════════════════════════
-function flyTo(key) {
-  var c = CAMPUSES[key];
-  if (!c) return;
-  // Deactivate all campus buttons
-  Object.keys(CAMPUSES).forEach(function(k) {
-    document.getElementById(CAMPUSES[k].id).classList.remove('active');
-  });
+// ── CAMPUS FLY-TO ─────────────────────────────────────────────────────────────
+function flyTo(key){
+  var c=CAMPUSES[key];
+  if(!c)return;
+  Object.keys(CAMPUSES).forEach(function(k){document.getElementById(CAMPUSES[k].id).classList.remove('active');});
   document.getElementById(c.id).classList.add('active');
-  activeCampus = key;
-  map.flyTo(c.center, c.zoom, { animate:true, duration:1.1 });
-  flash(c.label + ' Campus');
+  activeCampus=key;
+  map.flyTo(c.center,c.zoom,{animate:true,duration:1.1});
+  flash(c.label+' Campus');
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  LEGEND
-// ═══════════════════════════════════════════════════════════════
-L.control({ position:'bottomright' }).onAdd = function() {
-  var d = L.DomUtil.create('div','legend');
-  d.innerHTML =
-    '<h4>Legend</h4>' +
-    '<div class="li"><div class="sw" style="background:#c8c3bc;"></div>Academic</div>' +
-    '<div class="li"><div class="sw" style="background:#6a8fb5;"></div>Housing</div>' +
-    '<div class="li"><div class="sw" style="background:#7a9e6a;"></div>Athletic / Recreation</div>' +
-    '<div class="li"><div class="sw" style="background:#7060a0;"></div>Military</div>' +
-    '<div class="li"><div class="sw" style="background:#a07850;"></div>Administration</div>' +
-    '<div class="li"><div class="sw" style="background:#888880;"></div>Support / Facilities</div>' +
-    '<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(201,168,76,.25);">' +
-    '<div class="li"><div class="sw" style="background:#1a3d6e;"></div>New Building (Vision)</div>' +
-    '<div class="li"><div class="sw" style="background:#1a5c8e;"></div>New Housing (Vision)</div>' +
-    '<div class="li"><div class="sw" style="background:#4a7ab5;border:1px dashed #2a5a95;"></div>Renovation (Vision)</div>' +
-    '<div class="li"><div class="sw" style="background:#b8b4ae;opacity:.45;"></div>Existing Context (Vision)</div>' +
-    '</div>' +
-    '<div class="ln">' +
-    'Existing: <a href="' + EXISTING_URL + '" target="_blank">MPBUILDINGSOUTjson.geojson</a><br>' +
-    'Vision: <a href="' + VISION_URL + '" target="_blank">MPVISIONjson.geojson</a><br>' +
-    'Both fetched live from GitHub.<br>' +
-    'Draft &middot; Illustrative only.' +
+// ── LEGEND ────────────────────────────────────────────────────────────────────
+L.control({position:'bottomright'}).onAdd=function(){
+  var d=L.DomUtil.create('div','legend');
+  d.innerHTML=
+    '<h4>Legend</h4>'+
+    '<div class="li"><div class="sw" style="background:#c8c3bc;"></div>Academic</div>'+
+    '<div class="li"><div class="sw" style="background:#6a8fb5;"></div>Housing</div>'+
+    '<div class="li"><div class="sw" style="background:#7a9e6a;"></div>Athletic / Recreation</div>'+
+    '<div class="li"><div class="sw" style="background:#7060a0;"></div>Military</div>'+
+    '<div class="li"><div class="sw" style="background:#a07850;"></div>Administration</div>'+
+    '<div class="li"><div class="sw" style="background:#888880;"></div>Support / Facilities</div>'+
+    '<div style="margin-top:7px;padding-top:6px;border-top:1px solid rgba(201,168,76,.25);">'+
+    '<div class="li"><div class="sw" style="background:#1a3d6e;"></div>New Building (Vision)</div>'+
+    '<div class="li"><div class="sw" style="background:#1a5c8e;"></div>New Housing (Vision)</div>'+
+    '<div class="li"><div class="sw" style="background:#4a7ab5;border:1px dashed #2a5a95;"></div>Renovation (Vision)</div>'+
+    '<div class="li"><div class="sw" style="background:#b8b4ae;opacity:.45;"></div>Existing Context (Vision)</div>'+
+    '</div>'+
+    '<div class="ln">'+
+    'Existing: <a href="'+EXISTING_URL+'" target="_blank">MPBUILDINGSOUTjson.geojson</a><br>'+
+    'Vision: <a href="'+VISION_URL+'" target="_blank">MPVISIONjson.geojson</a><br>'+
+    'Both fetched live from GitHub.<br>'+
+    'Draft &middot; Illustrative only.'+
     '</div>';
   return d;
 }.addTo(map);
