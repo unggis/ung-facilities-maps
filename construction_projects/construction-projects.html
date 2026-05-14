@@ -40,13 +40,13 @@
     }
     .building-tooltip::before { border-top-color: #003366; }
 
-    /* ── Popup ── */
+    /* ── Popup wrapper ── */
     .leaflet-popup-content-wrapper {
       border-radius: 6px;
       border-top: 4px solid #C8952A;
       font-size: 12px;
-      min-width: 240px;
-      max-width: 320px;
+      min-width: 260px;
+      max-width: 340px;
     }
     .popup-building {
       font-weight: bold;
@@ -57,26 +57,82 @@
     .popup-campus {
       font-size: 11px;
       color: #666;
+      padding-bottom: 6px;
       margin-bottom: 8px;
       border-bottom: 1px solid #e0e0e0;
-      padding-bottom: 6px;
     }
-    .popup-project {
+    .popup-count {
+      font-size: 11px;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    /* ── Accordion ── */
+    .popup-accordion {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .popup-accordion-row {
+      border-bottom: 1px solid #ddd;
+    }
+    .popup-accordion-row:last-child { border-bottom: none; }
+
+    .popup-accordion-header {
+      display: flex;
+      align-items: center;
+      padding: 7px 10px;
       background: #f5f5f5;
-      border-left: 3px solid #C8952A;
-      border-radius: 3px;
-      padding: 6px 8px;
-      margin-bottom: 6px;
+      cursor: pointer;
+      user-select: none;
+      gap: 6px;
     }
-    .popup-project-name {
+    .popup-accordion-header:hover { background: #eaeaea; }
+    .popup-accordion-header.open {
+      background: #003366;
+      color: #fff;
+    }
+    .popup-accordion-title {
       font-weight: bold;
-      color: #003366;
-      margin-bottom: 4px;
+      font-size: 12px;
+      flex: 1;
     }
+    .popup-accordion-status {
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: bold;
+      color: #fff;
+      background: #e06000;
+      white-space: nowrap;
+    }
+    .popup-accordion-header.open .popup-accordion-status {
+      background: rgba(255,255,255,0.22);
+    }
+    .popup-accordion-chevron {
+      font-size: 10px;
+      color: #aaa;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .popup-accordion-header.open .popup-accordion-chevron {
+      transform: rotate(180deg);
+      color: #C8952A;
+    }
+
+    /* Body hidden by default; JS toggles .open */
+    .popup-accordion-body {
+      display: none;
+      padding: 8px 10px;
+      background: #fff;
+      border-top: 1px solid #eee;
+    }
+    .popup-accordion-body.open { display: block; }
+
     .popup-row {
       display: flex;
       gap: 4px;
-      margin: 2px 0;
+      margin: 3px 0;
       font-size: 11px;
     }
     .popup-label {
@@ -84,15 +140,6 @@
       color: #555;
       white-space: nowrap;
       min-width: 56px;
-    }
-    .popup-status {
-      display: inline-block;
-      padding: 1px 7px;
-      border-radius: 10px;
-      font-size: 10px;
-      font-weight: bold;
-      color: #fff;
-      background: #e06000;
     }
     .popup-loading {
       color: #888;
@@ -160,8 +207,8 @@
       },
       onEachFeature: function(feature, layer) {
         var props = feature.properties;
-        var label = props.Building || 'Building';
-        if (props.campus) label += ' \u2014 ' + props.campus;
+        // 'Building' = building name field; 'name' = display/domain field as fallback
+        var label = props.Building || props.name || 'Building';
         layer.bindTooltip(label, {
           permanent: false,
           sticky: true,
@@ -171,7 +218,12 @@
       }
     }).addTo(map);
 
-    // ── Query Projects_Table by Area_ID, populate open popup ──
+    // ── Build a detail row ──
+    function detailRow(label, value) {
+      return '<div class="popup-row"><span class="popup-label">' + label + ':</span><span>' + value + '</span></div>';
+    }
+
+    // ── Query Projects_Table by Area_ID, render collapsible accordion ──
     function queryProjects(areaId, buildingName, campusName, popup) {
       var queryUrl = PROJECTS_TABLE_URL
         + '/query?where=Area_ID%3D' + encodeURIComponent(areaId)
@@ -188,47 +240,83 @@
 
           if (features.length === 0) {
             html += '<div class="popup-none">No project records found.</div>';
-          } else {
-            features.forEach(function(f) {
-              var p = f.attributes;
-              html += '<div class="popup-project">';
-
-              if (p.Project)
-                html += '<div class="popup-project-name">' + p.Project + '</div>';
-
-              if (p.Status)
-                html += '<div class="popup-row"><span class="popup-label">Status:</span>'
-                      + '<span class="popup-status">' + p.Status + '</span></div>';
-
-              if (p.Location)
-                html += '<div class="popup-row"><span class="popup-label">Location:</span><span>' + p.Location + '</span></div>';
-
-              if (p.Vendor)
-                html += '<div class="popup-row"><span class="popup-label">Vendor:</span><span>' + p.Vendor + '</span></div>';
-
-              if (p.Cost !== null && p.Cost !== undefined && p.Cost !== '') {
-                var costFmt = '$' + Number(p.Cost).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-                html += '<div class="popup-row"><span class="popup-label">Cost:</span><span>' + costFmt + '</span></div>';
-              }
-
-              if (p.PO)
-                html += '<div class="popup-row"><span class="popup-label">PO:</span><span>' + p.PO + '</span></div>';
-
-              if (p.Acct)
-                html += '<div class="popup-row"><span class="popup-label">Acct:</span><span>' + p.Acct + '</span></div>';
-
-              if (p.Notes)
-                html += '<div class="popup-row"><span class="popup-label">Notes:</span><span>' + p.Notes + '</span></div>';
-
-              html += '</div>'; // .popup-project
-            });
+            popup.setContent(html);
+            return;
           }
 
+          // Single project — expand immediately, no accordion needed
+          if (features.length === 1) {
+            var p = features[0].attributes;
+            if (p.Project) html += '<div style="font-weight:bold;color:#003366;margin-bottom:6px;">' + p.Project + '</div>';
+            if (p.Status)  html += detailRow('Status', '<span style="background:#e06000;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:bold;">' + p.Status + '</span>');
+            if (p.Location) html += detailRow('Location', p.Location);
+            if (p.Vendor)   html += detailRow('Vendor', p.Vendor);
+            if (p.Cost !== null && p.Cost !== undefined && p.Cost !== '')
+              html += detailRow('Cost', '$' + Number(p.Cost).toLocaleString('en-US', { maximumFractionDigits: 0 }));
+            if (p.PO)    html += detailRow('PO', p.PO);
+            if (p.Acct)  html += detailRow('Acct', p.Acct);
+            if (p.Notes) html += detailRow('Notes', p.Notes);
+            popup.setContent(html);
+            return;
+          }
+
+          // Multiple projects — accordion
+          var count = features.length;
+          html += '<div class="popup-count">' + count + ' projects — click to expand</div>';
+          html += '<div class="popup-accordion">';
+
+          features.forEach(function(f, i) {
+            var p = f.attributes;
+            var title = p.Project || ('Project ' + (i + 1));
+            var status = p.Status || '';
+
+            // Build body content
+            var body = '';
+            if (p.Status)   body += detailRow('Status', '<span style="background:#e06000;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:bold;">' + p.Status + '</span>');
+            if (p.Location) body += detailRow('Location', p.Location);
+            if (p.Vendor)   body += detailRow('Vendor', p.Vendor);
+            if (p.Cost !== null && p.Cost !== undefined && p.Cost !== '')
+              body += detailRow('Cost', '$' + Number(p.Cost).toLocaleString('en-US', { maximumFractionDigits: 0 }));
+            if (p.PO)    body += detailRow('PO', p.PO);
+            if (p.Acct)  body += detailRow('Acct', p.Acct);
+            if (p.Notes) body += detailRow('Notes', p.Notes);
+            if (!body)   body  = '<div class="popup-none">No additional details.</div>';
+
+            html += '<div class="popup-accordion-row">'
+              + '<div class="popup-accordion-header" onclick="toggleAccordion(this)" data-idx="' + i + '">'
+              + '<span class="popup-accordion-title">' + title + '</span>'
+              + (status ? '<span class="popup-accordion-status">' + status + '</span>' : '')
+              + '<span class="popup-accordion-chevron">&#9660;</span>'
+              + '</div>'
+              + '<div class="popup-accordion-body" id="acc-body-' + i + '">' + body + '</div>'
+              + '</div>';
+          });
+
+          html += '</div>'; // .popup-accordion
           popup.setContent(html);
         })
         .catch(function() {
           popup.setContent('<div style="color:red;font-size:12px;">Error loading project details.</div>');
         });
+    }
+
+    // ── Accordion toggle (global so inline onclick can reach it) ──
+    function toggleAccordion(header) {
+      var isOpen = header.classList.contains('open');
+      // Close all in this popup
+      var allHeaders = header.closest('.popup-accordion').querySelectorAll('.popup-accordion-header');
+      var allBodies  = header.closest('.popup-accordion').querySelectorAll('.popup-accordion-body');
+      allHeaders.forEach(function(h) { h.classList.remove('open'); });
+      allBodies.forEach(function(b)  { b.classList.remove('open'); });
+      // Open clicked one (unless it was already open — toggle off)
+      if (!isOpen) {
+        header.classList.add('open');
+        var idx = header.getAttribute('data-idx');
+        var body = document.getElementById('acc-body-' + idx);
+        if (body) body.classList.add('open');
+        // Refit popup after DOM change
+        setTimeout(function() { header.closest('.leaflet-popup') && map.invalidateSize(); }, 50);
+      }
     }
 
     // ── Construction Project Areas (polygons) ──
