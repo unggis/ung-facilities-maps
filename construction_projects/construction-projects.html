@@ -381,11 +381,11 @@
 
     // ── Campus Bookmarks ──
     var campuses = {
-      'Blue Ridge':  [34.88866, -84.29174],
-      'Cumming':     [34.22394, -84.10806],
-      'Dahlonega':   [34.5297,  -83.9849],
-      'Gainesville': [34.23474, -83.86722],
-      'Oconee':      [33.86621, -83.42595]
+      'Blue Ridge':  { latlng: [34.88866, -84.29174], zoom: 16 },
+      'Cumming':     { latlng: [34.22394, -84.10806], zoom: 15 },
+      'Dahlonega':   { latlng: [34.5297,  -83.9849],  zoom: 15 },
+      'Gainesville': { latlng: [34.23474, -83.86722], zoom: 15 },
+      'Oconee':      { latlng: [33.86621, -83.42595], zoom: 15 }
     };
 
     var bookmarkControl = L.control({ position: 'topleft' });
@@ -404,7 +404,7 @@
         btn.style.cssText = 'display:block;width:100%;margin-bottom:4px;padding:4px 8px;background:#003366;color:#fff;border:none;border-radius:3px;cursor:pointer;text-align:left;font-size:12px;';
         btn.onmouseover = function() { this.style.background = '#C8952A'; };
         btn.onmouseout  = function() { this.style.background = '#003366'; };
-        btn.onclick = function() { map.setView(campuses[name], 15); };
+        btn.onclick = function() { map.setView(campuses[name].latlng, campuses[name].zoom); };
         div.appendChild(btn);
       });
 
