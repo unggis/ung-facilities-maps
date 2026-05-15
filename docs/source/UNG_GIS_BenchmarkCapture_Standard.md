@@ -4,6 +4,7 @@ author: "John Segars, MGIS"
 organization: "University of North Georgia — Enterprise GIS Program, Facilities Planning"
 division: "Facilities"
 date: "April 2026"
+geometry: "letterpaper, margin=1in"
 version: "1.0"
 classification: "Operational Reference"
 ---
