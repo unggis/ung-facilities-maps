@@ -5,6 +5,7 @@ author: "John Segars, MGIS"
 organization: "University of North Georgia — Enterprise GIS Program, Facilities Planning"
 division: "Facilities"
 date: "2026"
+geometry: "letterpaper, margin=1in"
 version: "1.0"
 audience: "Facilities Staff, Project Managers, and Campus Partners"
 ---
