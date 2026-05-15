@@ -12,7 +12,7 @@ audience: "Facilities Staff, Project Managers, and Campus Partners"
 # Understanding Map Accuracy
 **Why Maps Don't Always Agree — and Which One to Trust**
 
-*GIS Division | University of North Georgia | A Guide for Facilities Staff, Project Managers, and Campus Partners | 2026*
+*UNG Facilities GIS | University of North Georgia | A Guide for Facilities Staff, Project Managers, and Campus Partners | 2026*
 
 ---
 
