@@ -10,7 +10,7 @@ classification: "Operational Reference"
 
 # Survey Control & Benchmark Capture Standard
 
-*GIS Division | Prepared by: John Segars, MGIS | April 2026 | Operational Reference*
+*UNG Facilities GIS | Prepared by: John Segars, MGIS | April 2026 | Operational Reference*
 
 ---
 
