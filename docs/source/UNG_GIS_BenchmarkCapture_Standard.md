@@ -2,7 +2,7 @@
 title: "Survey Control & Benchmark Capture Standard"
 author: "John Segars, MGIS"
 organization: "University of North Georgia — Enterprise GIS Program, Facilities Planning"
-division: "GIS Division"
+division: "Facilities"
 date: "April 2026"
 version: "1.0"
 classification: "Operational Reference"
