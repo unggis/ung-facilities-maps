@@ -34,15 +34,15 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.9858, 34.5290] },
+      "geometry": { "type": "Point", "coordinates": [-83.987043, 34.530164] },
       "properties": {
         "id": "da_walkway_of_service",
         "name": "Walkway of Service",
         "subtitle": "Commemorative Brick Walkway",
         "campus": "Dahlonega",
         "category": "building",
-        "building": "Dahlonega Historic District",
-        "description": "Commemorative brick walkway honoring UNG alumni, veterans, and service members. Interactive map available at the Facilities GIS Hub.",
+        "building": "Price Memorial",
+        "description": "Commemorative brick walkway honoring UNG faculty & staff retirees. Interactive map available at the Facilities GIS Hub.",
         "hours": "Open daily"
       }
     },
