@@ -120,6 +120,31 @@
   .leaflet-control-attribution a{color:rgba(201,168,76,.65)!important;}
   .leaflet-control-zoom a{background:rgba(10,34,64,.9)!important;color:var(--gold)!important;border-color:rgba(201,168,76,.26)!important;}
 
+  /* ── COORDINATE PICKER ── */
+  #map.picking{cursor:crosshair!important;}
+  #coordPanel{
+    position:absolute;bottom:70px;left:50%;transform:translateX(-50%);
+    background:rgba(10,34,64,.96);border:1px solid var(--gold);
+    border-radius:4px;padding:10px 16px;
+    font-family:'Lato',sans-serif;font-size:10px;
+    color:#fff;letter-spacing:.06em;
+    z-index:900;backdrop-filter:blur(4px);
+    display:none;min-width:380px;text-align:center;
+  }
+  #coordPanel.show{display:block;}
+  #coordPanel .coord-label{font-size:8px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+  #coordPanel .coord-values{font-family:monospace;font-size:13px;color:#fff;margin-bottom:6px;letter-spacing:.04em;}
+  #coordPanel .coord-geojson{font-family:monospace;font-size:10px;color:var(--gold-lt);margin-bottom:8px;}
+  #coordPanel .coord-actions{display:flex;gap:8px;justify-content:center;}
+  #coordPanel .coord-copy{
+    font-family:'Lato',sans-serif;font-size:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    background:var(--gold);color:var(--navy);border:none;border-radius:2px;
+    padding:5px 12px;cursor:pointer;transition:background .15s;
+  }
+  #coordPanel .coord-copy:hover{background:var(--gold-lt);}
+  #coordPanel .coord-hint{font-size:8px;color:rgba(255,255,255,.35);margin-top:6px;font-style:italic;}
+  .pick-btn.active{background:var(--navy)!important;color:var(--gold)!important;border-color:var(--gold)!important;box-shadow:0 0 8px rgba(201,168,76,.25)!important;}
+
   /* ── NO-WAYPOINT NOTICE ── */
   #noWpNotice{
     position:absolute;bottom:70px;left:50%;transform:translateX(-50%);
@@ -162,7 +187,11 @@
   </div>
   <div class="tb-sep"></div>
   <div class="tb-section">
-    <span class="tb-label">Report:</span>
+    <span class="tb-label">Tools:</span>
+    <button class="tog-btn pick-btn" id="btnPick" onclick="togglePicker()">&#9678;&nbsp; Pick Coords</button>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-section">
     <a href="https://survey123.arcgis.com/share/ca742b0a3514485fa625475ccbc314e4"
        target="_blank"
        style="height:24px;padding:0 11px;display:flex;align-items:center;font-family:'Lato',sans-serif;font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;border:1px solid rgba(201,168,76,.5);border-radius:2px;cursor:pointer;background:rgba(201,168,76,.08);color:var(--gold);text-decoration:none;transition:all .18s;"
@@ -175,6 +204,16 @@
 
 <div id="map">
   <div id="viewLabel"></div>
+  <div id="coordPanel">
+    <div class="coord-label">&#9678; Coordinate Picker — Click anywhere on the map</div>
+    <div class="coord-values" id="coordLatLng">—</div>
+    <div class="coord-geojson" id="coordGeoJSON">GeoJSON: —</div>
+    <div class="coord-actions">
+      <button class="coord-copy" onclick="copyLatLng()">Copy Lat, Lng</button>
+      <button class="coord-copy" onclick="copyGeoJSON()">Copy GeoJSON</button>
+    </div>
+    <div class="coord-hint">GeoJSON coordinates are [longitude, latitude] — longitude first</div>
+  </div>
   <div id="noWpNotice">Scan a QR code at a campus location to open a specific waypoint.</div>
 </div>
 
@@ -182,7 +221,7 @@
 <script>
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-var GITHUB_BASE   = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/waypoints/';
+var GITHUB_BASE   = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/';
 var WAYPOINTS_URL = GITHUB_BASE + 'waypoints.geojson';
 var SURVEY_URL    = 'https://survey123.arcgis.com/share/ca742b0a3514485fa625475ccbc314e4';
 
@@ -384,6 +423,49 @@ document.body.appendChild(legendDiv);
 
 function toggleLegend(){
   document.querySelector('.legend').classList.toggle('collapsed');
+}
+
+// ── COORDINATE PICKER ────────────────────────────────────────────────────────
+var picking     = false;
+var lastLatLng  = null;
+var coordPanel  = document.getElementById('coordPanel');
+var coordLatLng = document.getElementById('coordLatLng');
+var coordGeoJSON= document.getElementById('coordGeoJSON');
+
+function togglePicker() {
+  picking = !picking;
+  var btn = document.getElementById('btnPick');
+  if (picking) {
+    btn.classList.add('active');
+    document.getElementById('map').classList.add('picking');
+    coordPanel.classList.add('show');
+    flash('Click map to pick coordinates');
+  } else {
+    btn.classList.remove('active');
+    document.getElementById('map').classList.remove('picking');
+    coordPanel.classList.remove('show');
+  }
+}
+
+map.on('click', function(e) {
+  if (!picking) return;
+  lastLatLng = e.latlng;
+  var lat = e.latlng.lat.toFixed(6);
+  var lng = e.latlng.lng.toFixed(6);
+  coordLatLng.textContent  = lat + ', ' + lng;
+  coordGeoJSON.textContent = 'GeoJSON: [' + lng + ', ' + lat + ']';
+});
+
+function copyLatLng() {
+  if (!lastLatLng) return;
+  var txt = lastLatLng.lat.toFixed(6) + ', ' + lastLatLng.lng.toFixed(6);
+  navigator.clipboard.writeText(txt).then(function(){ flash('Lat, Lng copied!'); });
+}
+
+function copyGeoJSON() {
+  if (!lastLatLng) return;
+  var txt = '[' + lastLatLng.lng.toFixed(6) + ', ' + lastLatLng.lat.toFixed(6) + ']';
+  navigator.clipboard.writeText(txt).then(function(){ flash('GeoJSON coords copied!'); });
 }
 
 </script>
