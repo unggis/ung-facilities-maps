@@ -1,0 +1,219 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.9864, 34.5281] },
+      "properties": {
+        "id": "da_main_entrance",
+        "name": "Dahlonega Main Entrance",
+        "subtitle": "University Circle at Georgia Road",
+        "campus": "Dahlonega",
+        "category": "entrance",
+        "building": "Campus Gateway",
+        "description": "Primary vehicle and pedestrian entrance to the Dahlonega campus. Visitor parking and information available nearby.",
+        "parking": "Lot A — 200 ft east",
+        "hours": "Campus open 24 hrs"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.9871, 34.5275] },
+      "properties": {
+        "id": "da_stewart_center",
+        "name": "Stewart Center",
+        "subtitle": "Student Services Hub",
+        "campus": "Dahlonega",
+        "category": "services",
+        "building": "Stewart Center",
+        "description": "Home to student services, advising, and administrative offices. Centrally located on the Dahlonega campus.",
+        "parking": "Lot B — adjacent",
+        "hours": "Mon–Fri 8am–5pm"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.9858, 34.5290] },
+      "properties": {
+        "id": "da_walkway_of_service",
+        "name": "Walkway of Service",
+        "subtitle": "Commemorative Brick Walkway",
+        "campus": "Dahlonega",
+        "category": "building",
+        "building": "Dahlonega Historic District",
+        "description": "Commemorative brick walkway honoring UNG alumni, veterans, and service members. Interactive map available at the Facilities GIS Hub.",
+        "hours": "Open daily"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.9868, 34.5268] },
+      "properties": {
+        "id": "da_parking_lot_a",
+        "name": "Parking Lot A",
+        "subtitle": "Visitor & General Parking",
+        "campus": "Dahlonega",
+        "category": "parking",
+        "description": "Primary visitor parking on the Dahlonega campus. Permit required in designated areas. Visitor spaces marked in blue.",
+        "parking": "Visitor spaces available — no permit required before 4pm"
+      }
+    },
+
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.8668, 34.2352] },
+      "properties": {
+        "id": "gv_main_entrance",
+        "name": "Gainesville Main Entrance",
+        "subtitle": "Mundy Mill Road",
+        "campus": "Gainesville",
+        "category": "entrance",
+        "description": "Primary entrance to the Gainesville campus. Visitor information and parking directions available at the gatehouse.",
+        "parking": "Visitor lot — straight ahead at entrance",
+        "hours": "Campus open 24 hrs"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.8661, 34.2360] },
+      "properties": {
+        "id": "gv_nesbitt_building",
+        "name": "Nesbitt Building",
+        "subtitle": "Academic & Administrative",
+        "campus": "Gainesville",
+        "category": "building",
+        "building": "Nesbitt",
+        "description": "Houses academic programs and administrative offices for the Gainesville campus. Main lobby information desk on the ground floor.",
+        "parking": "Lot G2 — adjacent north side",
+        "hours": "Mon–Fri 7am–10pm"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.8675, 34.2345] },
+      "properties": {
+        "id": "gv_walkway_of_service",
+        "name": "Walkway of Service",
+        "subtitle": "Commemorative Brick Walkway",
+        "campus": "Gainesville",
+        "category": "building",
+        "description": "Commemorative brick walkway honoring UNG alumni, veterans, and service members. Interactive map available at the Facilities GIS Hub.",
+        "hours": "Open daily"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.8655, 34.2358] },
+      "properties": {
+        "id": "gv_parking_lot_g1",
+        "name": "Parking Lot G1",
+        "subtitle": "Primary Visitor Parking",
+        "campus": "Gainesville",
+        "category": "parking",
+        "description": "Primary visitor and student parking on the Gainesville campus. Accessible spaces near the main building entrances.",
+        "parking": "Visitor spaces — rows 1–3, no permit required"
+      }
+    },
+
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-84.1078, 34.2244] },
+      "properties": {
+        "id": "cu_main_entrance",
+        "name": "Cumming Campus Entrance",
+        "subtitle": "Tribble Gap Road",
+        "campus": "Cumming",
+        "category": "entrance",
+        "description": "Main entrance to the UNG Cumming campus. Visitor parking is available directly inside the entrance on the right.",
+        "parking": "Visitor parking — first right after entrance",
+        "hours": "Campus open Mon–Sat"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-84.1072, 34.2250] },
+      "properties": {
+        "id": "cu_main_building",
+        "name": "Cumming Main Building",
+        "subtitle": "Academic & Student Services",
+        "campus": "Cumming",
+        "category": "building",
+        "description": "Primary academic and student services building on the Cumming campus. Advisors and faculty offices located inside.",
+        "hours": "Mon–Thu 8am–8pm, Fri 8am–5pm"
+      }
+    },
+
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-84.2920, 34.8890] },
+      "properties": {
+        "id": "br_main_entrance",
+        "name": "Blue Ridge Campus Entrance",
+        "subtitle": "Windy Ridge Road",
+        "campus": "Blue Ridge",
+        "category": "entrance",
+        "description": "Main entrance to the UNG Blue Ridge campus. A small but fully equipped campus serving the north Georgia mountain region.",
+        "parking": "Surface lot — adjacent to main building",
+        "hours": "Campus open Mon–Fri"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-84.2915, 34.8896] },
+      "properties": {
+        "id": "br_academic_building",
+        "name": "Blue Ridge Academic Building",
+        "subtitle": "Classrooms & Faculty Offices",
+        "campus": "Blue Ridge",
+        "category": "building",
+        "building": "Academic Building",
+        "description": "Primary academic building on the Blue Ridge campus. Houses classrooms, faculty offices, and student support services.",
+        "hours": "Mon–Fri 8am–6pm"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-84.2924, 34.8884] },
+      "properties": {
+        "id": "br_ralston_hall",
+        "name": "Ralston Hall",
+        "subtitle": "University College — Specialized Labs",
+        "campus": "Blue Ridge",
+        "category": "building",
+        "building": "Ralston Hall",
+        "description": "Home to University College programs at Blue Ridge, including specialized simulation and discipline lab spaces.",
+        "hours": "Mon–Fri 8am–6pm"
+      }
+    },
+
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.4258, 33.8665] },
+      "properties": {
+        "id": "oc_main_entrance",
+        "name": "Oconee Campus Entrance",
+        "subtitle": "Experiment Station Road",
+        "campus": "Oconee",
+        "category": "entrance",
+        "description": "Main entrance to the UNG Oconee campus serving the Athens-area region. Visitor parking is available near the main building.",
+        "parking": "Surface lot — adjacent to main entrance",
+        "hours": "Campus open Mon–Fri"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.4252, 33.8671] },
+      "properties": {
+        "id": "oc_main_building",
+        "name": "Oconee Main Building",
+        "subtitle": "Academic & Student Services",
+        "campus": "Oconee",
+        "category": "building",
+        "description": "Primary academic and administrative building on the Oconee campus. Student services, advising, and faculty offices located inside.",
+        "hours": "Mon–Thu 8am–8pm, Fri 8am–5pm"
+      }
+    }
+
+  ]
+}
