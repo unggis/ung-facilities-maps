@@ -37,13 +37,6 @@
   .tog-btn:last-of-type{border-radius:0 3px 3px 0;border-left:none;}
   .tog-btn.active{background:var(--navy);color:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(201,168,76,.18);}
 
-  /* pulse animation on the toggle buttons — runs on load, stops after demo */
-  @keyframes btnPulse {
-    0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0);}
-    50%{box-shadow:0 0 0 4px rgba(201,168,76,.32);}
-  }
-  .tog-btn.pulse{animation:btnPulse 1.4s ease-in-out infinite;}
-
   .tog-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
   .campus-btn{height:24px;padding:0 11px;margin-right:3px;font-family:'Lato',sans-serif;font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;border:1px solid rgba(201,168,76,.2);border-radius:2px;cursor:pointer;transition:all .18s;background:rgba(255,255,255,.03);color:#7a90a8;white-space:nowrap;}
   .campus-btn:hover{background:rgba(201,168,76,.1);color:var(--gold-lt);border-color:rgba(201,168,76,.48);}
@@ -55,41 +48,6 @@
   /* view label flash */
   #viewLabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:rgba(255,255,255,.95);background:rgba(10,34,64,.84);padding:10px 28px;border-radius:4px;border:1px solid rgba(201,168,76,.45);pointer-events:none;opacity:0;transition:opacity .25s;z-index:800;white-space:nowrap;backdrop-filter:blur(4px);}
   #viewLabel.show{opacity:1;}
-
-  /* demo hint bar */
-  #demoHint{
-    position:absolute;
-    bottom:72px;left:50%;transform:translateX(-50%);
-    font-family:'Cormorant Garamond',serif;
-    font-size:14px;font-style:italic;letter-spacing:.03em;
-    color:var(--gold-lt);
-    background:rgba(10,34,64,.88);
-    padding:7px 20px;
-    border-radius:3px;
-    border:1px solid rgba(201,168,76,.42);
-    pointer-events:none;
-    opacity:0;
-    transition:opacity .7s ease;
-    z-index:820;
-    white-space:nowrap;
-    backdrop-filter:blur(4px);
-  }
-
-  /* demo overlay — shows while demo is running */
-  #demoOverlay{
-    position:absolute;
-    top:0;left:0;right:0;
-    height:3px;
-    background:linear-gradient(90deg,transparent,var(--gold),transparent);
-    background-size:200% 100%;
-    animation:shimmer 1.6s linear infinite;
-    opacity:0;
-    transition:opacity .4s;
-    z-index:810;
-    pointer-events:none;
-  }
-  #demoOverlay.active{opacity:1;}
-  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
   /* ── LEGEND ── */
   .legend{position:fixed;bottom:24px;right:10px;z-index:9000;background:rgba(10,34,64,.93);border:1px solid rgba(201,168,76,.32);border-radius:4px;padding:10px 14px;min-width:195px;backdrop-filter:blur(4px);pointer-events:auto;transition:all .25s ease;}
@@ -205,8 +163,6 @@
 
 <div id="map">
   <div id="viewLabel"></div>
-  <div id="demoHint">&#8593; Toggle the view above to compare all five campuses</div>
-  <div id="demoOverlay"></div>
 
   <div id="welcomeOverlay">
     <div class="wc-card">
@@ -448,10 +404,8 @@ function flyTo(key){
   flash(c.label+' Campus');
 }
 
-// ── WELCOME OVERLAY + AUTO-DEMO ──────────────────────────────────────────────
-var demoDone  = false;
-var dataReady = false;   // true once both layers loaded
-var DEMO_KEY  = 'ung_map_demo1_shown';
+// ── WELCOME OVERLAY ───────────────────────────────────────────────────────────
+var dataReady = false;
 
 // Update the stat counters in the card as data arrives
 function updateStats(){
@@ -467,93 +421,20 @@ function updateStats(){
 
 function checkBothLoaded(){
   updateStats();
-  if(exLoaded && mpLoaded){
-    dataReady = true;
-    // If overlay already dismissed (skip was clicked before data loaded), run demo
-    var ov = document.getElementById('welcomeOverlay');
-    if(!ov || ov.classList.contains('hiding')){
-      runAutoDemo();
-    }
-    // Otherwise just update stats — overlay button triggers the demo
-  }
+  if(exLoaded && mpLoaded) dataReady = true;
 }
 
-// "Explore the Plan" button — dismiss overlay then run demo
-function dismissAndDemo(){
-  var ov = document.getElementById('welcomeOverlay');
-  ov.classList.add('hiding');
-  setTimeout(function(){
-    ov.style.display = 'none';
-    if(dataReady){
-      runAutoDemo();
-    } else {
-      // Data still loading — pulse buttons so user knows controls exist
-      pulseButtons(400);
-    }
-  }, 500);
-}
-
-// "Skip intro" link — dismiss without demo
-function dismissOnly(){
+function dismissOverlay(){
   var ov = document.getElementById('welcomeOverlay');
   ov.classList.add('hiding');
   setTimeout(function(){ ov.style.display = 'none'; }, 500);
-  demoDone = true;  // prevent demo from firing even if data loads after
 }
 
-function runAutoDemo(){
-  if(demoDone) return;
-  demoDone = true;
+// "Explore the Plan" button
+function dismissAndDemo(){ dismissOverlay(); }
 
-  // Returning session — skip full demo, just pulse
-  if(sessionStorage.getItem(DEMO_KEY)){
-    pulseButtons(400);
-    return;
-  }
-  sessionStorage.setItem(DEMO_KEY, '1');
-
-  var hint    = document.getElementById('demoHint');
-  var overlay = document.getElementById('demoOverlay');
-  var HOLD    = 1350;
-
-  function wait(ms){ return new Promise(function(r){setTimeout(r,ms);}); }
-  function switchTo(mode){
-    return new Promise(function(resolve){
-      if(mode === 'vision') showVision(); else showExisting();
-      setTimeout(resolve, HOLD);
-    });
-  }
-
-  overlay.classList.add('active');
-  pulseButtons(0);
-
-  wait(600)
-    .then(function(){ return switchTo('vision');   })
-    .then(function(){ return switchTo('existing'); })
-    .then(function(){ return switchTo('vision');   })
-    .then(function(){
-      overlay.classList.remove('active');
-      stopPulse();
-      hint.style.opacity = 1;
-      return wait(3800);
-    })
-    .then(function(){ hint.style.opacity = 0; });
-}
-
-// Button pulse helpers
-function pulseButtons(delayMs){
-  setTimeout(function(){
-    document.getElementById('btnExisting').classList.add('pulse');
-    document.getElementById('btnVision').classList.add('pulse');
-  }, delayMs);
-}
-function stopPulse(){
-  document.getElementById('btnExisting').classList.remove('pulse');
-  document.getElementById('btnVision').classList.remove('pulse');
-}
-
-document.getElementById('btnExisting').addEventListener('click', stopPulse);
-document.getElementById('btnVision').addEventListener('click', stopPulse);
+// "Skip intro" link — same behaviour, kept for clarity
+function dismissOnly(){ dismissOverlay(); }
 
 // ── LEGEND ────────────────────────────────────────────────────────────────────
 var legendDiv = document.createElement('div');
