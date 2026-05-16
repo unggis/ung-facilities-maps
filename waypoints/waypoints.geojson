@@ -4,7 +4,7 @@
 
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.9864, 34.5281] },
+      "geometry": { "type": "Point", "coordinates": [-83.981713, 34.528869] },
       "properties": {
         "id": "da_main_entrance",
         "name": "Dahlonega Main Entrance",
