@@ -221,8 +221,8 @@
 <script>
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-var GITHUB_BASE   = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/waypoints/';
-var WAYPOINTS_URL = GITHUB_BASE + 'waypoints.geojson?v=' + Date.now();
+var GITHUB_BASE   = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/';
+var WAYPOINTS_URL = GITHUB_BASE + 'waypoints.geojson';
 var SURVEY_URL    = 'https://survey123.arcgis.com/share/ca742b0a3514485fa625475ccbc314e4';
 
 var CAMPUSES = {
@@ -330,20 +330,21 @@ function buildPopup(p) {
   if (p.floor)    meta += '<div class="popup-meta-row"><span class="popup-meta-key">Floor</span><span class="popup-meta-val">' + p.floor + '</span></div>';
   if (p.hours)    meta += '<div class="popup-meta-row"><span class="popup-meta-key">Hours</span><span class="popup-meta-val">' + p.hours + '</span></div>';
   if (p.parking)  meta += '<div class="popup-meta-row"><span class="popup-meta-key">Parking</span><span class="popup-meta-val">' + p.parking + '</span></div>';
+  if (p.url)      meta += '<div class="popup-meta-row"><span class="popup-meta-key">Website</span><span class="popup-meta-val"><a href="' + p.url + '" target="_blank" style="color:var(--gold);text-decoration:none;">&#8594;&nbsp;Visit</a></span></div>';
 
   var desc = p.description ? '<div class="popup-body">' + p.description + '</div>' : '';
 
   return '<div class="popup-inner">' +
-      '<div class="popup-eyebrow">' + (p.campus || 'UNG') + ' &nbsp;&middot;&nbsp; ' + (p.category || 'Waypoint') + '</div>' +
-      '<div class="popup-title">' + (p.name || 'Campus Location') + '</div>' +
-      (p.subtitle ? '<div class="popup-sub">' + p.subtitle + '</div>' : '') +
-      '<div class="popup-divider"></div>' +
-      desc +
-      (meta ? '<div class="popup-meta">' + meta + '</div>' : '') +  
-      '<a class="popup-report-btn" href="' + SURVEY_URL + '" target="_blank">&#9888;&nbsp; Report a Facilities Issue</a>' +
-      (p.url ? '<a class="popup-report-btn" href="' + p.url + '" target="_blank" style="margin-top:6px;background:var(--navy);color:var(--gold);border:1px solid var(--gold);">&#8594;&nbsp; Learn More</a>' : '') +
-      '<div class="popup-source">UNG Facilities GIS &mdash; unggis.github.io</div>' +
-      '</div>';
+    '<div class="popup-eyebrow">' + (p.campus || 'UNG') + ' &nbsp;&middot;&nbsp; ' + (p.category || 'Waypoint') + '</div>' +
+    '<div class="popup-title">' + (p.name || 'Campus Location') + '</div>' +
+    (p.subtitle ? '<div class="popup-sub">' + p.subtitle + '</div>' : '') +
+    '<div class="popup-divider"></div>' +
+    desc +
+    (meta ? '<div class="popup-meta">' + meta + '</div>' : '') +
+    '<div class="popup-divider"></div>' +
+    '<a class="popup-report-btn" href="' + SURVEY_URL + '" target="_blank" style="background:var(--navy);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);font-size:8px;padding:5px 0;">&#9888;&nbsp; Report a Facilities Issue</a>' +
+    '<div class="popup-source">UNG Facilities GIS &mdash; unggis.github.io</div>' +
+    '</div>';
 }
 
 // ── LOAD WAYPOINTS ────────────────────────────────────────────────────────────
