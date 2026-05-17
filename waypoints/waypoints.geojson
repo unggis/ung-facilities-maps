@@ -32,6 +32,21 @@
         "hours": "Mon–Fri 8am–5pm"
       }
     },
+{
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.985527, 34.527384] },
+      "properties": {
+        "id": "dc_dining_hall",
+        "name": "Dining Hall",
+        "subtitle": "Main Dining Facility",
+        "campus": "Dahlonega",
+        "category": "building",
+        "building": "Dining Hall",
+        "description": "Main dining facility on the Dahlonega campus",
+        "parking": "Lot B — adjacent",
+        "hours": "Varies - <a href="https://ung.mydininghub.com/en/dahlonega/location/main-dining-hall">see website for details</a>"
+      }
+    },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-83.987043, 34.530164] },
