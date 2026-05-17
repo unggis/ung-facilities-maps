@@ -76,7 +76,7 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.8661, 34.2360] },
+      "geometry": { "type": "Point", "coordinates": [-83.869071, 34.237058] },
       "properties": {
         "id": "gv_nesbitt_building",
         "name": "Nesbitt Building",
