@@ -91,7 +91,7 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.8675, 34.2345] },
+      "geometry": { "type": "Point", "coordinates": [-83.868079, 34.234421] },
       "properties": {
         "id": "gv_walkway_of_service",
         "name": "Walkway of Service",
