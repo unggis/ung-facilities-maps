@@ -62,7 +62,7 @@
 
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.8668, 34.2352] },
+      "geometry": { "type": "Point", "coordinates": [-83.870101, 34.231754] },
       "properties": {
         "id": "gv_main_entrance",
         "name": "Gainesville Main Entrance",
