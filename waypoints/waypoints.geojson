@@ -146,7 +146,7 @@
 
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-84.2920, 34.8890] },
+      "geometry": { "type": "Point", "coordinates": [-84.289910, 34.887423] },
       "properties": {
         "id": "br_main_entrance",
         "name": "Blue Ridge Campus Entrance",
@@ -160,7 +160,7 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-84.2915, 34.8896] },
+      "geometry": { "type": "Point", "coordinates": [-84.292195, 34.888514] },
       "properties": {
         "id": "br_academic_building",
         "name": "Blue Ridge Academic Building",
@@ -174,7 +174,7 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-84.2924, 34.8884] },
+      "geometry": { "type": "Point", "coordinates": [-84.291610, 34.888928] },
       "properties": {
         "id": "br_ralston_hall",
         "name": "Ralston Hall",
