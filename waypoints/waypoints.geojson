@@ -118,7 +118,7 @@
 
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-84.1078, 34.2244] },
+      "geometry": { "type": "Point", "coordinates": [-84.108528, 34.223965] },
       "properties": {
         "id": "cu_main_entrance",
         "name": "Cumming Campus Entrance",
