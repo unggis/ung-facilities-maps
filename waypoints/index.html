@@ -221,8 +221,8 @@
 <script>
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-var GITHUB_BASE   = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/waypoints/';
-var WAYPOINTS_URL = GITHUB_BASE + 'waypoints.geojson?v=' + Date.now();
+var GITHUB_BASE   = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/';
+var WAYPOINTS_URL = GITHUB_BASE + 'waypoints.geojson';
 var SURVEY_URL    = 'https://survey123.arcgis.com/share/ca742b0a3514485fa625475ccbc314e4';
 
 var CAMPUSES = {
@@ -245,6 +245,7 @@ var CAT_ICONS = {
   emergency:   '🚨',
   services:    '🛎',
   recreation:  '⛳',
+  poi:         '⭐',
   default:     '📍'
 };
 
@@ -415,6 +416,7 @@ legendDiv.innerHTML =
   '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">🛎</div>Services</div>' +
   '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">⛳</div>Recreation</div>' +
   '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">🚨</div>Emergency</div>' +
+  '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">⭐</div>POI / Monument / Memorial</div>' +
   '<div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(201,168,76,.25);">' +
   '<div class="li"><div class="li-icon" style="background:var(--gold);border:2px solid #fff;">📍</div>Your scanned location</div>' +
   '</div>' +
