@@ -65,15 +65,14 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.9868, 34.5268] },
+      "geometry": { "type": "Point", "coordinates": [-83.986946, 34.526860] },
       "properties": {
-        "id": "da_parking_lot_a",
-        "name": "Parking Lot A",
-        "subtitle": "Visitor & General Parking",
+        "id": "dc_donovan_hall",
+        "name": "Donovan Hall",
+        "subtitle": "Freshman residence hall",
         "campus": "Dahlonega",
-        "category": "parking",
-        "description": "Primary visitor parking on the Dahlonega campus. Permit required in designated areas. Visitor spaces marked in blue.",
-        "parking": "Visitor spaces available — no permit required before 4pm"
+        "category": "building",
+        "description": "Constructed in 1975 and named for Ms. Alice Donovan, this residence hall is a three-story brick building containing three wings, with 124 rooms housing up to 248 residents."
       }
     },
 
