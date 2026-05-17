@@ -60,7 +60,7 @@
         "building": "Price Memorial",
         "description": "Commemorative brick walkway honoring UNG faculty & staff retirees. Interactive map available at the Facilities GIS Hub.",
         "hours": "Open daily",
-        "url": "https://gis-ung-facilities.hub.arcgis.com/walkway/"
+        "url": "https://unggis.github.io/ung-facilities-maps/walkway.html"
       }
     },
     {
