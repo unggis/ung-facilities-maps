@@ -34,7 +34,7 @@
     },
 {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.985527, 34.527384] },
+      "geometry": { "type": "Point", "coordinates": [-83.987976, 34.528657] },
       "properties": {
         "id": "dc_dining_hall",
         "name": "Dining Hall",
