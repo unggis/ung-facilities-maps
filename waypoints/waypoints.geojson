@@ -189,7 +189,7 @@
 
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.4258, 33.8665] },
+      "geometry": { "type": "Point", "coordinates": [-83.427644, 33.870772] },
       "properties": {
         "id": "oc_main_entrance",
         "name": "Oconee Campus Entrance",
