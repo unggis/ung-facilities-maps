@@ -103,6 +103,31 @@
   .popup-gmaps-btn:hover{background:rgba(201,168,76,.1);}
   .popup-source{font-family:'Lato',sans-serif;font-size:8px;color:rgba(255,255,255,.22);text-align:center;margin-top:8px;font-style:italic;}
 
+  /* ── ATTACHMENTS ── */
+  .popup-attachments{margin-bottom:10px;}
+  .popup-attachments-label{font-size:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(201,168,76,.75);margin-bottom:6px;}
+  .popup-photos{display:flex;gap:6px;flex-wrap:wrap;}
+  .popup-photo{
+    width:78px;height:78px;object-fit:cover;border-radius:3px;
+    border:1px solid rgba(201,168,76,.3);cursor:pointer;
+    transition:transform .15s,border-color .15s;
+  }
+  .popup-photo:hover{transform:scale(1.05);border-color:var(--gold);}
+  .popup-loading{font-size:9px;color:rgba(255,255,255,.35);font-style:italic;}
+  .popup-no-photos{font-size:9px;color:rgba(255,255,255,.25);font-style:italic;}
+
+  /* ── LIGHTBOX ── */
+  #lightbox{
+    display:none;position:fixed;inset:0;z-index:99999;
+    background:rgba(0,0,0,.88);
+    align-items:center;justify-content:center;
+    backdrop-filter:blur(4px);
+  }
+  #lightbox.show{display:flex;}
+  #lightbox img{max-width:90vw;max-height:88vh;border-radius:4px;border:1px solid rgba(201,168,76,.4);box-shadow:0 8px 40px rgba(0,0,0,.7);}
+  #lightbox-close{position:absolute;top:20px;right:28px;font-size:28px;color:var(--gold);cursor:pointer;font-weight:300;line-height:1;}
+  #lightbox-close:hover{color:var(--gold-lt);}
+
   /* ── LEGEND ── */
   .legend{position:fixed;bottom:24px;right:10px;z-index:9000;background:rgba(10,34,64,.93);border:1px solid rgba(201,168,76,.32);border-radius:4px;padding:10px 14px;min-width:200px;backdrop-filter:blur(4px);pointer-events:auto;transition:all .25s ease;}
   .legend-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(201,168,76,.25);}
@@ -160,6 +185,11 @@
 <div id="map">
   <div id="viewLabel"></div>
   <div id="refreshNote">Refreshing issue data&hellip;</div>
+</div>
+
+<div id="lightbox" onclick="closeLightbox()">
+  <span id="lightbox-close" onclick="closeLightbox()">&times;</span>
+  <img id="lightbox-img" src="" alt="Issue photo"/>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -264,7 +294,8 @@ function makeIcon(issueType, highlight) {
 // ── POPUP ─────────────────────────────────────────────────────────────────────
 function buildPopup(p, lat, lng) {
   var gmaps = 'https://www.google.com/maps?q=' + lat + ',' + lng;
-  return '<div class="popup-inner">' +
+  var oid   = p.objectid || '';
+  return '<div class="popup-inner" data-oid="' + oid + '">' +
     '<div class="popup-eyebrow">' + (p.field_10 || 'UNG') + ' &nbsp;&middot;&nbsp; Facilities Issue</div>' +
     '<div class="popup-title">' + (p.type_of_issue_being_reported || 'Issue Report') + '</div>' +
     '<div class="popup-divider"></div>' +
@@ -272,12 +303,71 @@ function buildPopup(p, lat, lng) {
     '<div class="popup-meta">' +
     '<div class="popup-meta-row"><span class="popup-meta-key">Campus</span><span class="popup-meta-val">' + (p.field_10 || '—') + '</span></div>' +
     '<div class="popup-meta-row"><span class="popup-meta-key">Issue Type</span><span class="popup-meta-val">' + (p.type_of_issue_being_reported || '—') + '</span></div>' +
-    '<div class="popup-meta-row"><span class="popup-meta-key">Record ID</span><span class="popup-meta-val">' + (p.objectid || '—') + '</span></div>' +
+    '<div class="popup-meta-row"><span class="popup-meta-key">Record ID</span><span class="popup-meta-val">' + oid + '</span></div>' +
     '</div>' +
+    '<div class="popup-attachments" id="attachments-' + oid + '">' +
+    '<div class="popup-loading">Loading photos&hellip;</div>' +
+    '</div>' +
+    '<div class="popup-divider"></div>' +
     '<a class="popup-gmaps-btn" href="' + gmaps + '" target="_blank">&#8982;&nbsp; View in Google Maps</a>' +
     '<div class="popup-source">UNG Facilities GIS &mdash; Non-Emergency Issue Report</div>' +
     '</div>';
 }
+
+// ── ATTACHMENT FETCH ──────────────────────────────────────────────────────────
+var ATTACH_BASE = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Non-emergency_maintenance_items_VIEW/FeatureServer/0/';
+
+function loadAttachments(oid) {
+  var container = document.getElementById('attachments-' + oid);
+  if (!container) return;
+
+  fetch(ATTACH_BASE + oid + '/attachments?f=json')
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      var infos = data.attachmentInfos || [];
+      var photos = infos.filter(function(a){
+        return a.contentType && a.contentType.indexOf('image') === 0;
+      });
+
+      if (photos.length === 0) {
+        container.innerHTML = '<div class="popup-no-photos">No photos attached</div>';
+        return;
+      }
+
+      var html = '<div class="popup-attachments-label">Photos (' + photos.length + ')</div><div class="popup-photos">';
+      photos.forEach(function(att) {
+        var src = ATTACH_BASE + oid + '/attachments/' + att.id;
+        html += '<img class="popup-photo" src="' + src + '" alt="' + att.name + '" ' +
+                'onclick="openLightbox(\'' + src + '\')" />';
+      });
+      html += '</div>';
+      container.innerHTML = html;
+
+      // Resize popup after images noted
+      setTimeout(function(){
+        var popup = document.querySelector('.leaflet-popup');
+        if (popup) popup.style.maxHeight = 'none';
+      }, 100);
+    })
+    .catch(function() {
+      container.innerHTML = '<div class="popup-no-photos">Could not load photos</div>';
+    });
+}
+
+// ── LIGHTBOX ──────────────────────────────────────────────────────────────────
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('show');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.getElementById('lightbox-img').src = '';
+}
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') closeLightbox();
+});
 
 // ── LOAD DATA ─────────────────────────────────────────────────────────────────
 function loadIssues(flyToOID) {
@@ -305,7 +395,8 @@ function loadIssues(flyToOID) {
           icon: makeIcon(p.type_of_issue_being_reported, isTarget)
         });
 
-        marker.bindPopup(buildPopup(p, lat, lng), { maxWidth: 300 });
+        marker.bindPopup(buildPopup(p, lat, lng), { maxWidth: 300, autoPanPadding: [20, 20] });
+        marker.on('popupopen', function(){ loadAttachments(oid); });
         marker.addTo(markerLayer);
         allMarkers.push({ marker: marker, feature: f, oid: oid });
 
