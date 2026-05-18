@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNG Waypoint Feature Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy: #0a2240;
+    --navy-mid: #0d2d54;
+    --navy-lt: #1a3f6f;
+    --gold: #c9a84c;
+    --gold-lt: #e8d49a;
+    --gold-dim: rgba(201,168,76,0.3);
+    --white: #ffffff;
+    --text-dim: rgba(255,255,255,0.5);
+    --text-faint: rgba(255,255,255,0.25);
+    --input-bg: rgba(255,255,255,0.06);
+    --success: #4caf82;
+    --error: #e05a5a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--navy);
+    border-bottom: 2px solid var(--gold);
+    padding: 0 28px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .wordmark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--gold-lt);
+    line-height: 1.3;
+  }
+  .wordmark span {
+    display: block;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: .18em;
+    color: var(--gold);
+    opacity: .85;
+  }
+  .dvdr { width: 1px; height: 30px; background: var(--gold); opacity: .38; }
+  .header-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-style: italic;
+    color: var(--white);
+  }
+
+  /* LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 28px;
+    gap: 32px;
+  }
+
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  /* PANEL */
+  .panel-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gold-dim);
+  }
+
+  /* FORM */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .required-star { color: var(--error); margin-left: 2px; }
+
+  input, select, textarea {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    background: var(--input-bg);
+    color: var(--white);
+    border: 1px solid var(--gold-dim);
+    border-radius: 3px;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color .2s, background .2s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--gold);
+    background: rgba(255,255,255,0.09);
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--text-faint);
+  }
+  select option { background: var(--navy-mid); }
+  textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+
+  .field-hint {
+    font-size: 9px;
+    color: var(--text-faint);
+    line-height: 1.5;
+    margin-top: 2px;
+  }
+
+  /* COORD SECTION */
+  .coord-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* ACTIONS */
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: 'Lato', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 3px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background .18s, color .18s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--gold); color: var(--navy); }
+  .btn-primary:hover { background: var(--gold-lt); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+  }
+  .btn-secondary:hover { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+  .btn-danger {
+    background: transparent;
+    color: var(--error);
+    border: 1px solid rgba(224,90,90,0.3);
+  }
+  .btn-danger:hover { background: rgba(224,90,90,0.1); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--navy-mid);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 11px;
+    color: var(--white);
+    transition: transform .3s ease;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { border-color: var(--success); color: var(--success); }
+  .toast.error { border-color: var(--error); color: var(--error); }
+
+  /* OUTPUT PANEL */
+  .output-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .code-block {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+    min-height: 200px;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  .code-block.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-faint);
+    font-family: 'Lato', sans-serif;
+    font-size: 11px;
+    font-style: italic;
+    letter-spacing: .05em;
+  }
+
+  /* QUEUE */
+  .queue-section { margin-top: 8px; }
+  .queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .queue-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--gold-dim);
+    border-radius: 3px;
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+  .queue-item-info { display: flex; flex-direction: column; gap: 2px; }
+  .queue-item-name { color: var(--gold-lt); font-size: 12px; }
+  .queue-item-id { color: var(--text-faint); font-size: 9px; letter-spacing: .08em; }
+  .queue-remove {
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 4px;
+    transition: color .15s;
+  }
+  .queue-remove:hover { color: var(--error); }
+
+  .queue-empty {
+    font-size: 10px;
+    color: var(--text-faint);
+    font-style: italic;
+    padding: 8px 0;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 20px;
+    margin-top: 4px;
+  }
+  .stat {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: .08em;
+  }
+  .stat strong { color: var(--gold); font-weight: 400; }
+
+  /* ID PREVIEW */
+  .id-preview {
+    font-size: 9px;
+    color: var(--gold);
+    margin-top: 3px;
+    font-family: 'Courier New', monospace;
+    min-height: 14px;
+  }
+
+  /* LOAD SECTION */
+  .load-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .load-row input[type="file"] { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">University of North Georgia<span>Facilities GIS &nbsp;&middot;&nbsp; Tools</span></div>
+  <div class="dvdr"></div>
+  <div class="header-title">Waypoint Feature Editor</div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT: FORM -->
+  <div>
+    <div class="panel-label">Load Existing GeoJSON</div>
+    <div class="load-row">
+      <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">Load GeoJSON File</button>
+      <input type="file" id="fileInput" accept=".geojson,.json" onchange="handleFileLoad(event)"/>
+      <span id="loadStatus" style="font-size:10px;color:var(--text-dim);"></span>
+    </div>
+
+    <div class="panel-label">Add New Waypoint</div>
+
+    <div class="form-grid">
+
+      <div class="field">
+        <label>Campus <span class="required-star">*</span></label>
+        <select id="campus" onchange="updateIdPreview()">
+          <option value="">— Select —</option>
+          <option value="Dahlonega">Dahlonega</option>
+          <option value="Gainesville">Gainesville</option>
+          <option value="Cumming">Cumming</option>
+          <option value="Blue Ridge">Blue Ridge</option>
+          <option value="Oconee">Oconee</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Category <span class="required-star">*</span></label>
+        <select id="category">
+          <option value="">— Select —</option>
+          <option value="entrance">Entrance / Access</option>
+          <option value="building">Building</option>
+          <option value="parking">Parking</option>
+          <option value="services">Services</option>
+          <option value="recreation">Recreation</option>
+          <option value="emergency">Emergency</option>
+          <option value="poi">Point of Interest</option>
+        </select>
+      </div>
+
+      <div class="field full">
+        <label>Waypoint ID <span class="required-star">*</span></label>
+        <input type="text" id="wpId" placeholder="e.g. dc_price_memorial" oninput="updateIdPreview()"/>
+        <div class="id-preview" id="idPreview"></div>
+        <div class="field-hint">Prefix auto-suggestion based on campus. Use lowercase, underscores only.</div>
+      </div>
+
+      <div class="field full">
+        <label>Name <span class="required-star">*</span></label>
+        <input type="text" id="name" placeholder="e.g. Price Memorial Hall"/>
+      </div>
+
+      <div class="field full">
+        <label>Subtitle</label>
+        <input type="text" id="subtitle" placeholder="e.g. Historic landmark and administrative offices"/>
+      </div>
+
+      <div class="field full">
+        <label>Building</label>
+        <input type="text" id="building" placeholder="Building name if different from feature name"/>
+      </div>
+
+      <div class="field full">
+        <label>Description</label>
+        <textarea id="description" placeholder="Brief description shown in the map popup…"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Longitude <span class="required-star">*</span></label>
+        <input type="text" id="lng" placeholder="-83.987043"/>
+      </div>
+
+      <div class="field">
+        <label>Latitude <span class="required-star">*</span></label>
+        <input type="text" id="lat" placeholder="34.530164"/>
+      </div>
+
+      <div class="field full">
+        <label>Parking</label>
+        <input type="text" id="parking" placeholder="e.g. Lot B — adjacent"/>
+      </div>
+
+      <div class="field full">
+        <label>Hours</label>
+        <input type="text" id="hours" placeholder="e.g. Mon–Fri 8am–5pm"/>
+      </div>
+
+      <div class="field full">
+        <label>URL <span style="color:var(--text-faint);font-weight:300;text-transform:none;letter-spacing:0;">(optional)</span></label>
+        <input type="text" id="url" placeholder="https://"/>
+      </div>
+
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="addToQueue()">Add to Queue</button>
+      <button class="btn btn-secondary" onclick="previewFeature()">Preview JSON</button>
+      <button class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: OUTPUT -->
+  <div class="output-panel">
+
+    <div>
+      <div class="panel-label">JSON Preview</div>
+      <div class="code-block empty" id="previewBlock">Fill in the form and click Preview JSON</div>
+    </div>
+
+    <div class="queue-section">
+      <div class="panel-label">Queue</div>
+      <div class="stat-row" style="margin-bottom:10px;">
+        <div class="stat">Loaded features: <strong id="statLoaded">0</strong></div>
+        <div class="stat">Queued to add: <strong id="statQueued">0</strong></div>
+        <div class="stat">Total on export: <strong id="statTotal">0</strong></div>
+      </div>
+      <div class="queue-list" id="queueList">
+        <div class="queue-empty">No waypoints queued yet.</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="downloadGeoJSON()">Download GeoJSON</button>
+      <button class="btn btn-secondary" onclick="copyGeoJSON()">Copy Full GeoJSON</button>
+      <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var loadedFeatures = [];
+  var queuedFeatures = [];
+
+  var CAMPUS_PREFIX = {
+    'Dahlonega':  'dc_',
+    'Gainesville':'gc_',
+    'Cumming':    'cc_',
+    'Blue Ridge': 'brc_',
+    'Oconee':     'oc_'
+  };
+
+  function updateIdPreview() {
+    var campus = document.getElementById('campus').value;
+    var id     = document.getElementById('wpId').value.trim();
+    var prev   = document.getElementById('idPreview');
+    var prefix = CAMPUS_PREFIX[campus] || '';
+
+    if (!id && prefix) {
+      prev.textContent = 'Suggested prefix: ' + prefix;
+    } else if (id) {
+      prev.textContent = 'ID: ' + id;
+    } else {
+      prev.textContent = '';
+    }
+  }
+
+  function getFormData() {
+    return {
+      id:          document.getElementById('wpId').value.trim().toLowerCase().replace(/\s+/g,'_'),
+      name:        document.getElementById('name').value.trim(),
+      subtitle:    document.getElementById('subtitle').value.trim(),
+      campus:      document.getElementById('campus').value,
+      category:    document.getElementById('category').value,
+      building:    document.getElementById('building').value.trim(),
+      description: document.getElementById('description').value.trim(),
+      lng:         parseFloat(document.getElementById('lng').value.trim()),
+      lat:         parseFloat(document.getElementById('lat').value.trim()),
+      parking:     document.getElementById('parking').value.trim(),
+      hours:       document.getElementById('hours').value.trim(),
+      url:         document.getElementById('url').value.trim()
+    };
+  }
+
+  function buildFeature(d) {
+    var props = {};
+    props.id       = d.id;
+    props.name     = d.name;
+    if (d.subtitle)    props.subtitle    = d.subtitle;
+    props.campus   = d.campus;
+    props.category = d.category;
+    if (d.building)    props.building    = d.building;
+    if (d.description) props.description = d.description;
+    if (d.parking)     props.parking     = d.parking;
+    if (d.hours)       props.hours       = d.hours;
+    if (d.url)         props.url         = d.url;
+
+    return {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [d.lng, d.lat] },
+      properties: props
+    };
+  }
+
+  function validateForm(d) {
+    if (!d.id)            return 'Waypoint ID is required.';
+    if (!d.name)          return 'Name is required.';
+    if (!d.campus)        return 'Campus is required.';
+    if (!d.category)      return 'Category is required.';
+    if (isNaN(d.lng))     return 'Valid longitude is required.';
+    if (isNaN(d.lat))     return 'Valid latitude is required.';
+    // Check for duplicate ID
+    var allIds = loadedFeatures.concat(queuedFeatures).map(function(f){ return f.properties.id; });
+    if (allIds.indexOf(d.id) !== -1) return 'ID "' + d.id + '" already exists.';
+    return null;
+  }
+
+  function previewFeature() {
+    var d = getFormData();
+    var block = document.getElementById('previewBlock');
+    block.classList.remove('empty');
+
+    var f = buildFeature(d);
+    block.textContent = JSON.stringify(f, null, 2);
+  }
+
+  function addToQueue() {
+    var d = getFormData();
+    var err = validateForm(d);
+    if (err) { showToast(err, 'error'); return; }
+
+    var f = buildFeature(d);
+    queuedFeatures.push(f);
+    updateQueueUI();
+    clearForm();
+    showToast('"' + d.name + '" added to queue.', 'success');
+  }
+
+  function updateQueueUI() {
+    var list = document.getElementById('queueList');
+    document.getElementById('statLoaded').textContent  = loadedFeatures.length;
+    document.getElementById('statQueued').textContent  = queuedFeatures.length;
+    document.getElementById('statTotal').textContent   = loadedFeatures.length + queuedFeatures.length;
+
+    if (queuedFeatures.length === 0) {
+      list.innerHTML = '<div class="queue-empty">No waypoints queued yet.</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    queuedFeatures.forEach(function(f, i) {
+      var item = document.createElement('div');
+      item.className = 'queue-item';
+      item.innerHTML =
+        '<div class="queue-item-info">' +
+          '<div class="queue-item-name">' + f.properties.name + '</div>' +
+          '<div class="queue-item-id">' + f.properties.id + ' &middot; ' + f.properties.campus + '</div>' +
+        '</div>' +
+        '<button class="queue-remove" onclick="removeFromQueue(' + i + ')" title="Remove">&times;</button>';
+      list.appendChild(item);
+    });
+  }
+
+  function removeFromQueue(i) {
+    queuedFeatures.splice(i, 1);
+    updateQueueUI();
+  }
+
+  function buildFullGeoJSON() {
+    return {
+      type: 'FeatureCollection',
+      features: loadedFeatures.concat(queuedFeatures)
+    };
+  }
+
+  function downloadGeoJSON() {
+    if (loadedFeatures.length === 0 && queuedFeatures.length === 0) {
+      showToast('Nothing to download.', 'error'); return;
+    }
+    var json = JSON.stringify(buildFullGeoJSON(), null, 2);
+    var blob = new Blob([json], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'waypoints.geojson';
+    a.click();
+    showToast('waypoints.geojson downloaded.', 'success');
+  }
+
+  function copyGeoJSON() {
+    if (loadedFeatures.length === 0 && queuedFeatures.length === 0) {
+      showToast('Nothing to copy.', 'error'); return;
+    }
+    var json = JSON.stringify(buildFullGeoJSON(), null, 2);
+    navigator.clipboard.writeText(json).then(function() {
+      showToast('Full GeoJSON copied to clipboard.', 'success');
+    });
+  }
+
+  function clearForm() {
+    ['wpId','name','subtitle','building','description','lng','lat','parking','hours','url'].forEach(function(id){
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('campus').value = '';
+    document.getElementById('category').value = '';
+    document.getElementById('idPreview').textContent = '';
+    document.getElementById('previewBlock').textContent = 'Fill in the form and click Preview JSON';
+    document.getElementById('previewBlock').classList.add('empty');
+  }
+
+  function clearAll() {
+    if (!confirm('Clear all loaded and queued features?')) return;
+    loadedFeatures = [];
+    queuedFeatures = [];
+    clearForm();
+    updateQueueUI();
+    document.getElementById('loadStatus').textContent = '';
+    showToast('Cleared.', 'success');
+  }
+
+  function handleFileLoad(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        var data = JSON.parse(ev.target.result);
+        if (!data.features) throw new Error('No features array.');
+        loadedFeatures = data.features;
+        updateQueueUI();
+        document.getElementById('loadStatus').textContent = loadedFeatures.length + ' features loaded.';
+        showToast(loadedFeatures.length + ' features loaded from ' + file.name, 'success');
+      } catch(err) {
+        showToast('Invalid GeoJSON: ' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function showToast(msg, type) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast ' + (type || '');
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 3000);
+  }
+
+  updateQueueUI();
+</script>
+</body>
+</html>
