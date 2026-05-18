@@ -186,7 +186,8 @@
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 var SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Non-emergency_maintenance_items_VIEW/FeatureServer/0/query';
-var QUERY_PARAMS = '?where=Status%3D%27Open%27&outFields=field_10,type_of_issue_being_reported,describe_the_issue_along_with_i,objectid,CreationDate&f=geojson&orderByFields=objectid+DESC';
+var QUERY_PARAMS = '?where=1%3D1&outFields=field_10,type_of_issue_being_reported,describe_the_issue_along_with_i,objectid&f=geojson&orderByFields=objectid+DESC';
+
 var CAMPUSES = {
   dahlonega:   { center:[34.5281,-83.9864], zoom:16, id:'cb-da', label:'Dahlonega'   },
   gainesville: { center:[34.2352,-83.8668], zoom:16, id:'cb-gv', label:'Gainesville' },
@@ -200,17 +201,16 @@ var ALL_ZOOM   = 9;
 
 // Issue type icons
 var ISSUE_ICONS = {
-  'Landscape':   '🌿',
-  'Roads':       '🛣',
-  'Safety':      '⚠️',
-  'Signage':     '🪧',
-  'Wildlife':    '🐾',
-  'Electrical':  '⚡',
-  'Plumbing':    '🔧',
-  'Structural':  '🏗',
-  'Lighting':    '💡',
-  'Trash':       '🗑',
-  'default':     '📍'
+  'Landscape': '🌿',
+  'Lighting':  '💡',
+  'Roads':     '🛣',
+  'Safety':    '⚠️',
+  'Sidewalks': '🚶',
+  'Signage':   '🪧',
+  'Waste':     '🗑',
+  'Wildlife':  '🐾',
+  'Other':     '📍',
+  'default':   '📍'
 };
 
 // ── URL PARAMS ────────────────────────────────────────────────────────────────
@@ -290,7 +290,6 @@ function buildPopup(p, lat, lng) {
     '<div class="popup-meta">' +
     '<div class="popup-meta-row"><span class="popup-meta-key">Record ID</span><span class="popup-meta-val">' + oid + '</span></div>' +
     '<div class="popup-meta-row"><span class="popup-meta-key">Campus</span><span class="popup-meta-val">' + (p.field_10 || '—') + '</span></div>' +
-    (p.CreationDate ? '<div class="popup-meta-row"><span class="popup-meta-key">Reported</span><span class="popup-meta-val">' + new Date(p.CreationDate).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) + '</span></div>' : '') +
     '</div>' +
     '<div class="popup-divider"></div>' +
     '<div class="popup-body">' + (p.describe_the_issue_along_with_i || '—') + '</div>' +
@@ -424,14 +423,13 @@ legendDiv.innerHTML =
   '</div>' +
   '<div class="legend-body">' +
   '<div class="li"><div class="li-icon">🌿</div>Landscape</div>' +
+  '<div class="li"><div class="li-icon">💡</div>Lighting</div>' +
   '<div class="li"><div class="li-icon">🛣</div>Roads</div>' +
   '<div class="li"><div class="li-icon">⚠️</div>Safety</div>' +
+  '<div class="li"><div class="li-icon">🚶</div>Sidewalks</div>' +
   '<div class="li"><div class="li-icon">🪧</div>Signage</div>' +
+  '<div class="li"><div class="li-icon">🗑</div>Waste</div>' +
   '<div class="li"><div class="li-icon">🐾</div>Wildlife</div>' +
-  '<div class="li"><div class="li-icon">⚡</div>Electrical</div>' +
-  '<div class="li"><div class="li-icon">🔧</div>Plumbing</div>' +
-  '<div class="li"><div class="li-icon">💡</div>Lighting</div>' +
-  '<div class="li"><div class="li-icon">🗑</div>Trash</div>' +
   '<div class="li"><div class="li-icon">📍</div>Other</div>' +
   '<div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(201,168,76,.25);">' +
   '<div class="li"><div class="li-icon" style="background:var(--amber);border-color:#fff;">📍</div>This report</div>' +
