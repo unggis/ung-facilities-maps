@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNG Facilities Issue Map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --navy:#0a2240;
+    --navy-mid:#0d2d54;
+    --gold:#c9a84c;
+    --gold-lt:#e8d49a;
+    --red:#c0392b;
+    --green:#7ecf9a;
+    --amber:#f5a623;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Lato',sans-serif;font-weight:300;background:var(--navy);color:#fff;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* ── HEADER ── */
+  header{background:var(--navy);border-bottom:2px solid var(--gold);padding:0 20px;height:56px;flex-shrink:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;}
+  .hd-left{display:flex;align-items:center;gap:12px;}
+  .wordmark{font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-lt);line-height:1.3;}
+  .wordmark span{display:block;font-size:9px;font-weight:400;letter-spacing:.18em;color:var(--gold);opacity:.85;}
+  .dvdr{width:1px;height:30px;background:var(--gold);opacity:.38;}
+  .map-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;font-style:italic;color:#fff;letter-spacing:.02em;}
+  .hd-right{display:flex;align-items:center;gap:10px;}
+  .badge{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:2px;}
+  .badge-internal{background:var(--amber);color:var(--navy);}
+  .load-pill{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;padding:2px 8px;border-radius:2px;border:1px solid rgba(201,168,76,.3);color:rgba(201,168,76,.55);font-style:italic;transition:all .4s;white-space:nowrap;}
+  .load-pill.ok{color:var(--green);border-color:var(--green);}
+  .load-pill.err{color:var(--red);border-color:var(--red);}
+
+  /* ── TOOLBAR ── */
+  .toolbar{display:flex;align-items:center;height:38px;flex-shrink:0;background:var(--navy-mid);border-bottom:1px solid rgba(201,168,76,.2);z-index:900;overflow-x:auto;overflow-y:hidden;}
+  .toolbar::-webkit-scrollbar{height:2px;}
+  .toolbar::-webkit-scrollbar-thumb{background:rgba(201,168,76,.3);}
+  .tb-section{display:flex;align-items:center;padding:0 12px;flex-shrink:0;}
+  .tb-sep{width:1px;height:20px;background:rgba(201,168,76,.22);flex-shrink:0;}
+  .tb-label{font-size:9px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:rgba(201,168,76,.52);padding-right:10px;white-space:nowrap;font-style:italic;}
+  .campus-btn{height:24px;padding:0 11px;margin-right:3px;font-family:'Lato',sans-serif;font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;border:1px solid rgba(201,168,76,.2);border-radius:2px;cursor:pointer;transition:all .18s;background:rgba(255,255,255,.03);color:#7a90a8;white-space:nowrap;}
+  .campus-btn:hover{background:rgba(201,168,76,.1);color:var(--gold-lt);border-color:rgba(201,168,76,.48);}
+  .campus-btn.active{background:rgba(10,34,64,.85);color:var(--gold);border-color:var(--gold);}
+  .tog-btn{height:26px;padding:0 14px;font-family:'Lato',sans-serif;font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;border:1px solid rgba(201,168,76,.28);border-radius:3px;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.04);color:#8aa0b8;}
+  .tog-btn.active{background:var(--navy);color:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(201,168,76,.18);}
+
+  /* ── MAP ── */
+  #map{flex:1;width:100%;position:relative;}
+  #viewLabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:rgba(255,255,255,.95);background:rgba(10,34,64,.84);padding:10px 28px;border-radius:4px;border:1px solid rgba(201,168,76,.45);pointer-events:none;opacity:0;transition:opacity .25s;z-index:800;white-space:nowrap;backdrop-filter:blur(4px);}
+  #viewLabel.show{opacity:1;}
+
+  /* ── ISSUE MARKERS ── */
+  .issue-icon{
+    width:32px;height:32px;border-radius:50%;
+    border:2px solid var(--gold);
+    background:var(--navy);
+    display:flex;align-items:center;justify-content:center;
+    font-size:14px;
+    box-shadow:0 2px 8px rgba(0,0,0,.45);
+    cursor:pointer;
+    transition:transform .15s;
+  }
+  .issue-icon:hover{transform:scale(1.15);}
+  .issue-icon.highlight{
+    border-color:#fff;
+    background:var(--amber);
+    box-shadow:0 0 0 3px rgba(245,166,35,.4),0 2px 12px rgba(0,0,0,.5);
+    animation: pulse 1.5s ease-in-out 3;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 3px rgba(245,166,35,.4),0 2px 12px rgba(0,0,0,.5);}
+    50%{box-shadow:0 0 0 8px rgba(245,166,35,.15),0 2px 12px rgba(0,0,0,.5);}
+    100%{box-shadow:0 0 0 3px rgba(245,166,35,.4),0 2px 12px rgba(0,0,0,.5);}
+  }
+
+  /* ── POPUP ── */
+  .leaflet-popup-content-wrapper{background:rgba(10,34,64,.97)!important;border:1px solid rgba(201,168,76,.45)!important;border-radius:5px!important;color:#fff!important;box-shadow:0 4px 20px rgba(0,0,0,.5)!important;padding:0!important;}
+  .leaflet-popup-content{margin:0!important;width:270px!important;}
+  .leaflet-popup-tip{background:rgba(10,34,64,.97)!important;}
+  .leaflet-popup-close-button{color:var(--gold)!important;font-size:16px!important;top:8px!important;right:10px!important;}
+
+  .popup-inner{padding:14px 16px 12px;}
+  .popup-eyebrow{font-family:'Lato',sans-serif;font-size:8px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:4px;}
+  .popup-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;line-height:1.2;margin-bottom:2px;}
+  .popup-divider{width:100%;height:1px;background:rgba(201,168,76,.2);margin:8px 0;}
+  .popup-body{font-family:'Lato',sans-serif;font-size:11px;font-weight:300;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:10px;}
+  .popup-meta{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+  .popup-meta-row{display:flex;gap:6px;font-size:10px;}
+  .popup-meta-key{font-weight:700;color:rgba(201,168,76,.75);min-width:70px;text-transform:uppercase;letter-spacing:.08em;}
+  .popup-meta-val{color:rgba(255,255,255,.65);}
+  .popup-gmaps-btn{
+    display:block;width:100%;
+    font-family:'Lato',sans-serif;font-size:9px;font-weight:700;
+    letter-spacing:.16em;text-transform:uppercase;
+    background:var(--navy);color:var(--gold);
+    border:1px solid rgba(201,168,76,.4);border-radius:3px;
+    padding:6px 0;text-align:center;
+    cursor:pointer;text-decoration:none;
+    transition:background .18s;margin-bottom:4px;
+  }
+  .popup-gmaps-btn:hover{background:rgba(201,168,76,.1);}
+  .popup-source{font-family:'Lato',sans-serif;font-size:8px;color:rgba(255,255,255,.22);text-align:center;margin-top:8px;font-style:italic;}
+
+  /* ── LEGEND ── */
+  .legend{position:fixed;bottom:24px;right:10px;z-index:9000;background:rgba(10,34,64,.93);border:1px solid rgba(201,168,76,.32);border-radius:4px;padding:10px 14px;min-width:200px;backdrop-filter:blur(4px);pointer-events:auto;transition:all .25s ease;}
+  .legend-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid rgba(201,168,76,.25);}
+  .legend-header h4{font-family:'Cormorant Garamond',serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:0;padding:0;border:none;}
+  .legend-chevron{font-size:11px;color:var(--gold);transition:transform .25s ease;line-height:1;padding-left:8px;}
+  .legend.collapsed .legend-chevron{transform:rotate(-90deg);}
+  .legend.collapsed .legend-body{display:none;}
+  .legend.collapsed{min-width:auto;}
+  .li{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:10px;font-weight:300;color:#c0d0e0;}
+  .li-icon{width:18px;height:18px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;border:1px solid var(--gold);background:var(--navy);}
+
+  /* ── LEAFLET OVERRIDES ── */
+  .leaflet-control-attribution{background:rgba(10,34,64,.75)!important;color:rgba(255,255,255,.4)!important;font-size:8px!important;}
+  .leaflet-control-attribution a{color:rgba(201,168,76,.65)!important;}
+  .leaflet-control-zoom a{background:rgba(10,34,64,.9)!important;color:var(--gold)!important;border-color:rgba(201,168,76,.26)!important;}
+
+  /* ── REFRESH INDICATOR ── */
+  #refreshNote{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:rgba(10,34,64,.92);border:1px solid rgba(201,168,76,.4);border-radius:4px;padding:6px 16px;font-family:'Lato',sans-serif;font-size:9px;font-weight:300;color:var(--gold-lt);letter-spacing:.08em;pointer-events:none;opacity:0;transition:opacity .4s;white-space:nowrap;z-index:800;backdrop-filter:blur(4px);}
+  #refreshNote.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-left">
+    <div class="wordmark">University of North Georgia<span>Facilities GIS &nbsp;&middot;&nbsp; Issue Reporting</span></div>
+    <div class="dvdr"></div>
+    <div class="map-title">Facilities Issue Map</div>
+  </div>
+  <div class="hd-right">
+    <div id="statusPill" class="load-pill">Loading issues&hellip;</div>
+    <div class="badge badge-internal">Internal</div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="tb-section">
+    <span class="tb-label">Campus:</span>
+    <button class="campus-btn" id="cb-br" onclick="flyTo('blueridge')">Blue Ridge</button>
+    <button class="campus-btn" id="cb-cu" onclick="flyTo('cumming')">Cumming</button>
+    <button class="campus-btn" id="cb-da" onclick="flyTo('dahlonega')">Dahlonega</button>
+    <button class="campus-btn" id="cb-gv" onclick="flyTo('gainesville')">Gainesville</button>
+    <button class="campus-btn" id="cb-oc" onclick="flyTo('oconee')">Oconee</button>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-section">
+    <button class="tog-btn active" id="btnAll" onclick="showAll()">All Campuses</button>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-section">
+    <button class="tog-btn" id="btnRefresh" onclick="refreshData()">&#8635;&nbsp; Refresh</button>
+  </div>
+</div>
+
+<div id="map">
+  <div id="viewLabel"></div>
+  <div id="refreshNote">Refreshing issue data&hellip;</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+var SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Non-emergency_maintenance_items_VIEW/FeatureServer/0/query';
+var QUERY_PARAMS = '?where=1%3D1&outFields=field_10,type_of_issue_being_reported,describe_the_issue_along_with_i,objectid&f=geojson&orderByFields=objectid+DESC';
+
+var CAMPUSES = {
+  dahlonega:   { center:[34.5281,-83.9864], zoom:16, id:'cb-da', label:'Dahlonega'   },
+  gainesville: { center:[34.2352,-83.8668], zoom:16, id:'cb-gv', label:'Gainesville' },
+  cumming:     { center:[34.2244,-84.1078], zoom:16, id:'cb-cu', label:'Cumming'      },
+  blueridge:   { center:[34.8890,-84.2920], zoom:16, id:'cb-br', label:'Blue Ridge'  },
+  oconee:      { center:[33.8665,-83.4258], zoom:16, id:'cb-oc', label:'Oconee'      }
+};
+
+var ALL_CENTER = [34.3, -83.85];
+var ALL_ZOOM   = 9;
+
+// Issue type icons
+var ISSUE_ICONS = {
+  'Landscape':   '🌿',
+  'Roads':       '🛣',
+  'Safety':      '⚠️',
+  'Signage':     '🪧',
+  'Wildlife':    '🐾',
+  'Electrical':  '⚡',
+  'Plumbing':    '🔧',
+  'Structural':  '🏗',
+  'Lighting':    '💡',
+  'Trash':       '🗑',
+  'default':     '📍'
+};
+
+// ── URL PARAMS ────────────────────────────────────────────────────────────────
+var params  = new URLSearchParams(window.location.search);
+var paramOID = params.get('oid') || null;
+var paramLat = parseFloat(params.get('y')) || null;
+var paramLng = parseFloat(params.get('x')) || null;
+
+// ── MAP INIT ──────────────────────────────────────────────────────────────────
+var map = L.map('map', { center: ALL_CENTER, zoom: ALL_ZOOM });
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors | UNG Facilities GIS',
+  maxZoom: 20
+}).addTo(map);
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+var allMarkers  = [];
+var markerLayer = L.layerGroup().addTo(map);
+var statusPill  = document.getElementById('statusPill');
+var lbl         = document.getElementById('viewLabel');
+var refreshNote = document.getElementById('refreshNote');
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function flash(txt) {
+  lbl.textContent = txt;
+  lbl.classList.add('show');
+  setTimeout(function(){ lbl.classList.remove('show'); }, 1400);
+}
+
+function setActiveCampusBtn(key) {
+  Object.keys(CAMPUSES).forEach(function(k){
+    document.getElementById(CAMPUSES[k].id).classList.remove('active');
+  });
+  document.getElementById('btnAll').classList.remove('active');
+  if (key && CAMPUSES[key]) {
+    document.getElementById(CAMPUSES[key].id).classList.add('active');
+  } else {
+    document.getElementById('btnAll').classList.add('active');
+  }
+}
+
+function flyTo(key) {
+  var c = CAMPUSES[key];
+  if (!c) return;
+  setActiveCampusBtn(key);
+  map.flyTo(c.center, c.zoom, { animate: true, duration: 1.1 });
+  flash(c.label + ' Campus');
+}
+
+function showAll() {
+  setActiveCampusBtn(null);
+  map.flyTo(ALL_CENTER, ALL_ZOOM, { animate: true, duration: 1.2 });
+  flash('All Campuses');
+}
+
+// ── ICON ─────────────────────────────────────────────────────────────────────
+function makeIcon(issueType, highlight) {
+  var emoji = ISSUE_ICONS[issueType] || ISSUE_ICONS.default;
+  var cls = 'issue-icon' + (highlight ? ' highlight' : '');
+  return L.divIcon({
+    html: '<div class="' + cls + '">' + emoji + '</div>',
+    className: '',
+    iconSize:   [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor:[0, -18]
+  });
+}
+
+// ── POPUP ─────────────────────────────────────────────────────────────────────
+function buildPopup(p, lat, lng) {
+  var gmaps = 'https://www.google.com/maps?q=' + lat + ',' + lng;
+  return '<div class="popup-inner">' +
+    '<div class="popup-eyebrow">' + (p.field_10 || 'UNG') + ' &nbsp;&middot;&nbsp; Facilities Issue</div>' +
+    '<div class="popup-title">' + (p.type_of_issue_being_reported || 'Issue Report') + '</div>' +
+    '<div class="popup-divider"></div>' +
+    '<div class="popup-body">' + (p.describe_the_issue_along_with_i || '—') + '</div>' +
+    '<div class="popup-meta">' +
+    '<div class="popup-meta-row"><span class="popup-meta-key">Campus</span><span class="popup-meta-val">' + (p.field_10 || '—') + '</span></div>' +
+    '<div class="popup-meta-row"><span class="popup-meta-key">Issue Type</span><span class="popup-meta-val">' + (p.type_of_issue_being_reported || '—') + '</span></div>' +
+    '<div class="popup-meta-row"><span class="popup-meta-key">Record ID</span><span class="popup-meta-val">' + (p.objectid || '—') + '</span></div>' +
+    '</div>' +
+    '<a class="popup-gmaps-btn" href="' + gmaps + '" target="_blank">&#8982;&nbsp; View in Google Maps</a>' +
+    '<div class="popup-source">UNG Facilities GIS &mdash; Non-Emergency Issue Report</div>' +
+    '</div>';
+}
+
+// ── LOAD DATA ─────────────────────────────────────────────────────────────────
+function loadIssues(flyToOID) {
+  fetch(SERVICE_URL + QUERY_PARAMS)
+    .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data) {
+      markerLayer.clearLayers();
+      allMarkers = [];
+
+      var n = data.features ? data.features.length : 0;
+      statusPill.textContent = '\u2713 ' + n + ' issue' + (n !== 1 ? 's' : '') + ' loaded';
+      statusPill.classList.remove('err');
+      statusPill.classList.add('ok');
+
+      var targetMarker = null;
+
+      data.features.forEach(function(f) {
+        var p    = f.properties;
+        var lng  = f.geometry.coordinates[0];
+        var lat  = f.geometry.coordinates[1];
+        var oid  = p.objectid;
+        var isTarget = flyToOID && String(oid) === String(flyToOID);
+
+        var marker = L.marker([lat, lng], {
+          icon: makeIcon(p.type_of_issue_being_reported, isTarget)
+        });
+
+        marker.bindPopup(buildPopup(p, lat, lng), { maxWidth: 300 });
+        marker.addTo(markerLayer);
+        allMarkers.push({ marker: marker, feature: f, oid: oid });
+
+        if (isTarget) targetMarker = { marker: marker, lat: lat, lng: lng };
+      });
+
+      // If OID param — fly to it
+      if (targetMarker) {
+        map.flyTo([targetMarker.lat, targetMarker.lng], 18, { animate: true, duration: 1.0 });
+        setTimeout(function(){ targetMarker.marker.openPopup(); }, 1100);
+      } else if (paramLat && paramLng) {
+        // Fallback to x,y params if no OID match
+        map.flyTo([paramLat, paramLng], 18, { animate: true, duration: 1.0 });
+      }
+    })
+    .catch(function(err) {
+      statusPill.textContent = '\u26a0 Could not load issues';
+      statusPill.classList.add('err');
+      console.warn('Issue fetch failed:', err);
+    });
+}
+
+// ── REFRESH ───────────────────────────────────────────────────────────────────
+function refreshData() {
+  statusPill.textContent = 'Refreshing\u2026';
+  statusPill.className = 'load-pill';
+  refreshNote.classList.add('show');
+  setTimeout(function(){ refreshNote.classList.remove('show'); }, 2000);
+  loadIssues(null);
+}
+
+// ── LEGEND ────────────────────────────────────────────────────────────────────
+var legendDiv = document.createElement('div');
+legendDiv.className = 'legend';
+legendDiv.innerHTML =
+  '<div class="legend-header" onclick="toggleLegend()">' +
+  '<h4>Issue Types</h4><span class="legend-chevron">&#9660;</span>' +
+  '</div>' +
+  '<div class="legend-body">' +
+  '<div class="li"><div class="li-icon">🌿</div>Landscape</div>' +
+  '<div class="li"><div class="li-icon">🛣</div>Roads</div>' +
+  '<div class="li"><div class="li-icon">⚠️</div>Safety</div>' +
+  '<div class="li"><div class="li-icon">🪧</div>Signage</div>' +
+  '<div class="li"><div class="li-icon">🐾</div>Wildlife</div>' +
+  '<div class="li"><div class="li-icon">⚡</div>Electrical</div>' +
+  '<div class="li"><div class="li-icon">🔧</div>Plumbing</div>' +
+  '<div class="li"><div class="li-icon">💡</div>Lighting</div>' +
+  '<div class="li"><div class="li-icon">🗑</div>Trash</div>' +
+  '<div class="li"><div class="li-icon">📍</div>Other</div>' +
+  '<div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(201,168,76,.25);">' +
+  '<div class="li"><div class="li-icon" style="background:var(--amber);border-color:#fff;">📍</div>This report</div>' +
+  '</div>' +
+  '</div>';
+document.body.appendChild(legendDiv);
+
+function toggleLegend(){
+  document.querySelector('.legend').classList.toggle('collapsed');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+loadIssues(paramOID);
+
+</script>
+</body>
+</html>
