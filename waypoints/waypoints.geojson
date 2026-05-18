@@ -210,13 +210,13 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -84.1072,
-          34.225
+          -84.108485,
+          34.224001
         ]
       },
       "properties": {
         "id": "cc_main_building",
-        "name": "Cumming Main Building",
+        "name": "Cumming Academic",
         "subtitle": "Academic & Student Services",
         "campus": "Cumming",
         "category": "building",
@@ -229,8 +229,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -84.107230,
-          34.223202
+          -84.291033,
+          34.887453
         ]
       },
       "properties": {
