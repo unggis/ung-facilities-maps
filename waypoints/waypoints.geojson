@@ -19,6 +19,20 @@
     },
     {
       "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-83.993300, 34.529795] },
+      "properties": {
+        "id": "da_facilities",
+        "name": "Facilities (DC)",
+        "subtitle": "Facilities and Materials Management",
+        "campus": "Dahlonega",
+        "category": "building",
+        "building": "Facilities",
+        "description": "Facilities and materials management.",
+        "parking": "Adjacent",
+        "hours": "0700 - 2300 M-F"
+      },
+    {
+      "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-83.984905, 34.529932] },
       "properties": {
         "id": "da_stewart_center",
