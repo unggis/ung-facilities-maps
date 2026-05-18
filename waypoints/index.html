@@ -262,7 +262,8 @@ var initialZoom   = CAMPUSES[initialCampus].zoom;
 var map = L.map('map', { center: initialCenter, zoom: initialZoom });
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors | UNG Facilities GIS',
-  maxZoom: 20
+  maxZoom: 22,
+  maxNativeZoom: 19
 }).addTo(map);
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
