@@ -301,7 +301,8 @@
         "category": "entrance",
         "description": "Main entrance to the UNG Oconee campus serving the Athens-area region. Visitor parking is available near the main building.",
         "parking": "Surface lot — adjacent to main entrance",
-        "hours": "Campus open Mon–Fri"
+        "hours": "Campus open Mon–Fri",
+        "url": "https://ung.edu/campuses/oconee/index.php"
       }
     },
     {
