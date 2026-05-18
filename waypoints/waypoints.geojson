@@ -210,32 +210,12 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -84.108528,
-          34.223965
-        ]
-      },
-      "properties": {
-        "id": "cu_main_entrance",
-        "name": "Cumming Campus Entrance",
-        "subtitle": "Tribble Gap Road",
-        "campus": "Cumming",
-        "category": "entrance",
-        "description": "Main entrance to the UNG Cumming campus. Visitor parking is available directly inside the entrance on the right.",
-        "parking": "Visitor parking — first right after entrance",
-        "hours": "Campus open Mon–Sat"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           -84.1072,
           34.225
         ]
       },
       "properties": {
-        "id": "cu_main_building",
+        "id": "cc_main_building",
         "name": "Cumming Main Building",
         "subtitle": "Academic & Student Services",
         "campus": "Cumming",
@@ -254,7 +234,7 @@
         ]
       },
       "properties": {
-        "id": "br_main_entrance",
+        "id": "brc_main_entrance",
         "name": "Blue Ridge Campus Entrance",
         "subtitle": "Windy Ridge Road",
         "campus": "Blue Ridge",
@@ -274,7 +254,7 @@
         ]
       },
       "properties": {
-        "id": "br_academic_building",
+        "id": "brc_academic_building",
         "name": "Blue Ridge Academic Building",
         "subtitle": "Classrooms & Faculty Offices",
         "campus": "Blue Ridge",
@@ -294,7 +274,7 @@
         ]
       },
       "properties": {
-        "id": "br_ralston_hall",
+        "id": "brc_ralston_hall",
         "name": "Ralston Hall",
         "subtitle": "University College — Specialized Labs",
         "campus": "Blue Ridge",
