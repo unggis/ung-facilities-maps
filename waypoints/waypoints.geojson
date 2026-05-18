@@ -15,7 +15,8 @@
         "description": "Primary vehicle and pedestrian entrance to the Dahlonega campus. Visitor parking and information available nearby.",
         "parking": "Lot A — 200 ft east",
         "hours": "Campus open 24 hrs"
-      },
+      }
+    },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-83.993300, 34.529795] },
@@ -29,7 +30,8 @@
         "description": "Facilities and materials management.",
         "parking": "Adjacent",
         "hours": "0700 - 2300 M-F"
-      },
+      }
+    },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-83.984905, 34.529932] },
