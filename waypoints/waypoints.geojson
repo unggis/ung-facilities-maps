@@ -358,6 +358,24 @@
         "parking": "Adjacent",
         "hours": "0730 - 1800 M-F"
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.107836,
+          34.224382
+        ]
+      },
+      "properties": {
+        "id": "cc_pavilion",
+        "name": "Pavilion",
+        "subtitle": "Outdoor recreation area",
+        "campus": "Cumming",
+        "category": "building",
+        "building": "Pavilion"
+      }
     }
   ]
 }
