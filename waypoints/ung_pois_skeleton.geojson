@@ -1,0 +1,2975 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.2922915,
+          34.8885945
+        ]
+      },
+      "properties": {
+        "id": "brc_academic_building",
+        "name": "Academic Building (BR)",
+        "subtitle": "",
+        "campus": "Blue Ridge",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.1086056,
+          34.2240331
+        ]
+      },
+      "properties": {
+        "id": "cc_academic_building",
+        "name": "Academic Building (CC)",
+        "subtitle": "",
+        "campus": "Cumming",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8673749,
+          34.2339764
+        ]
+      },
+      "properties": {
+        "id": "gc_administration",
+        "name": "Administration (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.4264378,
+          33.8663469
+        ]
+      },
+      "properties": {
+        "id": "oc_administration",
+        "name": "Administration (OC)",
+        "subtitle": "",
+        "campus": "Oconee",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9848617,
+          34.5261364
+        ]
+      },
+      "properties": {
+        "id": "dc_alumni_house",
+        "name": "Alumni House",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8681812,
+          34.2394586
+        ]
+      },
+      "properties": {
+        "id": "gc_ampitheater",
+        "name": "Ampitheater",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.866199,
+          34.2388942
+        ]
+      },
+      "properties": {
+        "id": "gc_ampitheater_restrooms",
+        "name": "Ampitheater Restrooms (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9821282,
+          34.5260656
+        ]
+      },
+      "properties": {
+        "id": "dc_armory",
+        "name": "Armory",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8647668,
+          34.2365482
+        ]
+      },
+      "properties": {
+        "id": "gc_art_and_technology_building",
+        "name": "Art and Technology Building",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.981191,
+          34.5267252
+        ]
+      },
+      "properties": {
+        "id": "dc_athletic_field_building",
+        "name": "Athletic Field Building",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9970069,
+          34.5219948
+        ]
+      },
+      "properties": {
+        "id": "dc_barlow_road_structure_1",
+        "name": "Barlow Road Structure 1",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9974147,
+          34.5220662
+        ]
+      },
+      "properties": {
+        "id": "dc_barlow_road_structure_2",
+        "name": "Barlow Road Structure 2",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9855768,
+          34.5294172
+        ]
+      },
+      "properties": {
+        "id": "dc_barnes_hall",
+        "name": "Barnes Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9929702,
+          34.5262654
+        ]
+      },
+      "properties": {
+        "id": "dc_baseball_dugout_1",
+        "name": "Baseball Dugout 1",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9927863,
+          34.5263501
+        ]
+      },
+      "properties": {
+        "id": "dc_baseball_dugout_2",
+        "name": "Baseball Dugout 2",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9927385,
+          34.5264847
+        ]
+      },
+      "properties": {
+        "id": "dc_baseball_press_box_concession_stand",
+        "name": "Baseball Press Box / Concession Stand",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.989491,
+          34.5289434
+        ]
+      },
+      "properties": {
+        "id": "dc_carcass_specimen_shed",
+        "name": "Carcass Specimen Shed (DC)",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8668821,
+          34.23935
+        ]
+      },
+      "properties": {
+        "id": "gc_carcass_specimen_shed",
+        "name": "Carcass Specimen Shed (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8618023,
+          34.2349631
+        ]
+      },
+      "properties": {
+        "id": "gc_cart_shed",
+        "name": "Cart Shed",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9843478,
+          34.5309226
+        ]
+      },
+      "properties": {
+        "id": "dc_chestatee_building",
+        "name": "Chestatee Building",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9838239,
+          34.5316977
+        ]
+      },
+      "properties": {
+        "id": "dc_choice_street_arts_complex_bldg_a",
+        "name": "Choice Street Arts Complex - Bldg. A",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9838778,
+          34.5318418
+        ]
+      },
+      "properties": {
+        "id": "dc_choice_street_arts_complex_bldg_b",
+        "name": "Choice Street Arts Complex - Bldg. B",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9840516,
+          34.5316003
+        ]
+      },
+      "properties": {
+        "id": "dc_choice_street_arts_complex_bldg_c",
+        "name": "Choice Street Arts Complex - Bldg. C",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9837022,
+          34.5316852
+        ]
+      },
+      "properties": {
+        "id": "dc_choice_street_arts_complex_bldg_d",
+        "name": "Choice Street Arts Complex - Bldg. D",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9834631,
+          34.5304401
+        ]
+      },
+      "properties": {
+        "id": "dc_church_street_house",
+        "name": "Church Street House",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.4260099,
+          33.8665159
+        ]
+      },
+      "properties": {
+        "id": "oc_classroom_building_200",
+        "name": "Classroom Building (200)",
+        "subtitle": "",
+        "campus": "Oconee",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9925906,
+          34.5261641
+        ]
+      },
+      "properties": {
+        "id": "dc_coleman_field_house",
+        "name": "Coleman Field House",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9861028,
+          34.5261872
+        ]
+      },
+      "properties": {
+        "id": "dc_convocation_center",
+        "name": "Convocation Center",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.982558,
+          34.5291356
+        ]
+      },
+      "properties": {
+        "id": "dc_cottrell_center",
+        "name": "Cottrell Center",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.1086798,
+          34.2236891
+        ]
+      },
+      "properties": {
+        "id": "cc_cumming_addition",
+        "name": "Cumming Addition",
+        "subtitle": "",
+        "campus": "Cumming",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9880459,
+          34.5287129
+        ]
+      },
+      "properties": {
+        "id": "dc_dining_hall",
+        "name": "Dining Hall",
+        "subtitle": "Main Dining Facility",
+        "campus": "Dahlonega",
+        "category": "building",
+        "building": "Dining Hall",
+        "description": "Main dining facility on the Dahlonega campus",
+        "parking": "Lot B \u2014 adjacent",
+        "hours": "Varies - see website for details",
+        "url": "https://ung.mydininghub.com/en/dahlonega/location/main-dining-hall"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9871405,
+          34.5269253
+        ]
+      },
+      "properties": {
+        "id": "dc_donovan_hall",
+        "name": "Donovan Hall",
+        "subtitle": "Freshman residence hall",
+        "campus": "Dahlonega",
+        "category": "building",
+        "building": "",
+        "description": "Constructed in 1975, this residence hall is a three-story brick building with 124 rooms housing up to 248 residents.",
+        "parking": "Lot X - nearby",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9863315,
+          34.5320853
+        ]
+      },
+      "properties": {
+        "id": "dc_downtown_office_building",
+        "name": "Downtown Office Building",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8662355,
+          34.232085
+        ]
+      },
+      "properties": {
+        "id": "gc_drama_storage",
+        "name": "Drama Storage",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9868772,
+          34.5282525
+        ]
+      },
+      "properties": {
+        "id": "dc_drill_field_review_stand",
+        "name": "Drill Field Review Stand",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9848852,
+          34.5294405
+        ]
+      },
+      "properties": {
+        "id": "dc_dunlap_hall",
+        "name": "Dunlap Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8684886,
+          34.2347445
+        ]
+      },
+      "properties": {
+        "id": "gc_dunlap_mathis",
+        "name": "Dunlap-Mathis",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9905268,
+          34.5294535
+        ]
+      },
+      "properties": {
+        "id": "dc_ecology_protection_lab_bug_house",
+        "name": "Ecology Protection Lab (Bug House)",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8672755,
+          34.2400669
+        ]
+      },
+      "properties": {
+        "id": "gc_equipment_shed_1",
+        "name": "Equipment Shed 1",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8670811,
+          34.2401471
+        ]
+      },
+      "properties": {
+        "id": "gc_equipment_shed_2",
+        "name": "Equipment Shed 2",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9810183,
+          34.5286194
+        ]
+      },
+      "properties": {
+        "id": "dc_evergreen_building",
+        "name": "Evergreen Building",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.4245329,
+          33.8668743
+        ]
+      },
+      "properties": {
+        "id": "oc_facilities_public_safety_900",
+        "name": "Facilities & Public Safety (900)",
+        "subtitle": "",
+        "campus": "Oconee",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9937041,
+          34.5296108
+        ]
+      },
+      "properties": {
+        "id": "dc_facilities",
+        "name": "Facilities (DC)",
+        "subtitle": "Facilities and Materials Management",
+        "campus": "Dahlonega",
+        "category": "building",
+        "building": "Facilities",
+        "description": "Facilities and materials management.",
+        "parking": "Adjacent",
+        "hours": "0700 - 2300 M-F",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8661875,
+          34.2393525
+        ]
+      },
+      "properties": {
+        "id": "gc_facilities",
+        "name": "Facilities (GC)",
+        "subtitle": "Facilities and Materials Management",
+        "campus": "Gainesville",
+        "category": "building",
+        "building": "Facilities",
+        "description": "Facilities and materials management.",
+        "parking": "Adjacent",
+        "hours": "0700 - 2300 M-F",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9942657,
+          34.5299883
+        ]
+      },
+      "properties": {
+        "id": "dc_facilities_auto_grounds",
+        "name": "Facilities - Auto/Grounds",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.4253647,
+          33.8666724
+        ]
+      },
+      "properties": {
+        "id": "oc_faculty_center_700",
+        "name": "Faculty Center (700)",
+        "subtitle": "",
+        "campus": "Oconee",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9959641,
+          34.5247838
+        ]
+      },
+      "properties": {
+        "id": "dc_field_house",
+        "name": "Field House (DC)",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8704002,
+          34.2365615
+        ]
+      },
+      "properties": {
+        "id": "gc_field_house",
+        "name": "Field House (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.864754,
+          34.2376543
+        ]
+      },
+      "properties": {
+        "id": "gc_film_digital_media",
+        "name": "Film & Digital Media",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9856961,
+          34.5272436
+        ]
+      },
+      "properties": {
+        "id": "dc_galliard_hall",
+        "name": "Galliard Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9681696,
+          34.495166
+        ]
+      },
+      "properties": {
+        "id": "dc_golf_practice_facility",
+        "name": "Golf Practice Facility",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9680897,
+          34.4969164
+        ]
+      },
+      "properties": {
+        "id": "dc_golf_practice_tee",
+        "name": "Golf Practice Tee",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9886709,
+          34.528045
+        ]
+      },
+      "properties": {
+        "id": "dc_greenhouse",
+        "name": "Greenhouse (DC)",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8675672,
+          34.2395791
+        ]
+      },
+      "properties": {
+        "id": "gc_greenhouse",
+        "name": "Greenhouse (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8671036,
+          34.2396923
+        ]
+      },
+      "properties": {
+        "id": "gc_grounds_maintenance_1",
+        "name": "Grounds Maintenance 1",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.867743,
+          34.2401322
+        ]
+      },
+      "properties": {
+        "id": "gc_grounds_maintenance_2",
+        "name": "Grounds Maintenance 2",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9889619,
+          34.528829
+        ]
+      },
+      "properties": {
+        "id": "dc_guest_house",
+        "name": "Guest House",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.0051989,
+          34.5323713
+        ]
+      },
+      "properties": {
+        "id": "dc_hamp_mill_art_annex",
+        "name": "Hamp Mill Art Annex",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.0045553,
+          34.5323155
+        ]
+      },
+      "properties": {
+        "id": "dc_hamp_mill_art_annex_shed_1",
+        "name": "Hamp Mill Art Annex - Shed 1",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.0049396,
+          34.532407
+        ]
+      },
+      "properties": {
+        "id": "dc_hamp_mill_art_annex_shed_2",
+        "name": "Hamp Mill Art Annex - Shed 2",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9874385,
+          34.5296925
+        ]
+      },
+      "properties": {
+        "id": "dc_hansford_hall",
+        "name": "Hansford Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8639097,
+          34.2356116
+        ]
+      },
+      "properties": {
+        "id": "gc_health_sciences_building",
+        "name": "Health Sciences Building",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9901983,
+          34.528536
+        ]
+      },
+      "properties": {
+        "id": "dc_health_and_natural_sciences",
+        "name": "Health and Natural Sciences",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.985834,
+          34.5302748
+        ]
+      },
+      "properties": {
+        "id": "dc_hoag_student_center",
+        "name": "Hoag Student Center",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9758016,
+          34.5228722
+        ]
+      },
+      "properties": {
+        "id": "dc_hospital_building",
+        "name": "Hospital Building",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8698195,
+          34.2364089
+        ]
+      },
+      "properties": {
+        "id": "gc_hugh_mills_physical_education",
+        "name": "Hugh Mills Physical Education",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9877067,
+          34.5277683
+        ]
+      },
+      "properties": {
+        "id": "dc_lewis_annex",
+        "name": "Lewis Annex",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9875149,
+          34.5279594
+        ]
+      },
+      "properties": {
+        "id": "dc_lewis_hall",
+        "name": "Lewis Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9841671,
+          34.5266132
+        ]
+      },
+      "properties": {
+        "id": "dc_liberty_hall",
+        "name": "Liberty Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.869421,
+          34.2350513
+        ]
+      },
+      "properties": {
+        "id": "gc_library",
+        "name": "Library (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9825082,
+          34.5273789
+        ]
+      },
+      "properties": {
+        "id": "dc_library_technology_center",
+        "name": "Library Technology Center",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8662587,
+          34.2396434
+        ]
+      },
+      "properties": {
+        "id": "gc_maintenance_shops_receiving",
+        "name": "Maintenance & Shops (Receiving)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.2915324,
+          34.888786
+        ]
+      },
+      "properties": {
+        "id": "brc_maintenance_building",
+        "name": "Maintenance Building (BR)",
+        "subtitle": "",
+        "campus": "Blue Ridge",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9914352,
+          34.5250128
+        ]
+      },
+      "properties": {
+        "id": "dc_maintenance_garage_baseball",
+        "name": "Maintenance Garage - Baseball",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.1074066,
+          34.2242149
+        ]
+      },
+      "properties": {
+        "id": "cc_maintenance_shop",
+        "name": "Maintenance Shop (CC)",
+        "subtitle": "",
+        "campus": "Cumming",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8689104,
+          34.2370804
+        ]
+      },
+      "properties": {
+        "id": "gc_martha_nesbitt_building",
+        "name": "Martha Nesbitt Building",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9834118,
+          34.5288179
+        ]
+      },
+      "properties": {
+        "id": "dc_memorial_hall",
+        "name": "Memorial Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9814479,
+          34.5281249
+        ]
+      },
+      "properties": {
+        "id": "dc_military_leadership_center",
+        "name": "Military Leadership Center",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8668614,
+          34.2360401
+        ]
+      },
+      "properties": {
+        "id": "gc_music",
+        "name": "Music",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9816854,
+          34.5267529
+        ]
+      },
+      "properties": {
+        "id": "dc_national_guard_storage",
+        "name": "National Guard Storage",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9842905,
+          34.5295784
+        ]
+      },
+      "properties": {
+        "id": "dc_newton_oakes_center",
+        "name": "Newton Oakes Center",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9868364,
+          34.5295506
+        ]
+      },
+      "properties": {
+        "id": "dc_nix_cultural_center",
+        "name": "Nix Cultural Center",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.99229,
+          34.528668
+        ]
+      },
+      "properties": {
+        "id": "dc_north_georgia_suites",
+        "name": "North Georgia Suites",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8660066,
+          34.2322572
+        ]
+      },
+      "properties": {
+        "id": "gc_oakwood_building",
+        "name": "Oakwood Building",
+        "subtitle": "Administrative building",
+        "campus": "Gainesville",
+        "category": "building",
+        "building": "Oakwood",
+        "description": "",
+        "parking": "Adjacent",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.0537119,
+          34.5209365
+        ]
+      },
+      "properties": {
+        "id": "dc_observatory",
+        "name": "Observatory",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.0563718,
+          34.5213125
+        ]
+      },
+      "properties": {
+        "id": "dc_observatory_well_house",
+        "name": "Observatory Well House",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.4064099,
+          33.8650529
+        ]
+      },
+      "properties": {
+        "id": "oc_oconee_cultural_arts_foundation",
+        "name": "Oconee Cultural Arts Foundation",
+        "subtitle": "",
+        "campus": "Oconee",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9828394,
+          34.5253621
+        ]
+      },
+      "properties": {
+        "id": "dc_owen_hall",
+        "name": "Owen Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8675571,
+          34.237785
+        ]
+      },
+      "properties": {
+        "id": "gc_parking_deck",
+        "name": "Parking Deck (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9845831,
+          34.5264681
+        ]
+      },
+      "properties": {
+        "id": "dc_patriot_hall",
+        "name": "Patriot Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.1074687,
+          34.224217
+        ]
+      },
+      "properties": {
+        "id": "cc_pavilion",
+        "name": "Pavilion (CC)",
+        "subtitle": "Outdoor recreation area",
+        "campus": "Cumming",
+        "category": "building",
+        "building": "Pavilion",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8666356,
+          34.2324047
+        ]
+      },
+      "properties": {
+        "id": "gc_performing_arts_continuting_education",
+        "name": "Performing Arts / Continuting Education",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.060711,
+          34.5130101
+        ]
+      },
+      "properties": {
+        "id": "dc_pine_valley_house",
+        "name": "Pine Valley House",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.0571623,
+          34.5123063
+        ]
+      },
+      "properties": {
+        "id": "dc_pine_valley_pavillion",
+        "name": "Pine Valley Pavillion",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.0602973,
+          34.5134795
+        ]
+      },
+      "properties": {
+        "id": "dc_pine_valley_pump_house",
+        "name": "Pine Valley Pump House",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.0596123,
+          34.5130081
+        ]
+      },
+      "properties": {
+        "id": "dc_pine_valley_restrooms",
+        "name": "Pine Valley Restrooms",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8645714,
+          34.2368567
+        ]
+      },
+      "properties": {
+        "id": "gc_plant_maintenance",
+        "name": "Plant Maintenance",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9870275,
+          34.5299946
+        ]
+      },
+      "properties": {
+        "id": "dc_price_memorial_hall",
+        "name": "Price Memorial Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8659562,
+          34.2388841
+        ]
+      },
+      "properties": {
+        "id": "gc_public_safety",
+        "name": "Public Safety",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "emergency",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9886901,
+          34.5277867
+        ]
+      },
+      "properties": {
+        "id": "dc_public_safety_academy",
+        "name": "Public Safety Academy",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9830001,
+          34.5238668
+        ]
+      },
+      "properties": {
+        "id": "dc_public_safety_headquarters",
+        "name": "Public Safety Headquarters",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.2918237,
+          34.8889671
+        ]
+      },
+      "properties": {
+        "id": "brc_ralston_hall",
+        "name": "Ralston Hall",
+        "subtitle": "University College \u2014 Specialized Labs",
+        "campus": "Blue Ridge",
+        "category": "building",
+        "building": "Ralston Hall",
+        "description": "Home to University College programs at Blue Ridge, including specialized simulation and discipline lab spaces.",
+        "parking": "",
+        "hours": "Mon\u2013Fri 8am\u20136pm",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9926055,
+          34.5231456
+        ]
+      },
+      "properties": {
+        "id": "dc_rec_fields_restrooms",
+        "name": "Rec Fields Restrooms",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9962506,
+          34.5246567
+        ]
+      },
+      "properties": {
+        "id": "dc_rec_fields_storage",
+        "name": "Rec Fields Storage",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9853911,
+          34.5307916
+        ]
+      },
+      "properties": {
+        "id": "dc_recreation_center",
+        "name": "Recreation Center",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9853231,
+          34.5308727
+        ]
+      },
+      "properties": {
+        "id": "dc_recreation_parking_deck",
+        "name": "Recreation Parking Deck",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9877618,
+          34.5293735
+        ]
+      },
+      "properties": {
+        "id": "dc_rogers_hall",
+        "name": "Rogers Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8657072,
+          34.2349339
+        ]
+      },
+      "properties": {
+        "id": "gc_science",
+        "name": "Science (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8645774,
+          34.2381628
+        ]
+      },
+      "properties": {
+        "id": "gc_sculpture_building_bldg_25",
+        "name": "Sculpture Building (BLDG 25)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.990418,
+          34.5255083
+        ]
+      },
+      "properties": {
+        "id": "dc_soccer_locker_room",
+        "name": "Soccer Locker Room",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9936031,
+          34.5260819
+        ]
+      },
+      "properties": {
+        "id": "dc_softball_dugout_1",
+        "name": "Softball Dugout 1",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9937095,
+          34.5263181
+        ]
+      },
+      "properties": {
+        "id": "dc_softball_dugout_2",
+        "name": "Softball Dugout 2",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9903801,
+          34.5261876
+        ]
+      },
+      "properties": {
+        "id": "dc_softball_practice_building",
+        "name": "Softball Practice Building",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9926915,
+          34.525961
+        ]
+      },
+      "properties": {
+        "id": "dc_softball_press_box_concession_stand",
+        "name": "Softball Press Box / Concession Stand",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9842675,
+          34.5257068
+        ]
+      },
+      "properties": {
+        "id": "dc_south_parking_deck",
+        "name": "South Parking Deck",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9847021,
+          34.5298642
+        ]
+      },
+      "properties": {
+        "id": "dc_stewart_center",
+        "name": "Stewart Center",
+        "subtitle": "Student Services Hub",
+        "campus": "Dahlonega",
+        "category": "services",
+        "building": "Stewart Center",
+        "description": "Home to student services, advising, and administrative offices. Centrally located on the Dahlonega campus.",
+        "parking": "Lot B \u2014 adjacent",
+        "hours": "Mon\u2013Fri 8am\u20135pm",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.86861,
+          34.2357634
+        ]
+      },
+      "properties": {
+        "id": "gc_strickland",
+        "name": "Strickland",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8669428,
+          34.2352487
+        ]
+      },
+      "properties": {
+        "id": "gc_student_center",
+        "name": "Student Center (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8665012,
+          34.234803
+        ]
+      },
+      "properties": {
+        "id": "gc_student_center_pavilion",
+        "name": "Student Center Pavilion (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8642057,
+          34.2371951
+        ]
+      },
+      "properties": {
+        "id": "gc_student_health_services",
+        "name": "Student Health Services (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.4264286,
+          33.8658982
+        ]
+      },
+      "properties": {
+        "id": "oc_student_resource_center_500",
+        "name": "Student Resource Center (500)",
+        "subtitle": "",
+        "campus": "Oconee",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.4266816,
+          33.8657747
+        ]
+      },
+      "properties": {
+        "id": "oc_student_resource_center_addition_500a",
+        "name": "Student Resource Center Addition (500A)",
+        "subtitle": "",
+        "campus": "Oconee",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8652049,
+          34.2301331
+        ]
+      },
+      "properties": {
+        "id": "gc_testing_center",
+        "name": "Testing Center (GC)",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9884503,
+          34.5281379
+        ]
+      },
+      "properties": {
+        "id": "dc_the_commons_bldg_1",
+        "name": "The Commons - Bldg. 1",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9892345,
+          34.5286928
+        ]
+      },
+      "properties": {
+        "id": "dc_the_commons_bldg_2",
+        "name": "The Commons - Bldg. 2",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8645091,
+          34.2379172
+        ]
+      },
+      "properties": {
+        "id": "gc_theater_storage",
+        "name": "Theater Storage",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8615755,
+          34.2414463
+        ]
+      },
+      "properties": {
+        "id": "gc_tumbling_creek_pavilion",
+        "name": "Tumbling Creek Pavilion",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8551097,
+          34.2238766
+        ]
+      },
+      "properties": {
+        "id": "gc_upward_bound_program_redwine_umc",
+        "name": "Upward Bound Program @ Redwine UMC",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9874579,
+          34.5301764
+        ]
+      },
+      "properties": {
+        "id": "dc_vickery_house",
+        "name": "Vickery House",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9906404,
+          34.5277354
+        ]
+      },
+      "properties": {
+        "id": "dc_walker_drive_deck",
+        "name": "Walker Drive Deck",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.4242564,
+          33.8668609
+        ]
+      },
+      "properties": {
+        "id": "oc_warehouse",
+        "name": "Warehouse (OC)",
+        "subtitle": "",
+        "campus": "Oconee",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8673295,
+          34.2343512
+        ]
+      },
+      "properties": {
+        "id": "gc_watkins",
+        "name": "Watkins",
+        "subtitle": "",
+        "campus": "Gainesville",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9857281,
+          34.5276825
+        ]
+      },
+      "properties": {
+        "id": "dc_wynne_matthews_military_science_building",
+        "name": "Wynne-Matthews Military Science Building",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9633127,
+          34.5278739
+        ]
+      },
+      "properties": {
+        "id": "dc_yahoola_creek_tennis_facility",
+        "name": "Yahoola Creek Tennis Facility",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.986313,
+          34.530125
+        ]
+      },
+      "properties": {
+        "id": "dc_young_hall",
+        "name": "Young Hall",
+        "subtitle": "",
+        "campus": "Dahlonega",
+        "category": "",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    }
+  ]
+}
