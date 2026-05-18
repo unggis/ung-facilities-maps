@@ -395,14 +395,13 @@
         <textarea id="description" placeholder="Brief description shown in the map popup…"></textarea>
       </div>
 
-      <div class="field">
-        <label>Longitude <span class="required-star">*</span></label>
-        <input type="text" id="lng" placeholder="-83.987043"/>
-      </div>
-
-      <div class="field">
-        <label>Latitude <span class="required-star">*</span></label>
-        <input type="text" id="lat" placeholder="34.530164"/>
+      <div class="field full">
+        <label>Coordinates <span class="required-star">*</span></label>
+        <input type="text" id="coordPaste" placeholder="[-84.291328, 34.888041]" oninput="parseCoords()"/>
+        <div class="field-hint">Paste directly from the Leaflet coordinate picker — format: [lng, lat]</div>
+        <div class="id-preview" id="coordPreview"></div>
+        <input type="hidden" id="lng"/>
+        <input type="hidden" id="lat"/>
       </div>
 
       <div class="field full">
@@ -618,10 +617,31 @@
     });
   }
 
+  function parseCoords() {
+    var raw = document.getElementById('coordPaste').value.trim();
+    var preview = document.getElementById('coordPreview');
+    // Match two numbers (possibly negative) separated by comma, optionally wrapped in brackets
+    var m = raw.match(/\[?\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)\s*\]?/);
+    if (m) {
+      document.getElementById('lng').value = m[1];
+      document.getElementById('lat').value = m[2];
+      preview.style.color = 'var(--success)';
+      preview.textContent = 'lng: ' + m[1] + '  lat: ' + m[2];
+    } else if (raw.length > 2) {
+      preview.style.color = 'var(--error)';
+      preview.textContent = 'Could not parse — expected [-84.291328, 34.888041]';
+      document.getElementById('lng').value = '';
+      document.getElementById('lat').value = '';
+    } else {
+      preview.textContent = '';
+    }
+  }
+
   function clearForm() {
-    ['wpId','name','subtitle','building','description','lng','lat','parking','hours','url'].forEach(function(id){
+    ['wpId','name','subtitle','building','description','coordPaste','lng','lat','parking','hours','url'].forEach(function(id){
       document.getElementById(id).value = '';
     });
+    document.getElementById('coordPreview').textContent = '';
     document.getElementById('campus').value = '';
     document.getElementById('category').value = '';
     document.getElementById('idPreview').textContent = '';
