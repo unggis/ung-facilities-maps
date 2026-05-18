@@ -196,7 +196,7 @@
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 var SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Non-emergency_maintenance_items_VIEW/FeatureServer/0/query';
-var QUERY_PARAMS = '?where=1%3D1&outFields=field_10,type_of_issue_being_reported,describe_the_issue_along_with_i,objectid&f=geojson&orderByFields=objectid+DESC';
+var QUERY_PARAMS = '?where=Status+%3D+%27Open%27&outFields=field_10,type_of_issue_being_reported,describe_the_issue_along_with_i,objectid,CreationDate&f=geojson&orderByFields=objectid+DESC&cacheBust=' + Date.now();
 
 var CAMPUSES = {
   dahlonega:   { center:[34.5281,-83.9864], zoom:16, id:'cb-da', label:'Dahlonega'   },
