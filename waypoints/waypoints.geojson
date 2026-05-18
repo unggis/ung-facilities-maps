@@ -249,7 +249,7 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -84.292200,
+          -84.2922,
           34.888501
         ]
       },
@@ -375,6 +375,44 @@
         "campus": "Cumming",
         "category": "building",
         "building": "Pavilion"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.108909,
+          34.22432
+        ]
+      },
+      "properties": {
+        "id": "cc_entrance",
+        "name": "Cumming Campus Main Entrance",
+        "subtitle": "Main entrance",
+        "campus": "Cumming",
+        "category": "entrance",
+        "parking": "Adjacent",
+        "url": "https://ung.edu/campuses/cumming/index.php"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.865976,
+          34.232259
+        ]
+      },
+      "properties": {
+        "id": "gc_oakwood",
+        "name": "Oakwood Building",
+        "subtitle": "Administrative building",
+        "campus": "Gainesville",
+        "category": "building",
+        "building": "Oakwood",
+        "parking": "Adjacent"
       }
     }
   ]
