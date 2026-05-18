@@ -1,7 +1,7 @@
 # Facilities Issue Map
 
 **Project:** UNG Facilities Issue Map
-**Status:** Beta — internal testing
+**Status:** Beta — working concept, internal use
 **Location:** `ung-facilities-internal/projects/facilities-issue-map/`
 **Owner:** John Segars, GIS Analyst / Facilities Planning Specialist
 **Last updated:** May 2026
@@ -10,80 +10,144 @@
 
 ## What This Is
 
-A Leaflet web map that displays non-emergency facilities issue reports submitted via the UNG Facilities Issue Reporting Survey123 form. Intended for internal Facilities staff use — linked from Power Automate email notifications so the recipient can see exactly where a reported issue is located on campus.
+A Leaflet web map that displays non-emergency facilities issue reports submitted via the UNG Facilities Issue Reporting Survey123 form. Intended for internal Facilities staff use — linked from Power Automate email notifications so the recipient can see exactly where a reported issue is located on campus, view the description, and see any attached photos.
 
-The map pulls live from the Survey123 feature layer via AGOL. No data file to maintain — submissions appear automatically as they are received.
-
----
-
-## How It Works
-
-1. Someone scans a QR code at a campus location and taps "Report a Facilities Issue"
-2. They complete the Survey123 form and submit
-3. The Survey123 webhook fires, sending the submission to Power Automate
-4. Power Automate sends an email notification to the designated Facilities recipient
-5. The email includes a link to this map with the submission's objectid as a URL parameter
-6. The recipient clicks the link — the map opens, flies to the reported location, highlights the marker, and opens the popup
+The map pulls live from the Survey123 feature layer via AGOL. No data file to maintain — submissions appear automatically as they are received. Only records with `Status = Open` are displayed. Resolved issues are hidden automatically.
 
 ---
 
-## URL Structure
+## The Full Pipeline
 
-### Specific submission (from email link)
 ```
-https://unggis.github.io/ung-facilities-maps/issues/?oid=9
+User scans QR code on campus
+        ↓
+Taps "Report a Facilities Issue" → Survey123 form
+        ↓
+Submits form (description, issue type, campus, photo)
+        ↓
+Survey123 webhook fires → Power Automate
+        ↓
+Email notification sent to Facilities staff
+        ↓
+Staff clicks map link in email → Facilities Issue Map
+        ↓
+Map flies to reported location, popup opens
+        ↓
+Staff views description + photo in popup
+        ↓
+Issue resolved in field → Staff marks Resolved in AGOL
+        ↓
+Record disappears from map on next load/refresh
 ```
-Flies to that submission, highlights it with an amber pulsing marker, opens popup automatically.
 
-### All submissions (overview)
-```
-https://unggis.github.io/ung-facilities-maps/issues/
-```
-Shows all current submissions across all five campuses. Defaults to all-campus zoom.
+---
 
-### Coordinate fallback (if OID not available)
+## How to Use the Map
+
+### Viewing issues
+- Open the map — all Open issues load automatically across all campuses
+- Click campus buttons in toolbar to fly to a specific campus
+- Click any marker to open the popup — shows issue type, record ID, campus, date reported, description, and photos
+- Click a photo thumbnail to view full size — press Escape or click anywhere to close
+- Click **Refresh** in toolbar to reload live data without refreshing the page
+
+### From an email notification
+The Power Automate notification email includes a direct link:
 ```
-https://unggis.github.io/ung-facilities-maps/issues/?x=-83.86871588&y=34.233672843
+https://unggis.github.io/ung-facilities-maps/maintenance_issue/?oid=[objectid]
 ```
-Flies to coordinates without highlighting a specific marker.
+Clicking this link opens the map already centered on the reported location with the popup open.
+
+---
+
+## Marking an Issue as Resolved
+
+**Current workflow — AGOL data tab:**
+
+1. Note the **Record ID** from the email notification or map popup
+2. Log into **ung-facilities.maps.arcgis.com** with your UNG credentials
+3. Go to **Content** → find **UNG Facilities Issue Reporting** (the master hosted feature layer — not the view)
+4. Click **Data** tab
+5. Find the record by objectid
+6. Click the record to edit it
+7. Change **Status** from `Open` to `Resolved`
+8. Save
+
+The record will no longer appear on the map after the next load or Refresh.
+
+**Alternative — Survey123 data tab:**
+
+1. Go to **survey123.arcgis.com**
+2. Open **UNG Facilities Issue Reporting**
+3. Click **Data** tab
+4. Find the record
+5. Click the edit (pencil) icon
+6. Change Status to `Resolved`
+7. Save
+
+---
+
+## Issue Types & Icons
+
+| Icon | Type |
+|---|---|
+| 🌿 | Landscape |
+| 💡 | Lighting |
+| 🛣 | Roads |
+| ⚠️ | Safety |
+| 🚶 | Sidewalks |
+| 🪧 | Signage |
+| 🗑 | Waste |
+| 🐾 | Wildlife |
+| 📍 | Other |
+| 📍 amber/pulsing | Currently highlighted submission (from email link) |
 
 ---
 
 ## Data Source
 
-**Feature service (view — public):**
+**Feature service view (public):**
 ```
 https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Non-emergency_maintenance_items_VIEW/FeatureServer/0
 ```
 
+**Query filter:** `Status = 'Open'`
+
 **Fields used:**
+
 | Field | Label | Notes |
 |---|---|---|
 | `field_10` | Campus | e.g. "Dahlonega Campus" |
 | `type_of_issue_being_reported` | Issue Type | Landscape, Roads, Safety, etc. |
 | `describe_the_issue_along_with_i` | Description | Free text from submitter |
 | `objectid` | Record ID | Used for URL parameter routing |
+| `CreationDate` | Date reported | Displayed in popup |
+| `Status` | Open / Resolved | Used to filter map display |
 
 **Fields intentionally excluded:**
 - `contact_information` — submitter email, kept private via the view layer
-- `globalid` — internal identifier, not needed for display
+
+**Important:** The view layer must remain shared to **Everyone (public)** in AGOL for the map to load. Editing the view's fields can reset sharing — verify after any view changes.
 
 ---
 
-## Power Automate Integration
+## URL Structure
 
-### Email body dynamic link
+| Mode | URL | Behavior |
+|---|---|---|
+| All open issues | `unggis.github.io/ung-facilities-maps/maintenance_issue/` | Shows all Open records, all-campus zoom |
+| Specific submission | `unggis.github.io/ung-facilities-maps/maintenance_issue/?oid=12` | Flies to that record, highlights marker, opens popup |
+| Coordinate fallback | `unggis.github.io/ung-facilities-maps/maintenance_issue/?x=-83.86&y=34.23` | Flies to coordinates |
 
-In the Power Automate "Send an email" step, add this line to the body:
+---
 
-```
-View on map: https://unggis.github.io/ung-facilities-maps/issues/?oid=[objectid]
-```
+## Power Automate Email Integration
 
-Replace `[objectid]` with the dynamic content field from the HTTP trigger payload.
+**Flow name:** Survey123 Action Item
+**Trigger:** HTTP webhook from Survey123 — fires on new submission
+**Action:** Send an email (V2) via Outlook to designated Facilities recipient
 
-### Full recommended email body
-
+**Recommended email body:**
 ```
 New Facilities Issue Reported
 
@@ -93,31 +157,48 @@ Description:  [describe_the_issue_along_with_i]
 Contact:      [contact_information]
 Submitted by: [fullName]
 
-View on map: https://unggis.github.io/ung-facilities-maps/issues/?oid=[objectid]
+View on map:
+https://unggis.github.io/ung-facilities-maps/maintenance_issue/?oid=[objectid]
 
-Log in to Survey123 to view attached photos:
+View full submission and photos in Survey123:
 https://survey123.arcgis.com/surveys/ca742b0a3514485fa625475ccbc314e4/data
 ```
 
+**Note:** The Power Automate connection uses `jdsegars@ung.edu` credentials. If the flow stops working, reauthenticate the Outlook connection at flow.microsoft.com. This may be required after password changes or MFA policy updates.
+
 ---
 
-## Issue Type Icons
+## Known Limitations
 
-| Icon | Type |
-|---|---|
-| 🌿 | Landscape |
-| 🛣 | Roads |
-| ⚠️ | Safety |
-| 🪧 | Signage |
-| 🐾 | Wildlife |
-| ⚡ | Electrical |
-| 🔧 | Plumbing |
-| 💡 | Lighting |
-| 🗑 | Trash |
-| 📍 | Other / default |
-| 📍 amber | Currently highlighted submission |
+**Resolve workflow requires AGOL login**
+There is no one-click resolve button in the map — resolving an issue requires logging into AGOL or Survey123 and editing the record manually. See Future Improvements below.
 
-To add a new issue type — add an entry to the `ISSUE_ICONS` object in `app/index.html` and a corresponding legend item in the legend HTML block.
+**Photo attachments require AGOL public access**
+Photos are fetched directly from the AGOL feature service. If the view layer sharing is changed from public, photos will fail to load.
+
+**Cache behavior**
+AGOL caches query results aggressively. The app appends `Date.now()` to every query to force fresh results. If resolved issues still appear after refresh, wait 30-60 seconds and refresh again.
+
+**No date filter**
+The map shows all Open issues regardless of age. Old unresolved issues will accumulate unless marked Resolved in AGOL.
+
+**Status field is case sensitive**
+The query filters on `Status = 'Open'` exactly. Ensure consistent capitalization when editing records — `open` or `OPEN` will not match.
+
+---
+
+## Future Improvements
+
+### One-Click Resolve (Priority)
+Add a "Mark Resolved" button to each popup that updates the Status field directly from the map. Requires AGOL OAuth authentication — staff log in once via a login button in the app header, then resolve issues with one tap.
+
+**Technical approach:** AGOL OAuth 2.0 → token stored in session → `applyEdits` POST to feature service with `Status = 'Resolved'` for that objectid.
+
+### Date Filter
+Add a toolbar control to filter issues by date range — Last 7 days, Last 30 days, All. Useful as submission volume grows.
+
+### Campus-Filtered View
+Clicking a campus button currently flies the map but still shows all markers. A true filter would show only markers for the selected campus.
 
 ---
 
@@ -133,37 +214,34 @@ facilities-issue-map/
 
 ---
 
-## Deployment
+## Deployment Checklist
 
 When ready to promote to the public repo:
 
-1. Copy `app/index.html` to `ung-facilities-maps/issues/index.html`
-2. Push to `ung-facilities-maps` public repo
-3. Confirm GitHub Pages serves it at `unggis.github.io/ung-facilities-maps/issues/`
-4. Update Power Automate email body with the live URL
-5. Test end to end — submit a form, confirm email arrives with working map link
-
-**Note:** The map is labeled "Internal" in the header badge. This is a visual indicator only — the page itself is publicly accessible once deployed to GitHub Pages. The data displayed is already public via the AGOL view layer. Contact information is not exposed.
-
----
-
-## Known Limitations
-
-- No date/time field currently exposed in the view layer. If submission timestamp is needed, the AGOL view may need to be updated to include `CreationDate`
-- Photo attachments are not displayed in the map popup — submitter photos must be viewed directly in Survey123
-- Issue type icons depend on exact string matching — if Survey123 form choices change, icon mappings in `ISSUE_ICONS` must be updated to match
-- The AGOL view layer sharing must remain set to "Everyone (public)" for the map to load without authentication
+- [ ] Verify AGOL view layer is shared to Everyone (public)
+- [ ] Test query URL returns only Open records
+- [ ] Test email link `?oid=X` flies to correct marker
+- [ ] Test photo loads in popup lightbox
+- [ ] Test Refresh button clears resolved records
+- [ ] Copy `app/index.html` to `ung-facilities-maps/maintenance_issue/index.html`
+- [ ] Push to `ung-facilities-maps` public repo
+- [ ] Confirm live at `unggis.github.io/ung-facilities-maps/maintenance_issue/`
+- [ ] Update Power Automate email body with live map link
+- [ ] Designate Facilities staff recipient for email notifications
+- [ ] Document resolve workflow for that recipient
 
 ---
 
-## Related Projects
+## Related Projects & Links
 
-| Project | Location | Notes |
-|---|---|---|
-| Campus Waypoint Map | `ung-facilities-maps/waypoints/` | Public — QR code wayfinding |
-| Campus Vision Plan | `ung-facilities-maps/` | Public — existing vs proposed buildout |
-| Facilities GIS Hub | gis-ung-facilities.hub.arcgis.com | Public portal |
-| Survey123 Form | survey123.arcgis.com/surveys/ca742b0a3514485fa625475ccbc314e4 | Public submission form |
+| Item | Location |
+|---|---|
+| Campus Waypoint Map | `unggis.github.io/ung-facilities-maps/waypoints/` |
+| Survey123 Report Form | `survey123.arcgis.com/surveys/ca742b0a3514485fa625475ccbc314e4` |
+| AGOL Feature Layer (master) | ung-facilities.maps.arcgis.com → Content → UNG Facilities Issue Reporting |
+| AGOL Feature Layer (view) | ung-facilities.maps.arcgis.com → Content → Non-emergency_maintenance_items_VIEW |
+| Power Automate Flow | flow.microsoft.com → Survey123 Action Item |
+| Facilities GIS Hub | gis-ung-facilities.hub.arcgis.com |
 
 ---
 
