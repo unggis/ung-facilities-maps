@@ -414,6 +414,59 @@
         "building": "Oakwood",
         "parking": "Adjacent"
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.426193,
+          33.865877
+        ]
+      },
+      "properties": {
+        "id": "oc_src",
+        "name": "Student Resource Center",
+        "campus": "Oconee",
+        "category": "building",
+        "building": "Student Resource Center",
+        "parking": "Lot C"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.425471,
+          33.866701
+        ]
+      },
+      "properties": {
+        "id": "oc_faculty_center",
+        "name": "Faculty Center",
+        "subtitle": "Bookstore and offices",
+        "campus": "Oconee",
+        "category": "building",
+        "building": "Faculty Center",
+        "parking": "Lots A & B"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.426163,
+          33.866445
+        ]
+      },
+      "properties": {
+        "id": "oc_classroom_building",
+        "name": "Classroom Building",
+        "campus": "Oconee",
+        "category": "building"
+      }
     }
   ]
 }
