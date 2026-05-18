@@ -320,7 +320,8 @@
         "campus": "Oconee",
         "category": "building",
         "description": "Primary academic and administrative building on the Oconee campus. Student services, advising, and faculty offices located inside.",
-        "hours": "Mon–Thu 8am–8pm, Fri 8am–5pm"
+        "hours": "Mon–Thu 8am–8pm, Fri 8am–5pm",
+        "url": "https://ung.edu/campuses/oconee/index.php"
       }
     },
     {
