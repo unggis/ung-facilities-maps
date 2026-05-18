@@ -11,7 +11,7 @@
         ]
       },
       "properties": {
-        "id": "da_main_entrance",
+        "id": "dc_main_entrance",
         "name": "Dahlonega Main Entrance",
         "subtitle": "adjacent to Cottrell Center and Military leadership Center",
         "campus": "Dahlonega",
@@ -53,7 +53,7 @@
         ]
       },
       "properties": {
-        "id": "da_stewart_center",
+        "id": "dc_stewart_center",
         "name": "Stewart Center",
         "subtitle": "Student Services Hub",
         "campus": "Dahlonega",
@@ -96,7 +96,7 @@
         ]
       },
       "properties": {
-        "id": "da_walkway_of_service",
+        "id": "dc_walkway_of_service",
         "name": "Walkway of Service",
         "subtitle": "Commemorative Brick Walkway",
         "campus": "Dahlonega",
@@ -136,7 +136,7 @@
         ]
       },
       "properties": {
-        "id": "gv_main_entrance",
+        "id": "gc_main_entrance",
         "name": "Gainesville Main Entrance",
         "subtitle": "Mundy Mill Road",
         "campus": "Gainesville",
@@ -156,7 +156,7 @@
         ]
       },
       "properties": {
-        "id": "gv_nesbitt_building",
+        "id": "gc_nesbitt_building",
         "name": "Nesbitt Building",
         "subtitle": "Academic & Administrative",
         "campus": "Gainesville",
@@ -177,7 +177,7 @@
         ]
       },
       "properties": {
-        "id": "gv_walkway_of_service",
+        "id": "gc_walkway_of_service",
         "name": "Walkway of Service",
         "subtitle": "Commemorative Brick Walkway",
         "campus": "Gainesville",
@@ -196,7 +196,7 @@
         ]
       },
       "properties": {
-        "id": "gv_parking_lot_g1",
+        "id": "gc_parking_lot_g1",
         "name": "Parking Lot G1",
         "subtitle": "Primary Visitor Parking",
         "campus": "Gainesville",
@@ -229,8 +229,8 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          -84.28991,
-          34.887423
+          -84.107230,
+          34.223202
         ]
       },
       "properties": {
