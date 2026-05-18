@@ -1,10 +1,15 @@
 {
   "type": "FeatureCollection",
   "features": [
-
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.981697, 34.528891] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.981697,
+          34.528891
+        ]
+      },
       "properties": {
         "id": "da_main_entrance",
         "name": "Dahlonega Main Entrance",
@@ -19,7 +24,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.993300, 34.529795] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.9933,
+          34.529795
+        ]
+      },
       "properties": {
         "id": "dc_facilities",
         "name": "Facilities (DC)",
@@ -34,7 +45,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.984905, 34.529932] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.984905,
+          34.529932
+        ]
+      },
       "properties": {
         "id": "da_stewart_center",
         "name": "Stewart Center",
@@ -47,9 +64,15 @@
         "hours": "Mon–Fri 8am–5pm"
       }
     },
-{
+    {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.987976, 34.528657] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.987976,
+          34.528657
+        ]
+      },
       "properties": {
         "id": "dc_dining_hall",
         "name": "Dining Hall",
@@ -65,7 +88,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.987043, 34.530164] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.987043,
+          34.530164
+        ]
+      },
       "properties": {
         "id": "da_walkway_of_service",
         "name": "Walkway of Service",
@@ -80,7 +109,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.986946, 34.526860] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.986946,
+          34.52686
+        ]
+      },
       "properties": {
         "id": "dc_donovan_hall",
         "name": "Donovan Hall",
@@ -91,10 +126,15 @@
         "parking": "Lot X - nearby"
       }
     },
-
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.870101, 34.231754] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.870101,
+          34.231754
+        ]
+      },
       "properties": {
         "id": "gv_main_entrance",
         "name": "Gainesville Main Entrance",
@@ -108,7 +148,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.869071, 34.237058] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.869071,
+          34.237058
+        ]
+      },
       "properties": {
         "id": "gv_nesbitt_building",
         "name": "Nesbitt Building",
@@ -123,7 +169,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.868079, 34.234421] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.868079,
+          34.234421
+        ]
+      },
       "properties": {
         "id": "gv_walkway_of_service",
         "name": "Walkway of Service",
@@ -136,7 +188,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.8655, 34.2358] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.8655,
+          34.2358
+        ]
+      },
       "properties": {
         "id": "gv_parking_lot_g1",
         "name": "Parking Lot G1",
@@ -147,10 +205,15 @@
         "parking": "Visitor spaces — rows 1–3, no permit required"
       }
     },
-
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-84.108528, 34.223965] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.108528,
+          34.223965
+        ]
+      },
       "properties": {
         "id": "cu_main_entrance",
         "name": "Cumming Campus Entrance",
@@ -164,7 +227,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-84.1072, 34.2250] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.1072,
+          34.225
+        ]
+      },
       "properties": {
         "id": "cu_main_building",
         "name": "Cumming Main Building",
@@ -175,10 +244,15 @@
         "hours": "Mon–Thu 8am–8pm, Fri 8am–5pm"
       }
     },
-
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-84.289910, 34.887423] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.28991,
+          34.887423
+        ]
+      },
       "properties": {
         "id": "br_main_entrance",
         "name": "Blue Ridge Campus Entrance",
@@ -192,7 +266,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-84.292195, 34.888514] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.292195,
+          34.888514
+        ]
+      },
       "properties": {
         "id": "br_academic_building",
         "name": "Blue Ridge Academic Building",
@@ -206,7 +286,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-84.291610, 34.888928] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.29161,
+          34.888928
+        ]
+      },
       "properties": {
         "id": "br_ralston_hall",
         "name": "Ralston Hall",
@@ -218,10 +304,15 @@
         "hours": "Mon–Fri 8am–6pm"
       }
     },
-
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.427644, 33.870772] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.427644,
+          33.870772
+        ]
+      },
       "properties": {
         "id": "oc_main_entrance",
         "name": "Oconee Campus Entrance",
@@ -235,7 +326,13 @@
     },
     {
       "type": "Feature",
-      "geometry": { "type": "Point", "coordinates": [-83.4252, 33.8671] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.4252,
+          33.8671
+        ]
+      },
       "properties": {
         "id": "oc_main_building",
         "name": "Oconee Main Building",
@@ -245,7 +342,42 @@
         "description": "Primary academic and administrative building on the Oconee campus. Student services, advising, and faculty offices located inside.",
         "hours": "Mon–Thu 8am–8pm, Fri 8am–5pm"
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.29201,
+          34.888994
+        ]
+      },
+      "properties": {
+        "id": "brc_maintenance",
+        "name": "Maintenance",
+        "campus": "Blue Ridge",
+        "category": "building",
+        "description": "Maintenance building"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.107434,
+          34.224243
+        ]
+      },
+      "properties": {
+        "id": "cc_maintenance",
+        "name": "Maintenance",
+        "campus": "Cumming",
+        "category": "building",
+        "description": "Maintenance and shop",
+        "parking": "Adjacent",
+        "hours": "0730 - 1800 M-F"
+      }
     }
-
   ]
 }
