@@ -296,7 +296,7 @@
       "properties": {
         "id": "oc_main_entrance",
         "name": "Oconee Campus Entrance",
-        "subtitle": "Experiment Station Road",
+        "subtitle": "Experiment Station Rd & Bishop Farms Pkwy.",
         "campus": "Oconee",
         "category": "entrance",
         "description": "Main entrance to the UNG Oconee campus serving the Athens-area region. Visitor parking is available near the main building.",
@@ -320,8 +320,7 @@
         "campus": "Oconee",
         "category": "building",
         "description": "Primary academic and administrative building on the Oconee campus. Student services, advising, and faculty offices located inside.",
-        "hours": "Mon–Thu 8am–8pm, Fri 8am–5pm",
-        "url": "https://ung.edu/campuses/oconee/index.php"
+        "hours": "Mon–Thu 8am–8pm, Fri 8am–5pm"
       }
     },
     {
