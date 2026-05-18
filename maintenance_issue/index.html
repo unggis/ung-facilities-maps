@@ -85,22 +85,11 @@
   .popup-eyebrow{font-family:'Lato',sans-serif;font-size:8px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:4px;}
   .popup-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;line-height:1.2;margin-bottom:2px;}
   .popup-divider{width:100%;height:1px;background:rgba(201,168,76,.2);margin:8px 0;}
-  .popup-body{font-family:'Lato',sans-serif;font-size:11px;font-weight:300;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:10px;}
+  .popup-body{font-family:'Lato',sans-serif;font-size:14px;font-weight:300;color:rgba(255,255,255,.9);line-height:1.6;margin-bottom:10px;}
   .popup-meta{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
   .popup-meta-row{display:flex;gap:6px;font-size:10px;}
   .popup-meta-key{font-weight:700;color:rgba(201,168,76,.75);min-width:70px;text-transform:uppercase;letter-spacing:.08em;}
   .popup-meta-val{color:rgba(255,255,255,.65);}
-  .popup-gmaps-btn{
-    display:block;width:100%;
-    font-family:'Lato',sans-serif;font-size:9px;font-weight:700;
-    letter-spacing:.16em;text-transform:uppercase;
-    background:var(--navy);color:var(--gold);
-    border:1px solid rgba(201,168,76,.4);border-radius:3px;
-    padding:6px 0;text-align:center;
-    cursor:pointer;text-decoration:none;
-    transition:background .18s;margin-bottom:4px;
-  }
-  .popup-gmaps-btn:hover{background:rgba(201,168,76,.1);}
   .popup-source{font-family:'Lato',sans-serif;font-size:8px;color:rgba(255,255,255,.22);text-align:center;margin-top:8px;font-style:italic;}
 
   /* ── ATTACHMENTS ── */
@@ -293,23 +282,21 @@ function makeIcon(issueType, highlight) {
 
 // ── POPUP ─────────────────────────────────────────────────────────────────────
 function buildPopup(p, lat, lng) {
-  var gmaps = 'https://www.google.com/maps?q=' + lat + ',' + lng;
-  var oid   = p.objectid || '';
+  var oid      = p.objectid || '—';
+  var issueType = (p.type_of_issue_being_reported || 'Facilities') + ' Issue';
   return '<div class="popup-inner" data-oid="' + oid + '">' +
-    '<div class="popup-eyebrow">' + (p.field_10 || 'UNG') + ' &nbsp;&middot;&nbsp; Facilities Issue</div>' +
-    '<div class="popup-title">' + (p.type_of_issue_being_reported || 'Issue Report') + '</div>' +
+    '<div class="popup-eyebrow">' + (p.field_10 || 'UNG') + ' &nbsp;&middot;&nbsp; Non-Emergency Report</div>' +
+    '<div class="popup-title">' + issueType + '</div>' +
+    '<div class="popup-divider"></div>' +
+    '<div class="popup-meta">' +
+    '<div class="popup-meta-row"><span class="popup-meta-key">Record ID</span><span class="popup-meta-val">' + oid + '</span></div>' +
+    '<div class="popup-meta-row"><span class="popup-meta-key">Campus</span><span class="popup-meta-val">' + (p.field_10 || '—') + '</span></div>' +
+    '</div>' +
     '<div class="popup-divider"></div>' +
     '<div class="popup-body">' + (p.describe_the_issue_along_with_i || '—') + '</div>' +
-    '<div class="popup-meta">' +
-    '<div class="popup-meta-row"><span class="popup-meta-key">Campus</span><span class="popup-meta-val">' + (p.field_10 || '—') + '</span></div>' +
-    '<div class="popup-meta-row"><span class="popup-meta-key">Issue Type</span><span class="popup-meta-val">' + (p.type_of_issue_being_reported || '—') + '</span></div>' +
-    '<div class="popup-meta-row"><span class="popup-meta-key">Record ID</span><span class="popup-meta-val">' + oid + '</span></div>' +
-    '</div>' +
     '<div class="popup-attachments" id="attachments-' + oid + '">' +
     '<div class="popup-loading">Loading photos&hellip;</div>' +
     '</div>' +
-    '<div class="popup-divider"></div>' +
-    '<a class="popup-gmaps-btn" href="' + gmaps + '" target="_blank">&#8982;&nbsp; View in Google Maps</a>' +
     '<div class="popup-source">UNG Facilities GIS &mdash; Non-Emergency Issue Report</div>' +
     '</div>';
 }
