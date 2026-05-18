@@ -21,7 +21,7 @@
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-83.993300, 34.529795] },
       "properties": {
-        "id": "da_facilities",
+        "id": "dc_facilities",
         "name": "Facilities (DC)",
         "subtitle": "Facilities and Materials Management",
         "campus": "Dahlonega",
