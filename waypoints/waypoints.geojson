@@ -468,6 +468,38 @@
         "campus": "Oconee",
         "category": "building"
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.42464,
+          33.866808
+        ]
+      },
+      "properties": {
+        "id": "oc_public_safety",
+        "name": "Public Safety",
+        "campus": "Oconee",
+        "category": "emergency"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.424669,
+          33.866946
+        ]
+      },
+      "properties": {
+        "id": "oc_facilities",
+        "name": "Facilities & Grounds",
+        "campus": "Oconee",
+        "category": "building"
+      }
     }
   ]
 }
