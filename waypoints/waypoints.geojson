@@ -182,6 +182,28 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          -84.108885,
+          34.224313
+        ]
+      },
+      "properties": {
+        "id": "cc_main_entrance",
+        "name": "Main Entrance",
+        "subtitle": "",
+        "campus": "Cumming",
+        "category": "entrance",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": "https://ung.edu/campuses/cumming/index.php"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           -84.1084768,
           34.2239726
         ]
