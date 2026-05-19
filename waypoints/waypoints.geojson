@@ -94,6 +94,28 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          -84.289979,
+          34.887489
+        ]
+      },
+      "properties": {
+        "id": "brc_entrance",
+        "name": "Entrance to campus",
+        "subtitle": "",
+        "campus": "Blue Ridge",
+        "category": "entrance",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": "https://ung.edu/campuses/blueridge/index.php"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           -84.1084768,
           34.2239726
         ]
