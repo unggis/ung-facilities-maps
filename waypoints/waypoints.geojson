@@ -111,7 +111,6 @@
         "url": "https://ung.edu/campuses/blueridge/index.php"
       }
     },
-    
     {
       "type": "Feature",
       "geometry": {
@@ -124,6 +123,28 @@
       "properties": {
         "id": "brc_parking_a",
         "name": "Academic Building Parking",
+        "subtitle": "",
+        "campus": "Blue Ridge",
+        "category": "parking",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.291760,
+          34.887845
+        ]
+      },
+      "properties": {
+        "id": "brc_parking_b",
+        "name": "Academic Building Overflow Parking",
         "subtitle": "",
         "campus": "Blue Ridge",
         "category": "parking",
