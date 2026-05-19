@@ -157,6 +157,28 @@
     },
     {
       "type": "Feature",
+      "geometry": {[-84.291417, 34.889020]
+        "type": "Point",
+        "coordinates": [
+          -84.291417,
+          34.889020
+        ]
+      },
+      "properties": {
+        "id": "brc_parking_c",
+        "name": "Ralston Hall Parking",
+        "subtitle": "",
+        "campus": "Blue Ridge",
+        "category": "parking",
+        "building": "",
+        "description": "",
+        "parking": "",
+        "hours": "",
+        "url": ""
+      }
+    },
+    {
+      "type": "Feature",
       "geometry": {
         "type": "Point",
         "coordinates": [
