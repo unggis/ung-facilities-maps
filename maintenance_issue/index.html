@@ -197,7 +197,7 @@
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 var SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/survey123_2fecee77984545139d8455483a6eba0e_results/FeatureServer/0/query';
 // FIX: updated outFields — replaced field_10 with campus, fixed description field name (_l not _i)
-var QUERY_PARAMS = '?where=1%3D1&outFields=campus,issue_type,description,email,objectid,CreationDate&f=geojson&orderByFields=objectid+DESC&cacheBust=' + Date.now();
+var QUERY_PARAMS = '?where=status+%3D+%27Open%27&outFields=campus,issue_type,description,email,objectid,CreationDate&f=geojson&orderByFields=objectid+DESC&cacheBust=' + Date.now();
 
 var CAMPUSES = {
   dahlonega:   { center:[34.5281,-83.9864], zoom:16, id:'cb-da', label:'Dahlonega'   },
