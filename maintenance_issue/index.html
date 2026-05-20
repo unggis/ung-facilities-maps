@@ -195,9 +195,9 @@
 <script>
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-var SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Non-emergency_maintenance_items_VIEW/FeatureServer/0/query';
+var SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/survey123_2fecee77984545139d8455483a6eba0e_results/FeatureServer/0/query';
 // FIX: updated outFields — replaced field_10 with campus, fixed description field name (_l not _i)
-var QUERY_PARAMS = '?where=Status+%3D+%27Open%27&outFields=campus,type_of_issue_being_reported,describe_the_issue_along_with_i,objectid,CreationDate,contact_information&f=geojson&orderByFields=objectid+DESC&cacheBust=' + Date.now();
+var QUERY_PARAMS = '?where=1%3D1&outFields=campus,issue_type,description,email,objectid,CreationDate&f=geojson&orderByFields=objectid+DESC&cacheBust=' + Date.now();
 
 var CAMPUSES = {
   dahlonega:   { center:[34.5281,-83.9864], zoom:16, id:'cb-da', label:'Dahlonega'   },
@@ -293,8 +293,7 @@ function makeIcon(issueType, highlight) {
 // ── POPUP ─────────────────────────────────────────────────────────────────────
 function buildPopup(p, lat, lng) {
   var oid       = p.objectid || '—';
-  var issueType = (p.type_of_issue_being_reported || 'Facilities') + ' Issue';
-  // FIX: replaced p.field_10 with p.campus; fixed description field to describe_the_issue_along_with_l
+  var issueType = (p.issue_type || 'Facilities') + ' Issue';
   return '<div class="popup-inner" data-oid="' + oid + '">' +
     '<div class="popup-eyebrow">' + (p.campus || 'UNG') + ' &nbsp;&middot;&nbsp; Non-Emergency Report</div>' +
     '<div class="popup-title">' + issueType + '</div>' +
@@ -305,7 +304,7 @@ function buildPopup(p, lat, lng) {
     (p.CreationDate ? '<div class="popup-meta-row"><span class="popup-meta-key">Reported</span><span class="popup-meta-val">' + new Date(p.CreationDate).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) + '</span></div>' : '') +
     '</div>' +
     '<div class="popup-divider"></div>' +
-    '<div class="popup-body">' + (p.describe_the_issue_along_with_i || '—') + '</div>' +
+    '<div class="popup-body">' + (p.description || '—') + '</div>' +
     '<div class="popup-attachments" id="attachments-' + oid + '">' +
     '<div class="popup-loading">Loading photos&hellip;</div>' +
     '</div>' +
@@ -314,7 +313,7 @@ function buildPopup(p, lat, lng) {
 }
 
 // ── ATTACHMENT FETCH ──────────────────────────────────────────────────────────
-var ATTACH_BASE = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Non-emergency_maintenance_items_VIEW/FeatureServer/0/';
+var ATTACH_BASE = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/survey123_2fecee77984545139d8455483a6eba0e_results/FeatureServer/0/';
 
 function loadAttachments(oid) {
   var container = document.getElementById('attachments-' + oid);
@@ -390,7 +389,7 @@ function loadIssues(flyToOID) {
         var isTarget = flyToOID && String(oid) === String(flyToOID);
 
         var marker = L.marker([lat, lng], {
-          icon: makeIcon(p.type_of_issue_being_reported, isTarget)
+          icon: makeIcon(p.issue_type, isTarget)
         });
 
         marker.bindPopup(buildPopup(p, lat, lng), { maxWidth: 300, autoPanPadding: [20, 20] });
