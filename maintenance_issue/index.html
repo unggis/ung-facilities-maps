@@ -196,7 +196,8 @@
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 var SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Non-emergency_maintenance_items_VIEW/FeatureServer/0/query';
-var QUERY_PARAMS = '?where=Status+%3D+%27Open%27&outFields=field_10,type_of_issue_being_reported,describe_the_issue_along_with_i,objectid,CreationDate&f=geojson&orderByFields=objectid+DESC&cacheBust=' + Date.now();
+// FIX: updated outFields — replaced field_10 with campus, fixed description field name (_l not _i)
+var QUERY_PARAMS = '?where=Status+%3D+%27Open%27&outFields=campus,type_of_issue_being_reported,describe_the_issue_along_with_i,objectid,CreationDate,contact_information&f=geojson&orderByFields=objectid+DESC&cacheBust=' + Date.now();
 
 var CAMPUSES = {
   dahlonega:   { center:[34.5281,-83.9864], zoom:16, id:'cb-da', label:'Dahlonega'   },
@@ -291,15 +292,16 @@ function makeIcon(issueType, highlight) {
 
 // ── POPUP ─────────────────────────────────────────────────────────────────────
 function buildPopup(p, lat, lng) {
-  var oid      = p.objectid || '—';
+  var oid       = p.objectid || '—';
   var issueType = (p.type_of_issue_being_reported || 'Facilities') + ' Issue';
+  // FIX: replaced p.field_10 with p.campus; fixed description field to describe_the_issue_along_with_l
   return '<div class="popup-inner" data-oid="' + oid + '">' +
-    '<div class="popup-eyebrow">' + (p.field_10 || 'UNG') + ' &nbsp;&middot;&nbsp; Non-Emergency Report</div>' +
+    '<div class="popup-eyebrow">' + (p.campus || 'UNG') + ' &nbsp;&middot;&nbsp; Non-Emergency Report</div>' +
     '<div class="popup-title">' + issueType + '</div>' +
     '<div class="popup-divider"></div>' +
     '<div class="popup-meta">' +
     '<div class="popup-meta-row"><span class="popup-meta-key">Record ID</span><span class="popup-meta-val">' + oid + '</span></div>' +
-    '<div class="popup-meta-row"><span class="popup-meta-key">Campus</span><span class="popup-meta-val">' + (p.field_10 || '—') + '</span></div>' +
+    '<div class="popup-meta-row"><span class="popup-meta-key">Campus</span><span class="popup-meta-val">' + (p.campus || '—') + '</span></div>' +
     (p.CreationDate ? '<div class="popup-meta-row"><span class="popup-meta-key">Reported</span><span class="popup-meta-val">' + new Date(p.CreationDate).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) + '</span></div>' : '') +
     '</div>' +
     '<div class="popup-divider"></div>' +
@@ -340,7 +342,6 @@ function loadAttachments(oid) {
       html += '</div>';
       container.innerHTML = html;
 
-      // Resize popup after images noted
       setTimeout(function(){
         var popup = document.querySelector('.leaflet-popup');
         if (popup) popup.style.maxHeight = 'none';
@@ -400,12 +401,10 @@ function loadIssues(flyToOID) {
         if (isTarget) targetMarker = { marker: marker, lat: lat, lng: lng };
       });
 
-      // If OID param — fly to it
       if (targetMarker) {
         map.flyTo([targetMarker.lat, targetMarker.lng], 18, { animate: true, duration: 1.0 });
         setTimeout(function(){ targetMarker.marker.openPopup(); }, 1100);
       } else if (paramLat && paramLng) {
-        // Fallback to x,y params if no OID match
         map.flyTo([paramLat, paramLng], 18, { animate: true, duration: 1.0 });
       }
     })
