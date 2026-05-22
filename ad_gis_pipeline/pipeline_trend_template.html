@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNG Facilities GIS — Pipeline Trend</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy:      #1a2a4a;
+  --navy-mid:  #243558;
+  --gold:      #c9a84c;
+  --gold-light:#e8d49a;
+  --white:     #ffffff;
+  --off-white: #f8f7f4;
+  --text:      #1e2532;
+  --muted:     #5a6478;
+  --rule:      #ddd8cc;
+  --green:     #2d7a3a;
+  --green-pale:#edf7ef;
+  --amber:     #b07d00;
+  --red:       #a63228;
+  --red-pale:  #fdf1f0;
+  --blue-pale: #f0f4fa;
+}
+body { font-family:'Source Sans 3',sans-serif; font-weight:300; background:var(--off-white); color:var(--text); }
+
+header { background:var(--navy); border-bottom:3px solid var(--gold); }
+.header-inner { max-width:960px; margin:0 auto; padding:28px 32px 22px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; }
+.header-brand { display:flex; flex-direction:column; gap:4px; }
+.header-eyebrow { font-weight:600; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); }
+.header-title { font-family:'Libre Baskerville',serif; font-size:22px; font-weight:700; color:var(--white); }
+.header-sub { font-size:13px; font-weight:300; color:var(--gold-light); margin-top:2px; }
+.header-date { text-align:right; flex-shrink:0; }
+.date-label { font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); font-weight:600; }
+.date-value { font-family:'Libre Baskerville',serif; font-size:17px; color:var(--white); margin-top:3px; font-style:italic; }
+
+main { max-width:960px; margin:0 auto; padding:36px 32px 60px; }
+.section-label { font-size:10px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--rule); }
+
+/* GOAL HERO */
+.goal-hero { background:var(--white); border:1px solid var(--rule); border-top:4px solid var(--navy); padding:28px 32px; margin-bottom:32px; border-radius:2px; }
+.goal-header { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px; }
+.goal-rate { font-family:'Libre Baskerville',serif; font-size:52px; font-weight:700; color:var(--navy); line-height:1; }
+.goal-rate span { font-size:28px; }
+.goal-target { text-align:right; }
+.goal-target-label { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.goal-target-val { font-family:'Libre Baskerville',serif; font-size:24px; color:var(--gold); margin-top:2px; }
+.progress-track { background:var(--off-white); border-radius:4px; height:14px; overflow:hidden; margin-bottom:8px; border:1px solid var(--rule); }
+.progress-fill { height:100%; border-radius:4px; transition:width .6s ease; background:linear-gradient(90deg, var(--navy) 0%, #2e6da4 100%); }
+.progress-labels { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); }
+.delta-row { display:flex; gap:24px; margin-top:20px; padding-top:16px; border-top:1px solid var(--rule); }
+.delta-item { display:flex; flex-direction:column; gap:2px; }
+.delta-label { font-size:10px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.delta-val { font-size:18px; font-weight:600; font-family:'Libre Baskerville',serif; }
+.delta-val.up { color:var(--green); }
+.delta-val.down { color:var(--red); }
+.delta-val.flat { color:var(--muted); }
+
+/* CHART GRID */
+.chart-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:32px; }
+.chart-card { background:var(--white); border:1px solid var(--rule); border-top:3px solid var(--navy); padding:20px; border-radius:2px; }
+.chart-title { font-size:12px; font-weight:600; color:var(--navy); margin-bottom:16px; text-transform:uppercase; letter-spacing:.06em; }
+.chart-wrap { position:relative; height:200px; }
+
+/* RUNS TABLE */
+.runs-table-wrap { background:var(--white); border:1px solid var(--rule); margin-bottom:32px; overflow:hidden; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead tr { background:var(--navy); }
+thead th { padding:10px 16px; text-align:left; font-weight:600; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--white); }
+thead th:not(:first-child) { text-align:right; }
+tbody tr { border-bottom:1px solid var(--rule); }
+tbody tr:last-child { border-bottom:none; }
+tbody tr.latest { background:var(--blue-pale); font-weight:600; }
+tbody td { padding:10px 16px; }
+tbody td:not(:first-child) { text-align:right; font-variant-numeric:tabular-nums; }
+.arrow-up { color:var(--green); }
+.arrow-down { color:var(--red); }
+.arrow-flat { color:var(--muted); }
+.badge-latest { display:inline-block; background:var(--gold); color:var(--navy); font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:2px 6px; border-radius:2px; margin-left:6px; vertical-align:middle; }
+
+/* GAP BREAKDOWN */
+.gap-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:32px; }
+.gap-box { background:var(--white); border:1px solid var(--rule); padding:18px; border-radius:2px; }
+.gap-box.no-match { border-top:3px solid var(--amber); }
+.gap-box.duplicates { border-top:3px solid var(--red); }
+.gap-box.goal { border-top:3px solid var(--green); }
+.gap-num { font-family:'Libre Baskerville',serif; font-size:30px; font-weight:700; color:var(--navy); }
+.gap-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin-top:4px; }
+.gap-sub { font-size:11px; color:var(--muted); margin-top:2px; line-height:1.4; }
+.gap-trend { font-size:12px; margin-top:8px; font-weight:600; }
+
+footer { background:var(--navy); border-top:3px solid var(--gold); padding:18px 32px; text-align:center; }
+.footer-inner { max-width:960px; margin:0 auto; font-size:11px; color:var(--gold-light); line-height:1.7; }
+.footer-inner strong { color:var(--white); }
+
+@media(max-width:640px) {
+  .chart-grid { grid-template-columns:1fr; }
+  .gap-grid { grid-template-columns:1fr 1fr; }
+  .header-inner { flex-direction:column; align-items:flex-start; }
+  .header-date { text-align:left; }
+  .goal-header { flex-direction:column; gap:8px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-eyebrow">University of North Georgia · Facilities Planning & GIS</div>
+      <div class="header-title">AD → GIS Pipeline · Run History</div>
+      <div class="header-sub">Weekly occupant placement trend across all five campuses</div>
+    </div>
+    <div class="header-date">
+      <div class="date-label">Latest Run</div>
+      <div class="date-value" id="latest-date">—</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- GOAL HERO -->
+  <div class="section-label" style="margin-top:0">Placement Rate — Progress Toward 100%</div>
+  <div class="goal-hero">
+    <div class="goal-header">
+      <div>
+        <div class="goal-rate"><span id="current-rate">—</span><span>%</span></div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">of mappable AD records placed on a GIS polygon</div>
+      </div>
+      <div class="goal-target">
+        <div class="goal-target-label">Goal</div>
+        <div class="goal-target-val">100%</div>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="progress-labels"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+    <div class="delta-row" id="delta-row"></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="section-label">Trend — All Recorded Runs</div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">Placement Rate %</div>
+      <div class="chart-wrap"><canvas id="rateChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Polygons Populated vs Gap</div>
+      <div class="chart-wrap"><canvas id="stackChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- GAP BREAKDOWN -->
+  <div class="section-label">Current Gap — Accounted For</div>
+  <div class="gap-grid">
+    <div class="gap-box no-match">
+      <div class="gap-num" id="gap-no-match">—</div>
+      <div class="gap-label">No Matching Polygon</div>
+      <div class="gap-sub">AD room entry exists but no GIS polygon found — new construction, entry variants, crosswalk gaps</div>
+      <div class="gap-trend" id="gap-no-match-trend"></div>
+    </div>
+    <div class="gap-box duplicates">
+      <div class="gap-num" id="gap-dup">—</div>
+      <div class="gap-label">Duplicate Polygons Skipped</div>
+      <div class="gap-sub">GIS data quality — ambiguous building+room combinations intentionally skipped</div>
+      <div class="gap-trend" id="gap-dup-trend"></div>
+    </div>
+    <div class="gap-box goal">
+      <div class="gap-num" id="remaining">—</div>
+      <div class="gap-label">Polygons to Goal</div>
+      <div class="gap-sub">Additional placements needed to reach 100% of mappable population</div>
+      <div class="gap-trend" id="remaining-trend"></div>
+    </div>
+  </div>
+
+  <!-- RUNS TABLE -->
+  <div class="section-label">Run History</div>
+  <div class="runs-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Run Date</th>
+          <th>Total AD</th>
+          <th>Mappable</th>
+          <th>Populated</th>
+          <th>Rate %</th>
+          <th>No Match</th>
+          <th>Duplicates</th>
+        </tr>
+      </thead>
+      <tbody id="runs-tbody"></tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <strong>UNG Facilities Planning &amp; GIS</strong> &nbsp;·&nbsp;
+    AD → GIS Floor Plan Pipeline &nbsp;·&nbsp; Internal Use<br>
+    Data sourced from pipeline_history.json &nbsp;·&nbsp; <span id="footer-generated"></span>
+  </div>
+</footer>
+
+<script>
+// ── LOAD HISTORY ──────────────────────────────────────────────────────────────
+// In production this is fetched from pipeline_history.json in the same repo.
+// For the demo, data is embedded directly.
+
+const HISTORY = PIPELINE_HISTORY_PLACEHOLDER;
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function fmt(n) { return Number(n).toLocaleString(); }
+function fmtRate(r) { return Number(r).toFixed(1); }
+function delta(curr, prev, invert) {
+  if (prev === undefined || prev === null) return '';
+  const d = curr - prev;
+  if (Math.abs(d) < 0.05) return '<span class="arrow-flat">→ no change</span>';
+  const up = invert ? d < 0 : d > 0;
+  const sign = d > 0 ? '+' : '';
+  const cls = up ? 'arrow-up' : 'arrow-down';
+  const arrow = up ? '↑' : '↓';
+  return `<span class="${cls}">${arrow} ${sign}${typeof curr === 'number' && !Number.isInteger(curr) ? d.toFixed(1) : Math.round(d)}</span>`;
+}
+
+// Sort by date ascending
+const runs = [...HISTORY].sort((a,b) => new Date(a.run_date) - new Date(b.run_date));
+const latest = runs[runs.length - 1];
+const prev   = runs.length > 1 ? runs[runs.length - 2] : null;
+
+// ── GOAL HERO ─────────────────────────────────────────────────────────────────
+document.getElementById('latest-date').textContent = latest.run_label || latest.run_date;
+document.getElementById('current-rate').textContent = fmtRate(latest.placement_rate);
+document.getElementById('progress-fill').style.width = Math.min(latest.placement_rate, 100) + '%';
+
+const deltaRow = document.getElementById('delta-row');
+const deltaItems = [
+  { label: 'vs Previous Run', val: prev ? fmtRate(latest.placement_rate - prev.placement_rate) + '%' : 'First run', cls: prev ? (latest.placement_rate >= prev.placement_rate ? 'up' : 'down') : 'flat' },
+  { label: 'Polygons Populated', val: fmt(latest.gis_populated), cls: 'flat' },
+  { label: 'Mappable Records', val: fmt(latest.mappable), cls: 'flat' },
+  { label: 'Runs Recorded', val: runs.length, cls: 'flat' },
+];
+deltaRow.innerHTML = deltaItems.map(d =>
+  `<div class="delta-item">
+    <div class="delta-label">${d.label}</div>
+    <div class="delta-val ${d.cls}">${d.val}</div>
+  </div>`
+).join('');
+
+// ── GAP BREAKDOWN ─────────────────────────────────────────────────────────────
+document.getElementById('gap-no-match').textContent = fmt(latest.gap_no_match);
+document.getElementById('gap-dup').textContent = fmt(latest.gap_duplicates);
+document.getElementById('remaining').textContent = fmt(latest.mappable - latest.gis_populated);
+
+if (prev) {
+  document.getElementById('gap-no-match-trend').innerHTML =
+    delta(latest.gap_no_match, prev.gap_no_match, true) + ' vs previous run';
+  document.getElementById('gap-dup-trend').innerHTML =
+    delta(latest.gap_duplicates, prev.gap_duplicates, true) + ' vs previous run';
+  document.getElementById('remaining-trend').innerHTML =
+    delta(latest.mappable - latest.gis_populated, prev.mappable - prev.gis_populated, true) + ' vs previous run';
+}
+
+// ── RUNS TABLE ────────────────────────────────────────────────────────────────
+const tbody = document.getElementById('runs-tbody');
+const tableRuns = runs.slice().reverse(); // latest first
+
+tbody.innerHTML = tableRuns.map((run, i) => {
+  const prevRun = tableRuns[i + 1];
+  const isLatest = i === 0;
+  return `<tr class="${isLatest ? 'latest' : ''}">
+    <td>${run.run_label || run.run_date}${isLatest ? '<span class="badge-latest">Latest</span>' : ''}</td>
+    <td>${fmt(run.total_ad)}</td>
+    <td>${fmt(run.mappable)}</td>
+    <td>${fmt(run.gis_populated)} ${prevRun ? delta(run.gis_populated, prevRun.gis_populated, false) : ''}</td>
+    <td>${fmtRate(run.placement_rate)}% ${prevRun ? delta(run.placement_rate, prevRun.placement_rate, false) : ''}</td>
+    <td>${fmt(run.gap_no_match)} ${prevRun ? delta(run.gap_no_match, prevRun.gap_no_match, true) : ''}</td>
+    <td>${fmt(run.gap_duplicates)} ${prevRun ? delta(run.gap_duplicates, prevRun.gap_duplicates, true) : ''}</td>
+  </tr>`;
+}).join('');
+
+// ── CHART COLORS ──────────────────────────────────────────────────────────────
+const NAVY_C   = '#1a2a4a';
+const GOLD_C   = '#c9a84c';
+const GREEN_C  = '#2d7a3a';
+const RED_C    = '#a63228';
+const AMBER_C  = '#b07d00';
+const LGRAY_C  = '#ddd8cc';
+
+const labels = runs.map(r => r.run_label || r.run_date);
+
+// ── RATE CHART ────────────────────────────────────────────────────────────────
+new Chart(document.getElementById('rateChart'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [{
+      label: 'Placement Rate %',
+      data: runs.map(r => r.placement_rate),
+      borderColor: NAVY_C,
+      backgroundColor: 'rgba(26,42,74,0.08)',
+      borderWidth: 2.5,
+      pointBackgroundColor: GOLD_C,
+      pointBorderColor: NAVY_C,
+      pointRadius: 5,
+      tension: 0.3,
+      fill: true,
+    }, {
+      label: '100% Goal',
+      data: runs.map(() => 100),
+      borderColor: GREEN_C,
+      borderWidth: 1.5,
+      borderDash: [6, 4],
+      pointRadius: 0,
+      fill: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { min: 0, max: 100, grid: { color: LGRAY_C },
+           ticks: { callback: v => v + '%', font: { size: 10 } } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// ── STACKED BAR CHART ─────────────────────────────────────────────────────────
+new Chart(document.getElementById('stackChart'), {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [
+      { label: 'Populated', data: runs.map(r => r.gis_populated),
+        backgroundColor: NAVY_C, stack: 'a' },
+      { label: 'No Match',  data: runs.map(r => r.gap_no_match),
+        backgroundColor: AMBER_C, stack: 'a' },
+      { label: 'Duplicates',data: runs.map(r => r.gap_duplicates),
+        backgroundColor: RED_C, stack: 'a' },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } } },
+    scales: {
+      y: { stacked: true, grid: { color: LGRAY_C }, ticks: { font: { size: 10 } } },
+      x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+document.getElementById('footer-generated').textContent =
+  'Generated ' + new Date().toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'});
+</script>
+</body>
+</html>

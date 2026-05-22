@@ -1,0 +1,67 @@
+[
+  {
+    "run_date": "2026-03-19",
+    "run_label": "March 19, 2026",
+    "total_ad": 2380,
+    "mappable": 1467,
+    "suspect": 685,
+    "online_blank": 207,
+    "missing_location": 21,
+    "gis_populated": 1063,
+    "placement_rate": 72.5,
+    "gap_no_match": 107,
+    "gap_duplicates": 78
+  },
+  {
+    "run_date": "2026-03-26",
+    "run_label": "March 26, 2026",
+    "total_ad": 2391,
+    "mappable": 1478,
+    "suspect": 688,
+    "online_blank": 207,
+    "missing_location": 18,
+    "gis_populated": 1082,
+    "placement_rate": 73.2,
+    "gap_no_match": 101,
+    "gap_duplicates": 78
+  },
+  {
+    "run_date": "2026-04-09",
+    "run_label": "April 9, 2026",
+    "total_ad": 2418,
+    "mappable": 1493,
+    "suspect": 695,
+    "online_blank": 209,
+    "missing_location": 21,
+    "gis_populated": 1108,
+    "placement_rate": 74.2,
+    "gap_no_match": 98,
+    "gap_duplicates": 78
+  },
+  {
+    "run_date": "2026-05-20",
+    "run_label": "May 20, 2026",
+    "total_ad": 2447,
+    "mappable": 1511,
+    "suspect": 701,
+    "online_blank": 209,
+    "missing_location": 26,
+    "gis_populated": 1142,
+    "placement_rate": 75.6,
+    "gap_no_match": 92,
+    "gap_duplicates": 78
+  },
+  {
+    "run_date": "2026-05-21",
+    "run_label": "May 21, 2026",
+    "total_ad": 2458,
+    "mappable": 1511,
+    "suspect": 712,
+    "online_blank": 209,
+    "missing_location": 26,
+    "gis_populated": 1150,
+    "placement_rate": 76.2,
+    "gap_no_match": 83,
+    "gap_duplicates": 78
+  }
+]
