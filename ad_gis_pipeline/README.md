@@ -2,7 +2,7 @@
 
 **University of North Georgia | Facilities Planning & GIS**  
 **Author:** John Segars, MGIS | jdsegars@ung.edu  
-**Repository:** unggis (public) | `pipeline/` directory  
+**Repository:** unggis (public) | `ad_gis_pipeline/` directory  
 **Last Updated:** May 2026
 
 ---
@@ -25,8 +25,8 @@ These files are generated automatically by `Pipeline_Summary_Stats_v1_2.py` and 
 
 | Page | URL |
 |------|-----|
-| Current run snapshot | `https://unggis.github.io/pipeline/` |
-| Trend / history | `https://unggis.github.io/pipeline/trend.html` |
+| Current run snapshot | `https://unggis.github.io/ad_gis_pipeline/` |
+| Trend / history | `https://unggis.github.io/ad_gis_pipeline/trend.html` |
 
 Both pages are self-contained — no build step, no server, no external data calls beyond Google Fonts and Chart.js from CDN.
 
@@ -106,14 +106,14 @@ After each weekly pipeline run:
 
 3. Copy and rename to this directory:
    ```
-   pipeline_summary.html  →  pipeline/index.html
-   pipeline_trend.html    →  pipeline/trend.html
-   pipeline_history.json  →  pipeline/pipeline_history.json
+   pipeline_summary.html  →  ad_gis_pipeline/index.html
+   pipeline_trend.html    →  ad_gis_pipeline/trend.html
+   pipeline_history.json  →  ad_gis_pipeline/pipeline_history.json
    ```
 
 4. Commit and push:
    ```
-   git add pipeline/
+   git add ad_gis_pipeline/
    git commit -m "Pipeline run MMDDYYYY — XX.X% placement rate"
    git push
    ```
