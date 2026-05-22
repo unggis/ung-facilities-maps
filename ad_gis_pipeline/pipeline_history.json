@@ -73,8 +73,9 @@
     "online_blank": 211,
     "missing_location": 238,
     "gis_populated": 1393,
-    "placement_rate": 75.6,
+    "placement_rate": 93.7,
     "gap_no_match": 83,
-    "gap_duplicates": 78
+    "gap_duplicates": 10,
+    "gap_gis_duplicates": 78
   }
 ]
