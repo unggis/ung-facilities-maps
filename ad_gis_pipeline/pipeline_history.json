@@ -59,9 +59,9 @@
     "suspect": 712,
     "online_blank": 209,
     "missing_location": 238,
-    "gis_populated": 1405,
-    "placement_rate": 94.4,
+    "gis_populated": 1395,
+    "placement_rate": 93.8,
     "gap_no_match": 83,
-    "gap_duplicates": 0
+    "gap_duplicates": 10
   }
 ]
