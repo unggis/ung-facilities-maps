@@ -151,8 +151,8 @@ footer { background:var(--navy); border-top:3px solid var(--gold); padding:18px 
       <div class="chart-wrap"><canvas id="rateChart"></canvas></div>
     </div>
     <div class="chart-card">
-      <div class="chart-title">Polygons Populated vs Gap</div>
-      <div class="chart-wrap"><canvas id="stackChart"></canvas></div>
+      <div class="chart-title">Gap Trend — No Match &amp; Duplicates</div>
+      <div class="chart-wrap"><canvas id="gapChart"></canvas></div>
     </div>
   </div>
 
@@ -362,13 +362,19 @@ const LGRAY_C  = '#ddd8cc';
 const labels = runs.map(r => r.run_label || r.run_date);
 
 // ── RATE CHART ────────────────────────────────────────────────────────────────
+// Y-axis floor is dynamic — 5 points below the lowest recorded rate,
+// rounded down to nearest 5, so week-over-week movement is visible.
+const rates = runs.map(r => r.placement_rate);
+const rateFloor = Math.floor((Math.min(...rates) - 5) / 5) * 5;
+const rateCeil  = 100;
+
 new Chart(document.getElementById('rateChart'), {
   type: 'line',
   data: {
     labels,
     datasets: [{
       label: 'Placement Rate %',
-      data: runs.map(r => r.placement_rate),
+      data: rates,
       borderColor: NAVY_C,
       backgroundColor: 'rgba(26,42,74,0.08)',
       borderWidth: 2.5,
@@ -389,35 +395,76 @@ new Chart(document.getElementById('rateChart'), {
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%' } }
+    },
     scales: {
-      y: { min: 0, max: 100, grid: { color: LGRAY_C },
-           ticks: { callback: v => v + '%', font: { size: 10 } } },
+      y: {
+        min: rateFloor, max: rateCeil,
+        grid: { color: LGRAY_C },
+        ticks: { callback: v => v + '%', font: { size: 10 } }
+      },
       x: { grid: { display: false }, ticks: { font: { size: 10 } } }
     }
   }
 });
 
-// ── STACKED BAR CHART ─────────────────────────────────────────────────────────
-new Chart(document.getElementById('stackChart'), {
-  type: 'bar',
+// ── GAP TREND LINE CHART ──────────────────────────────────────────────────────
+// Shows no_match and duplicates as separate lines over time.
+// Y-axis is dynamic so dropping no_match counts are clearly visible.
+// Duplicates are a GIS data quality item (flat until DC polygons fixed).
+// No_match drops as crosswalk entries are added and AD data improves.
+const allGapVals = [
+  ...runs.map(r => r.gap_no_match),
+  ...runs.map(r => r.gap_duplicates)
+];
+const gapFloor = Math.floor((Math.min(...allGapVals) - 10) / 10) * 10;
+const gapCeil  = Math.ceil((Math.max(...allGapVals) + 10) / 10) * 10;
+
+new Chart(document.getElementById('gapChart'), {
+  type: 'line',
   data: {
     labels,
-    datasets: [
-      { label: 'Populated', data: runs.map(r => r.gis_populated),
-        backgroundColor: NAVY_C, stack: 'a' },
-      { label: 'No Match',  data: runs.map(r => r.gap_no_match),
-        backgroundColor: AMBER_C, stack: 'a' },
-      { label: 'Duplicates',data: runs.map(r => r.gap_duplicates),
-        backgroundColor: RED_C, stack: 'a' },
-    ]
+    datasets: [{
+      label: 'No Match',
+      data: runs.map(r => r.gap_no_match),
+      borderColor: AMBER_C,
+      backgroundColor: 'rgba(176,125,0,0.08)',
+      borderWidth: 2.5,
+      pointBackgroundColor: AMBER_C,
+      pointBorderColor: AMBER_C,
+      pointRadius: 5,
+      tension: 0.3,
+      fill: false,
+    }, {
+      label: 'Duplicates',
+      data: runs.map(r => r.gap_duplicates),
+      borderColor: RED_C,
+      backgroundColor: 'rgba(166,50,40,0.08)',
+      borderWidth: 2.5,
+      pointBackgroundColor: RED_C,
+      pointBorderColor: RED_C,
+      pointRadius: 5,
+      tension: 0.1,
+      fill: false,
+      borderDash: [5, 3],
+    }]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } } },
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } },
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y } }
+    },
     scales: {
-      y: { stacked: true, grid: { color: LGRAY_C }, ticks: { font: { size: 10 } } },
-      x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } }
+      y: {
+        min: Math.max(0, gapFloor),
+        max: gapCeil,
+        grid: { color: LGRAY_C },
+        ticks: { font: { size: 10 } }
+      },
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } }
     }
   }
 });
