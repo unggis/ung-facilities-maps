@@ -131,8 +131,10 @@
       lat: 34.234847,
       lng: -83.867550,
       title: "Orientation — Student Center",
+      img: "imgs/student_center.jpg",
       body: "Welcome to NextFest! Start your tour here at the Student Center. Pick up a program, get your bearings, and head out to explore everything the Gainesville campus has to offer. [Update with CE content]"
     }
+    // Add MTS stops here: { n: 2, lat: XX, lng: XX, title: "...", img: "imgs/filename.jpg", body: "..." }
   ];
 
   // ── POINTS OF INTEREST ──
@@ -143,8 +145,10 @@
       lat: 34.235974,
       lng: -83.864635,
       title: "The Mural",
-      body: "This vibrant mural captures the cultural spirit of UNG and the Gainesville community — and the bold vision behind UNG's fine arts programs. A must-see for visitors drawn to the visual arts. [Update with CE content]"
+      img: "imgs/mural.jpg",
+      body: "This vibrant mural captures the cultural spirit of UNG and the Gainesville community — and the bold vision behind UNG's fine arts programs. A must-see for visitors drawn to the visual arts."
     }
+    // Add POI stops here: { initial: "F", category: "Food", lat: XX, lng: XX, title: "...", img: "imgs/filename.jpg", body: "..." }
   ];
 
   mtsStops.forEach(stop => {
@@ -155,6 +159,7 @@
           <div class="popup-stop-mts">Stop ${stop.n}</div>
           <div class="popup-title">${stop.title}</div>
         </div>
+        ${stop.img ? `<img src="${stop.img}" style="width:100%;height:120px;object-fit:cover;display:block;">` : ''}
         <div class="popup-body">${stop.body}</div>
       `, { className: 'custom-popup', maxWidth: 280 });
   });
@@ -167,6 +172,7 @@
           <div class="popup-stop-poi">${stop.category}</div>
           <div class="popup-title">${stop.title}</div>
         </div>
+        ${stop.img ? `<img src="${stop.img}" style="width:100%;height:120px;object-fit:cover;display:block;">` : ''}
         <div class="popup-body">${stop.body}</div>
       `, { className: 'custom-popup', maxWidth: 280 });
   });
