@@ -101,9 +101,11 @@ function buildUrl(base, campus, wpId) {
 
 function overlayLogo(containerId) {
   var container = document.getElementById(containerId);
-  if (!container) return;
+  if (!container) { console.log('no container'); return; }
   var canvas = container.querySelector('canvas');
-  if (!canvas) return;
+  if (!canvas) { console.log('no canvas'); return; }
+  console.log('canvas found:', canvas.width, canvas.height);
+  console.log('steeple complete:', STEEPLE_IMG.complete, 'naturalWidth:', STEEPLE_IMG.naturalWidth);
   var ctx = canvas.getContext('2d');
   var cw = canvas.width;
   var ch = canvas.height;
@@ -116,6 +118,7 @@ function overlayLogo(containerId) {
   ctx.fillStyle = '#ffffff';
   ctx.fill();
   ctx.drawImage(STEEPLE_IMG, cx - logoSize/2, cy - logoSize/2, logoSize, logoSize);
+  console.log('drawImage called');
 }
 
 function makeQRCard(name, campus, wpId, baseUrl, containerId) {
