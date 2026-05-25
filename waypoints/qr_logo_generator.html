@@ -162,7 +162,13 @@ function makeQRCard(name, campus, wpId, baseUrl, containerId) {
     correctLevel: QRCode.CorrectLevel.H
   });
 
-  setTimeout(function() { overlayLogo(cardId); }, 400);
+  if (STEEPLE_IMG.complete) {
+    setTimeout(function() { overlayLogo(cardId); }, 400);
+  } else {
+    STEEPLE_IMG.onload = function() {
+      setTimeout(function() { overlayLogo(cardId); }, 200);
+    };
+  }
 }
 
 function genSingle() {
