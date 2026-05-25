@@ -10,55 +10,29 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   #map { height: 100vh; width: 100%; }
-
   .custom-popup .leaflet-popup-content-wrapper {
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-    padding: 0;
-    overflow: hidden;
+    border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    padding: 0; overflow: hidden;
   }
-  .custom-popup .leaflet-popup-content {
-    margin: 0;
-    width: 260px !important;
-  }
+  .custom-popup .leaflet-popup-content { margin: 0; width: 260px !important; }
   .popup-header-mts { background: #003057; color: #fff; padding: 12px 14px 10px; }
   .popup-header-poi { background: #CBA052; color: #fff; padding: 12px 14px 10px; }
   .popup-stop-mts { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #CBA052; font-weight: 600; margin-bottom: 4px; }
   .popup-stop-poi { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #003057; font-weight: 600; margin-bottom: 4px; }
   .popup-title { font-size: 15px; font-weight: 700; line-height: 1.2; }
   .popup-body { padding: 10px 14px 12px; font-size: 13px; color: #333; line-height: 1.5; }
-
-  /* MTS — navy teardrop with number */
   .mts-pin {
-    width: 32px; height: 32px;
-    border-radius: 50% 50% 50% 0;
-    background: #003057;
-    border: 2px solid #CBA052;
-    transform: rotate(-45deg);
-    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 50% 50% 50% 0;
+    background: #003057; border: 2px solid #CBA052;
+    transform: rotate(-45deg); display: flex; align-items: center; justify-content: center;
   }
-  .mts-pin span {
-    transform: rotate(45deg);
-    color: #CBA052; font-weight: 700; font-size: 13px;
-    font-family: Arial, sans-serif;
-    display: block; margin-left: 1px; margin-top: 1px;
-  }
-
-  /* POI — gold teardrop with category initial */
+  .mts-pin span { transform: rotate(45deg); color: #CBA052; font-weight: 700; font-size: 13px; font-family: Arial, sans-serif; display: block; margin-left: 1px; margin-top: 1px; }
   .poi-pin {
-    width: 28px; height: 28px;
-    border-radius: 50% 50% 50% 0;
-    background: #CBA052;
-    border: 2px solid #003057;
-    transform: rotate(-45deg);
-    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50% 50% 50% 0;
+    background: #CBA052; border: 2px solid #003057;
+    transform: rotate(-45deg); display: flex; align-items: center; justify-content: center;
   }
-  .poi-pin span {
-    transform: rotate(45deg);
-    color: #003057; font-weight: 700; font-size: 11px;
-    font-family: Arial, sans-serif;
-    display: block; margin-left: 1px; margin-top: 1px;
-  }
+  .poi-pin span { transform: rotate(45deg); color: #003057; font-weight: 700; font-size: 11px; font-family: Arial, sans-serif; display: block; margin-left: 1px; margin-top: 1px; }
 </style>
 </head>
 <body>
@@ -72,13 +46,20 @@
     zoomControl: true
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  // Base tiles — no labels
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 20
   }).addTo(map);
 
-  // ── MARKER FACTORIES ──
+  // Labels on top — sits above markers so building names are always readable
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd',
+    maxZoom: 20,
+    pane: 'overlayPane'
+  }).addTo(map);
+
   function mtsIcon(n) {
     return L.divIcon({
       className: '',
@@ -95,7 +76,6 @@
     });
   }
 
-  // ── MAIN TOUR STOPS (MTS) ──
   const mtsStops = [
     {
       n: 1,
@@ -104,11 +84,8 @@
       title: "Orientation — Student Center",
       body: "Welcome to NextFest! Start your tour here at the Student Center. Pick up a program, get your bearings, and head out to explore everything the Gainesville campus has to offer. [Update with CE content]"
     }
-    // Add MTS stops here as CE supplies the activity list
-    // { n: 2, lat: XX, lng: XX, title: "...", body: "..." },
   ];
 
-  // ── POINTS OF INTEREST (POI) ──
   const poiStops = [
     {
       initial: "A",
@@ -118,11 +95,8 @@
       title: "The Mural",
       body: "This vibrant mural captures the cultural spirit of UNG and the Gainesville community — and the bold vision behind UNG's fine arts programs. A must-see for visitors drawn to the visual arts. [Update with CE content]"
     }
-    // Add POI stops here — A=Arts, F=Food, S=Sports, etc.
-    // { initial: "F", category: "Food", lat: XX, lng: XX, title: "...", body: "..." },
   ];
 
-  // ── RENDER MTS ──
   mtsStops.forEach(stop => {
     L.marker([stop.lat, stop.lng], { icon: mtsIcon(stop.n) })
       .addTo(map)
@@ -135,7 +109,6 @@
       `, { className: 'custom-popup', maxWidth: 280 });
   });
 
-  // ── RENDER POI ──
   poiStops.forEach(stop => {
     L.marker([stop.lat, stop.lng], { icon: poiIcon(stop.initial) })
       .addTo(map)
