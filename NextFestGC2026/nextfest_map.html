@@ -120,14 +120,8 @@
 
       // Click popup
       layer.on('click', function() {
-        var rows = '';
-        if (typeLabel)  rows += '<tr><td class="bl">Type</td><td>' + typeLabel + '</td></tr>';
-        if (p.sqft)     rows += '<tr><td class="bl">Sq Ft</td><td>' + p.sqft.toLocaleString() + '</td></tr>';
-        rows += '<tr><td class="bl">ADA</td><td>' + (p.ADA_ACCES === 1 ? 'Yes' : 'No') + '</td></tr>';
-
         layer.bindPopup(
-          '<div class="bldg-popup-header">' + name + '</div>' +
-          '<table class="bldg-table">' + rows + '</table>',
+          '<div class="bldg-popup-header">' + name + '</div>',
           { maxWidth: 260 }
         ).openPopup();
       });
