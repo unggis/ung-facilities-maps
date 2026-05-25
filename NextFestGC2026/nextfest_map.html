@@ -88,13 +88,21 @@
       var name = feature.properties.Building || '';
       if (name) {
         layer.bindTooltip(name, {
-          permanent: false,
-          sticky: true,
-          direction: 'top',
+          permanent: true,
+          direction: 'center',
           className: 'building-label'
         });
-        layer.on('mouseover', function() { layer.openTooltip(); });
-        layer.on('mouseout', function() { layer.closeTooltip(); });
+
+        function updateLabel() {
+          if (map.getZoom() >= 19) {
+            layer.openTooltip();
+          } else {
+            layer.closeTooltip();
+          }
+        }
+
+        map.on('zoomend', updateLabel);
+        updateLabel();
       }
     }
   }).addTo(map);
