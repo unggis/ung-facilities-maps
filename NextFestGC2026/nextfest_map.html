@@ -89,9 +89,12 @@
       if (name) {
         layer.bindTooltip(name, {
           permanent: false,
-          direction: 'center',
+          sticky: true,
+          direction: 'top',
           className: 'building-label'
         });
+        layer.on('mouseover', function() { layer.openTooltip(); });
+        layer.on('mouseout', function() { layer.closeTooltip(); });
       }
     }
   }).addTo(map);
