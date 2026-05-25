@@ -46,6 +46,11 @@
     zoomControl: true
   });
 
+  // Create a custom pane for labels with high z-index — sits above markers
+  map.createPane('labelsPane');
+  map.getPane('labelsPane').style.zIndex = 650;
+  map.getPane('labelsPane').style.pointerEvents = 'none';
+
   // Base tiles — no labels
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
@@ -53,11 +58,11 @@
     maxZoom: 20
   }).addTo(map);
 
-  // Labels on top — sits above markers so building names are always readable
+  // Labels pane — above everything including markers
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
     subdomains: 'abcd',
     maxZoom: 20,
-    pane: 'overlayPane'
+    pane: 'labelsPane'
   }).addTo(map);
 
   function mtsIcon(n) {
