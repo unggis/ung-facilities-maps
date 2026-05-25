@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NextFest Gainesville 2026</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  #map { height: 100vh; width: 100%; }
+
+  .custom-popup .leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    padding: 0;
+    overflow: hidden;
+  }
+  .custom-popup .leaflet-popup-content {
+    margin: 0;
+    width: 260px !important;
+  }
+  .popup-header {
+    background: #003057;
+    color: #fff;
+    padding: 12px 14px 10px;
+  }
+  .popup-stop {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #CBA052;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .popup-title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .popup-body {
+    padding: 10px 14px 12px;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.5;
+  }
+
+  /* Numbered marker */
+  .marker-pin {
+    width: 32px;
+    height: 32px;
+    border-radius: 50% 50% 50% 0;
+    background: #003057;
+    border: 2px solid #CBA052;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .marker-pin span {
+    transform: rotate(45deg);
+    color: #CBA052;
+    font-weight: 700;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    display: block;
+    margin-left: 1px;
+    margin-top: 1px;
+  }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+  // UNG Gainesville campus center
+  const map = L.map('map', {
+    center: [34.2849, -83.8241],
+    zoom: 16,
+    minZoom: 15,
+    maxZoom: 19,
+    zoomControl: true
+  });
+
+  // CartoDB Positron — clean, no building names
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20
+  }).addTo(map);
+
+  // Numbered marker factory
+  function makeIcon(n) {
+    return L.divIcon({
+      className: '',
+      html: `<div class="marker-pin"><span>${n}</span></div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -34]
+    });
+  }
+
+  // Stop 1 — Mural (placeholder coords — update once confirmed)
+  const stops = [
+    {
+      n: 1,
+      lat: 34.2849,
+      lng: -83.8220,
+      title: "The Mural",
+      body: "This vibrant mural on the Gainesville campus captures the cultural spirit of UNG and the surrounding community. It's where NextFest begins — and where bold futures take shape. [Update description with CE]"
+    }
+    // Additional stops will be added here as CE supplies activity list
+    // { n: 2, lat: XX, lng: XX, title: "...", body: "..." },
+  ];
+
+  stops.forEach(stop => {
+    L.marker([stop.lat, stop.lng], { icon: makeIcon(stop.n) })
+      .addTo(map)
+      .bindPopup(`
+        <div class="popup-header">
+          <div class="popup-stop">Stop ${stop.n}</div>
+          <div class="popup-title">${stop.title}</div>
+        </div>
+        <div class="popup-body">${stop.body}</div>
+      `, { className: 'custom-popup', maxWidth: 280 });
+  });
+
+</script>
+</body>
+</html>
