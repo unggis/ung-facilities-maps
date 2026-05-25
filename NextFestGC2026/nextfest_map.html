@@ -6,10 +6,24 @@
 <title>NextFest Gainesville 2026</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; }
   #map { height: 100vh; width: 100%; }
+
+  .building-label {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: #003057;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: Arial, sans-serif;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
   .custom-popup .leaflet-popup-content-wrapper {
     border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
     padding: 0; overflow: hidden;
@@ -21,12 +35,14 @@
   .popup-stop-poi { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #003057; font-weight: 600; margin-bottom: 4px; }
   .popup-title { font-size: 15px; font-weight: 700; line-height: 1.2; }
   .popup-body { padding: 10px 14px 12px; font-size: 13px; color: #333; line-height: 1.5; }
+
   .mts-pin {
     width: 32px; height: 32px; border-radius: 50% 50% 50% 0;
     background: #003057; border: 2px solid #CBA052;
     transform: rotate(-45deg); display: flex; align-items: center; justify-content: center;
   }
   .mts-pin span { transform: rotate(45deg); color: #CBA052; font-weight: 700; font-size: 13px; font-family: Arial, sans-serif; display: block; margin-left: 1px; margin-top: 1px; }
+
   .poi-pin {
     width: 28px; height: 28px; border-radius: 50% 50% 50% 0;
     background: #CBA052; border: 2px solid #003057;
@@ -46,25 +62,41 @@
     zoomControl: true
   });
 
-  // Create a custom pane for labels with high z-index — sits above markers
-  map.createPane('labelsPane');
-  map.getPane('labelsPane').style.zIndex = 650;
-  map.getPane('labelsPane').style.pointerEvents = 'none';
+  // Pane for buildings — below markers
+  map.createPane('buildings');
+  map.getPane('buildings').style.zIndex = 400;
 
-  // Base tiles — no labels
+  // CartoDB no-labels base
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 20
   }).addTo(map);
 
-  // Labels pane — above everything including markers
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd',
-    maxZoom: 20,
-    pane: 'labelsPane'
+  // UNG Building Footprints — Gainesville only (campus field = 'Gainesville')
+  L.esri.featureLayer({
+    url: 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Building_Footprints_2_view/FeatureServer/5',
+    pane: 'buildings',
+    where: "campus = 'Gainesville'",
+    style: {
+      color: '#003057',
+      weight: 1.5,
+      fillColor: '#CBA052',
+      fillOpacity: 0.35
+    },
+    onEachFeature: function(feature, layer) {
+      var name = feature.properties.Building || '';
+      if (name) {
+        layer.bindTooltip(name, {
+          permanent: true,
+          direction: 'center',
+          className: 'building-label'
+        });
+      }
+    }
   }).addTo(map);
 
+  // ── MARKER FACTORIES ──
   function mtsIcon(n) {
     return L.divIcon({
       className: '',
@@ -81,6 +113,7 @@
     });
   }
 
+  // ── MAIN TOUR STOPS ──
   const mtsStops = [
     {
       n: 1,
@@ -91,6 +124,7 @@
     }
   ];
 
+  // ── POINTS OF INTEREST ──
   const poiStops = [
     {
       initial: "A",
