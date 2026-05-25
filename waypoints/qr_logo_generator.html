@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNG Waypoint QR Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{--navy:#0a2240;--navy-mid:#0d2d54;--gold:#c9a84c;--gold-lt:#e8d49a;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:"Lato",sans-serif;font-weight:300;background:var(--navy);color:#fff;min-height:100vh;}
+  header{background:var(--navy);border-bottom:2px solid var(--gold);padding:0 24px;height:56px;display:flex;align-items:center;gap:12px;}
+  .wordmark{font-family:"Cormorant Garamond",serif;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-lt);line-height:1.3;}
+  .wordmark span{display:block;font-size:9px;font-weight:400;letter-spacing:.18em;color:var(--gold);opacity:.85;}
+  .dvdr{width:1px;height:30px;background:var(--gold);opacity:.38;}
+  .title{font-family:"Cormorant Garamond",serif;font-size:16px;font-style:italic;color:#fff;}
+  .container{max-width:900px;margin:32px auto;padding:0 24px;}
+  h2{font-family:"Cormorant Garamond",serif;font-size:22px;font-weight:400;color:var(--gold-lt);margin-bottom:6px;}
+  p{font-size:11px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:24px;}
+  .controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px;align-items:flex-end;}
+  label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:5px;}
+  input,select{font-family:"Lato",sans-serif;font-size:11px;font-weight:300;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(201,168,76,.3);border-radius:3px;padding:6px 10px;outline:none;transition:border .2s;}
+  input:focus,select:focus{border-color:var(--gold);}
+  input{width:320px;}
+  select{width:180px;}
+  select option{background:var(--navy);}
+  .gen-btn{height:34px;padding:0 20px;font-family:"Lato",sans-serif;font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;background:var(--gold);color:var(--navy);border:none;border-radius:3px;cursor:pointer;transition:background .18s;}
+  .gen-btn:hover{background:var(--gold-lt);}
+  .qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;}
+  .qr-card{background:rgba(255,255,255,.04);border:1px solid rgba(201,168,76,.2);border-radius:4px;padding:16px;text-align:center;}
+  .qr-card-title{font-family:"Cormorant Garamond",serif;font-size:13px;font-weight:600;color:var(--gold-lt);margin-bottom:3px;}
+  .qr-card-sub{font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;}
+  .qr-wrap{background:#fff;padding:10px;border-radius:3px;display:inline-block;margin-bottom:12px;}
+  .qr-url{font-size:8px;color:rgba(255,255,255,.28);word-break:break-all;margin-bottom:10px;line-height:1.5;}
+  .dl-btn{display:inline-block;font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--navy);background:var(--gold);border:none;border-radius:2px;padding:5px 12px;cursor:pointer;text-decoration:none;transition:background .15s;}
+  .dl-btn:hover{background:var(--gold-lt);}
+  .single-section{margin-bottom:36px;padding-bottom:32px;border-bottom:1px solid rgba(201,168,76,.15);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">University of North Georgia<span>Facilities GIS &nbsp;&middot;&nbsp; Tools</span></div>
+  <div class="dvdr"></div>
+  <div class="title">Waypoint QR Code Generator</div>
+</header>
+
+<div class="container">
+
+  <div class="single-section">
+    <h2>Generate a Single QR Code</h2>
+    <p>Enter the base URL of your deployed waypoint app and a waypoint ID to generate a QR code for a specific location.</p>
+    <div class="controls">
+      <div>
+        <label>Base App URL</label>
+        <input type="text" id="baseUrl" value="https://unggis.github.io/ung-facilities-maps/waypoint" placeholder="https://unggis.github.io/..."/>
+      </div>
+      <div>
+        <label>Campus</label>
+        <select id="campusSelect">
+          <option value="dahlonega">Dahlonega</option>
+          <option value="gainesville">Gainesville</option>
+          <option value="cumming">Cumming</option>
+          <option value="blueridge">Blue Ridge</option>
+          <option value="oconee">Oconee</option>
+        </select>
+      </div>
+      <div>
+        <label>Waypoint ID</label>
+        <input type="text" id="waypointId" placeholder="e.g. da_main_entrance" style="width:200px;"/>
+      </div>
+      <button class="gen-btn" onclick="genSingle()">Generate</button>
+    </div>
+    <div id="singleOutput"></div>
+  </div>
+
+  <h2>All Waypoints — Batch Generate</h2>
+  <p>Paste your waypoints.geojson content below and click Generate All to produce a QR code for every waypoint at once.</p>
+  <div class="controls">
+    <div>
+      <label>Base App URL</label>
+      <input type="text" id="batchBase" value="https://unggis.github.io/ung-facilities-maps/waypoint" placeholder="https://unggis.github.io/..."/>
+    </div>
+    <button class="gen-btn" onclick="loadFromFile()">Load GeoJSON File</button>
+    <input type="file" id="fileInput" accept=".geojson,.json" style="display:none" onchange="handleFile(event)"/>
+    <button class="gen-btn" onclick="genAll()" style="background:var(--navy);color:var(--gold);border:1px solid var(--gold);">Generate All</button>
+  </div>
+  <textarea id="geojsonInput" placeholder="Paste waypoints.geojson here, or use Load GeoJSON File above..."
+    style="width:100%;height:120px;background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.2);border-radius:3px;padding:10px;font-family:monospace;font-size:10px;color:rgba(255,255,255,.6);resize:vertical;margin-bottom:16px;outline:none;"></textarea>
+  <div id="batchOutput" class="qr-grid"></div>
+
+</div>
+
+<script>
+  // Steeple logo embedded as base64
+  var STEEPLE_SRC =  + steeple_b64 + ;
+  var STEEPLE_IMG = new Image();
+  STEEPLE_IMG.src = STEEPLE_SRC;
+
+  function buildUrl(base, campus, waypointId) {
+    return base.replace(/\/$/, '') + '?campus=' + campus + '&waypoint=' + waypointId;
+  }
+
+  function overlayLogo(containerId) {
+    var container = document.getElementById(containerId);
+    var canvas = container.querySelector('canvas');
+    if (!canvas) return;
+
+    var ctx = canvas.getContext('2d');
+    var cw = canvas.width;
+    var ch = canvas.height;
+
+    // White circle background for logo
+    var logoSize = Math.round(cw * 0.22);
+    var cx = cw / 2;
+    var cy = ch / 2;
+    var radius = logoSize / 2 + 4;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+
+    // Draw steeple centered
+    ctx.drawImage(STEEPLE_IMG, cx - logoSize/2, cy - logoSize/2, logoSize, logoSize);
+  }
+
+  function makeQRCard(name, campus, waypointId, baseUrl, containerId) {
+    var url    = buildUrl(baseUrl, campus, waypointId);
+    var cardId = 'qr_' + waypointId.replace(/[^a-z0-9]/gi, '_') + '_' + Date.now();
+
+    var card = document.createElement('div');
+    card.className = 'qr-card';
+    card.innerHTML =
+      '<div class="qr-card-title">' + (name || waypointId) + '</div>' +
+      '<div class="qr-card-sub">' + campus + ' &middot; ' + waypointId + '</div>' +
+      '<div class="qr-wrap" id="' + cardId + '"></div>' +
+      '<div class="qr-url">' + url + '</div>' +
+      '<button class="dl-btn" onclick="downloadQR('' + cardId + '','' + waypointId + '')">Download PNG</button>';
+
+    document.getElementById(containerId).appendChild(card);
+
+    var qr = new QRCode(document.getElementById(cardId), {
+      text:         url,
+      width:        160,
+      height:       160,
+      colorDark:    '#0a2240',
+      colorLight:   '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    // Overlay logo after QR renders
+    setTimeout(function() { overlayLogo(cardId); }, 300);
+  }
+
+  function genSingle() {
+    var base   = document.getElementById('baseUrl').value.trim();
+    var campus = document.getElementById('campusSelect').value;
+    var wpId   = document.getElementById('waypointId').value.trim().toLowerCase().replace(/\s+/g,'_');
+    var out    = document.getElementById('singleOutput');
+    if (!base || !wpId) { alert('Please enter a base URL and waypoint ID.'); return; }
+    out.innerHTML = '<div class="qr-grid" id="singleGrid"></div>';
+    makeQRCard(wpId, campus, wpId, base, 'singleGrid');
+  }
+
+  function loadFromFile() { document.getElementById('fileInput').click(); }
+
+  function handleFile(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) { document.getElementById('geojsonInput').value = ev.target.result; };
+    reader.readAsText(file);
+  }
+
+  function genAll() {
+    var base = document.getElementById('batchBase').value.trim();
+    var raw  = document.getElementById('geojsonInput').value.trim();
+    var out  = document.getElementById('batchOutput');
+    out.innerHTML = '';
+    if (!raw) { alert('Paste your waypoints.geojson content first.'); return; }
+    var data;
+    try { data = JSON.parse(raw); } catch(e) { alert('Invalid JSON.'); return; }
+    if (!data.features || !data.features.length) { alert('No features found.'); return; }
+    data.features.forEach(function(f, i) {
+      var p      = f.properties;
+      var wpId   = (p.id || ('waypoint_' + i)).toLowerCase();
+      var campus = (p.campus || 'dahlonega').toLowerCase().replace(/\s+/g,'');
+      makeQRCard(p.name, p.campus || 'UNG', wpId, base, 'batchOutput');
+    });
+  }
+
+  function downloadQR(containerId, filename) {
+    var container = document.getElementById(containerId);
+    var canvas = container.querySelector('canvas');
+    if (!canvas) { alert('QR not ready yet.'); return; }
+    var a = document.createElement('a');
+    a.href     = canvas.toDataURL('image/png');
+    a.download = 'qr_' + filename + '.png';
+    a.click();
+  }
+</script>
+</body>
+</html>
