@@ -49,6 +49,18 @@
     transform: rotate(-45deg); display: flex; align-items: center; justify-content: center;
   }
   .poi-pin span { transform: rotate(45deg); color: #003057; font-weight: 700; font-size: 11px; font-family: Arial, sans-serif; display: block; margin-left: 1px; margin-top: 1px; }
+
+  .bldg-popup-header {
+    background: #003057; color: #fff;
+    padding: 10px 14px; font-size: 14px; font-weight: 700; font-family: Arial, sans-serif;
+  }
+  .bldg-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 12px; font-family: Arial, sans-serif;
+  }
+  .bldg-table tr:nth-child(even) { background: #f5f5f5; }
+  .bldg-table td { padding: 5px 10px; color: #333; }
+  .bldg-table td.bl { font-weight: 700; color: #003057; white-space: nowrap; width: 80px; }
 </style>
 </head>
 <body>
@@ -85,25 +97,40 @@
       fillOpacity: 0.35
     },
     onEachFeature: function(feature, layer) {
-      var name = feature.properties.Building || '';
+      var p = feature.properties;
+      var name = p.Building || 'Building';
+
+      // Tooltip on zoom 19
       if (name) {
         layer.bindTooltip(name, {
           permanent: true,
           direction: 'center',
           className: 'building-label'
         });
-
         function updateLabel() {
-          if (map.getZoom() >= 19) {
-            layer.openTooltip();
-          } else {
-            layer.closeTooltip();
-          }
+          if (map.getZoom() >= 19) { layer.openTooltip(); } else { layer.closeTooltip(); }
         }
-
         map.on('zoomend', updateLabel);
         updateLabel();
       }
+
+      // Building type lookup
+      var buildingTypes = { 0: 'Academic', 3: 'Administration', 2: 'Athletics & Recreation', 1: 'Residential', 4: 'Support', 5: 'Other' };
+      var typeLabel = buildingTypes[p.BuildingType] || '';
+
+      // Click popup
+      layer.on('click', function() {
+        var rows = '';
+        if (typeLabel)  rows += '<tr><td class="bl">Type</td><td>' + typeLabel + '</td></tr>';
+        if (p.sqft)     rows += '<tr><td class="bl">Sq Ft</td><td>' + p.sqft.toLocaleString() + '</td></tr>';
+        rows += '<tr><td class="bl">ADA</td><td>' + (p.ADA_ACCES === 1 ? 'Yes' : 'No') + '</td></tr>';
+
+        layer.bindPopup(
+          '<div class="bldg-popup-header">' + name + '</div>' +
+          '<table class="bldg-table">' + rows + '</table>',
+          { maxWidth: 260 }
+        ).openPopup();
+      });
     }
   }).addTo(map);
 
@@ -131,7 +158,7 @@
       lat: 34.234847,
       lng: -83.867550,
       title: "Orientation — Student Center",
-      img: "imgs/stuctr.jpg",
+      img: "imgs/student_center.jpg",
       body: "Welcome to NextFest! Start your tour here at the Student Center. Pick up a program, get your bearings, and head out to explore everything the Gainesville campus has to offer. [Update with CE content]"
     }
     // Add MTS stops here: { n: 2, lat: XX, lng: XX, title: "...", img: "imgs/filename.jpg", body: "..." }
@@ -146,7 +173,7 @@
       lng: -83.864635,
       title: "The Mural",
       img: "imgs/mural.jpg",
-      body: "This vibrant mural captures the cultural spirit of UNG and the Gainesville community — and the bold vision behind UNG's fine arts programs. A must-see for visitors drawn to the visual arts."
+      body: "This vibrant mural captures the cultural spirit of UNG and the Gainesville community — and the bold vision behind UNG's fine arts programs. A must-see for visitors drawn to the visual arts. [Update with CE content]"
     }
     // Add POI stops here: { initial: "F", category: "Food", lat: XX, lng: XX, title: "...", img: "imgs/filename.jpg", body: "..." }
   ];
