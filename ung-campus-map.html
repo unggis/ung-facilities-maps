@@ -322,44 +322,117 @@
       });
     }
 
-    alertsLayer.addTo(map);
+    // Alerts start hidden — Life Safety is default overlay
     loadPublicAlerts();
     setInterval(loadPublicAlerts, 120000); // refresh every 2 min
 
-    // ── LAYER CONTROL — now includes overlay toggles ──────────────
-    var overlayMaps = {
-      '🔴 Life Safety':     lifeSafetyLayer,
-      '🚧 Campus Alerts':   alertsLayer
-    };
+    // ── BASE MAP CONTROL only — overlays handled by custom toggle ──
+    L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 
-    L.control.layers(baseMaps, overlayMaps, { position: 'topright' }).addTo(map);
+    // ── CUSTOM MUTUALLY EXCLUSIVE OVERLAY TOGGLE ──────────────────
+    var activeOverlay = 'lifesafety'; // default
+
+    var toggleControl = L.control({ position: 'topleft' });
+    toggleControl.onAdd = function() {
+      var div = L.DomUtil.create('div');
+      div.style.background   = 'white';
+      div.style.padding      = '8px';
+      div.style.borderRadius = '6px';
+      div.style.boxShadow    = '0 1px 4px rgba(0,0,0,0.3)';
+      div.style.fontSize     = '12px';
+      div.style.marginTop    = '8px';
+
+      var label = document.createElement('strong');
+      label.textContent        = 'Overlay';
+      label.style.display      = 'block';
+      label.style.marginBottom = '6px';
+      div.appendChild(label);
+
+      var options = [
+        { key: 'lifesafety', label: '🔴 Life Safety',   layer: lifeSafetyLayer },
+        { key: 'alerts',     label: '🚧 Campus Alerts', layer: alertsLayer     }
+      ];
+
+      options.forEach(function(opt) {
+        var btn = document.createElement('button');
+        btn.textContent        = opt.label;
+        btn.dataset.key        = opt.key;
+        btn.style.display      = 'block';
+        btn.style.width        = '100%';
+        btn.style.marginBottom = '4px';
+        btn.style.padding      = '4px 8px';
+        btn.style.border       = 'none';
+        btn.style.borderRadius = '3px';
+        btn.style.cursor       = 'pointer';
+        btn.style.textAlign    = 'left';
+        btn.style.fontFamily   = 'Arial, sans-serif';
+        btn.style.fontSize     = '12px';
+        btn.style.transition   = 'background 0.15s';
+
+        function updateStyle() {
+          if (activeOverlay === opt.key) {
+            btn.style.background = '#C8952A';
+            btn.style.color      = '#ffffff';
+            btn.style.fontWeight = 'bold';
+          } else {
+            btn.style.background = '#003366';
+            btn.style.color      = '#ffffff';
+            btn.style.fontWeight = 'normal';
+          }
+        }
+        updateStyle();
+
+        btn.onclick = function() {
+          // Remove all overlays
+          options.forEach(function(o) {
+            if (map.hasLayer(o.layer)) map.removeLayer(o.layer);
+          });
+          // Add selected
+          activeOverlay = opt.key;
+          map.addLayer(opt.layer);
+          // Update button styles
+          div.querySelectorAll('button[data-key]').forEach(function(b) {
+            var isActive = b.dataset.key === activeOverlay;
+            b.style.background = isActive ? '#C8952A' : '#003366';
+            b.style.fontWeight = isActive ? 'bold' : 'normal';
+          });
+          // Swap legend section
+          updateLegendVisibility();
+        };
+
+        div.appendChild(btn);
+      });
+
+      // Stop map clicks propagating through control
+      L.DomEvent.disableClickPropagation(div);
+      return div;
+    };
+    toggleControl.addTo(map);
 
     // ── LEGEND ────────────────────────────────────────────────────
     var legend = L.control({ position: 'bottomright' });
 
     legend.onAdd = function(map) {
       var div = L.DomUtil.create('div', 'legend');
-      div.style.background    = 'white';
-      div.style.padding       = '10px';
-      div.style.borderRadius  = '6px';
-      div.style.boxShadow     = '0 1px 4px rgba(0,0,0,0.3)';
-      div.style.lineHeight    = '1.8';
-      div.style.fontSize      = '12px';
-      div.style.maxHeight     = '340px';
-      div.style.overflowY     = 'auto';
+      div.style.background   = 'white';
+      div.style.padding      = '10px';
+      div.style.borderRadius = '6px';
+      div.style.boxShadow    = '0 1px 4px rgba(0,0,0,0.3)';
+      div.style.lineHeight   = '1.8';
+      div.style.fontSize     = '12px';
 
       function svgIcon(svg) {
         return '<span style="display:inline-block;vertical-align:middle;margin-right:6px;">' + svg + '</span>';
       }
       function alertSwatch(color, dash) {
         var border = dash
-          ? 'border-top: 3px dashed ' + color + '; background: none;'
+          ? 'border-top:3px dashed ' + color + ';background:none;'
           : 'background:' + color + ';';
         return '<span style="display:inline-block;width:18px;height:3px;' + border +
                'vertical-align:middle;margin-right:6px;"></span>';
       }
 
-      div.innerHTML =
+      var lifeSafetyHTML =
         '<strong style="display:block;margin-bottom:6px;">Life Safety</strong>' +
         svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="#cc0000"/><text x="12" y="16" text-anchor="middle" font-size="11" fill="white" font-family="Arial">H</text></svg>') + ' Fire Hydrant<br>' +
         svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#8b0000"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">SP</text></svg>') + ' Stand Pipe<br>' +
@@ -369,6 +442,10 @@
         svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#ff6600"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">FE</text></svg>') + ' Fire Extinguisher<br>' +
         svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><polygon points="12,2 22,22 2,22" fill="#990000"/><text x="12" y="19" text-anchor="middle" font-size="7" fill="white" font-family="Arial">FDC</text></svg>') + ' Fire Dept Connection<br>' +
         '<hr style="border:none;border-top:1px solid #eee;margin:8px 0;">' +
+        '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
+        '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
+
+      var alertsHTML =
         '<strong style="display:block;margin-bottom:6px;">Campus Alerts</strong>' +
         alertSwatch('#D13438', false) + ' Road Closed<br>' +
         alertSwatch('#F4A41B', true)  + ' Construction Zone<br>' +
@@ -380,10 +457,25 @@
         '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
         '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
 
+      div.innerHTML = lifeSafetyHTML; // default matches activeOverlay default
+
+      // Store references for swapping
+      window._legendLifeSafetyHTML = lifeSafetyHTML;
+      window._legendAlertsHTML     = alertsHTML;
+      window._legendDiv            = div;
+
       return div;
     };
 
     legend.addTo(map);
+
+    // Called by toggle buttons to swap legend content
+    function updateLegendVisibility() {
+      if (!window._legendDiv) return;
+      window._legendDiv.innerHTML = activeOverlay === 'alerts'
+        ? window._legendAlertsHTML
+        : window._legendLifeSafetyHTML;
+    }
 
     // ── CAMPUS BOOKMARKS ──────────────────────────────────────────
     var campuses = {
