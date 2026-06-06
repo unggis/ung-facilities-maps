@@ -270,6 +270,18 @@
     // Alerts live in their own featureGroup for layer control toggle
     var alertsLayer = L.featureGroup({ pane: 'alerts' });
 
+    // Campus filter state — null means show all campuses
+    var currentCampusFilter = null;
+
+    // Maps campus name to domain code for filtering
+    var CAMPUS_CODES = {
+      'Blue Ridge':  0,
+      'Cumming':     1,
+      'Dahlonega':   2,
+      'Gainesville': 3,
+      'Oconee':      4
+    };
+
     // Build alerts legend dynamically from active features only
     function buildAlertsLegend(activePolyTypes, activeLineTypes) {
       function alertSwatch(color, dash) {
@@ -341,10 +353,13 @@
       }
     }
 
-    function loadPublicAlerts() {
+    function loadPublicAlerts(campusCode) {
       var nowStr = new Date().toISOString().replace('T',' ').substring(0,19);
+      var campusClause = (campusCode !== undefined && campusCode !== null)
+        ? " AND Campus=" + campusCode
+        : "";
       var where  = encodeURIComponent(
-        "Active=1 AND Start_Date <= DATE '" + nowStr + "' AND (End_Date IS NULL OR End_Date >= DATE '" + nowStr + "')"
+        "Active=1 AND Start_Date <= DATE '" + nowStr + "' AND (End_Date IS NULL OR End_Date >= DATE '" + nowStr + "')" + campusClause
       );
       var q = '?where=' + where + '&outFields=Alert_Type,Message,End_Date&f=geojson&returnGeometry=true';
 
@@ -404,8 +419,8 @@
     }
 
     // Alerts start hidden — Life Safety is default overlay
-    loadPublicAlerts();
-    setInterval(loadPublicAlerts, 120000); // refresh every 2 min
+    loadPublicAlerts(currentCampusFilter);
+    setInterval(function() { loadPublicAlerts(currentCampusFilter); }, 120000); // refresh every 2 min
 
     // ── BASE MAP CONTROL only — overlays handled by custom toggle ──
     L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
@@ -595,7 +610,18 @@
         btn.style.textAlign      = 'left';
         btn.onmouseover = function() { this.style.background = '#C8952A'; };
         btn.onmouseout  = function() { this.style.background = '#003366'; };
-        btn.onclick = function() { map.setView([campuses[name][0], campuses[name][1]], campuses[name][2] || 15); };
+        btn.onclick = (function(campusName) {
+          return function() {
+            map.setView([campuses[campusName][0], campuses[campusName][1]], campuses[campusName][2] || 15);
+            currentCampusFilter = CAMPUS_CODES[campusName];
+            loadPublicAlerts(currentCampusFilter);
+            // Highlight active button
+            div.querySelectorAll('button').forEach(function(b) {
+              b.style.background = '#003366';
+            });
+            this.style.background = '#C8952A';
+          };
+        })(name);
         div.appendChild(btn);
       });
 
