@@ -270,6 +270,77 @@
     // Alerts live in their own featureGroup for layer control toggle
     var alertsLayer = L.featureGroup({ pane: 'alerts' });
 
+    // Build alerts legend dynamically from active features only
+    function buildAlertsLegend(activePolyTypes, activeLineTypes) {
+      function alertSwatch(color, dash) {
+        var border = dash
+          ? 'border-top:3px dashed ' + color + ';background:none;'
+          : 'background:' + color + ';';
+        return '<span style="display:inline-block;width:18px;height:3px;' + border +
+               'vertical-align:middle;margin-right:6px;"></span>';
+      }
+      function zoneSwatch(color) {
+        return '<span style="display:inline-block;width:14px;height:14px;background:' + color +
+               ';opacity:0.5;border:2px solid ' + color + ';vertical-align:middle;margin-right:6px;"></span>';
+      }
+
+      var html = '<strong style="display:block;margin-bottom:6px;">Campus Alerts</strong>';
+      var hasAny = false;
+
+      // Zone types (polygon)
+      var zoneTypes = [
+        [0, '#D13438', 'Road Closed'],
+        [1, '#F4A41B', 'Construction Zone'],
+        [2, '#888888', 'Out of Order'],
+        [3, '#cc5500', 'Hazard'],
+        [4, '#b8a800', 'Other']
+      ];
+      var hasZones = false;
+      zoneTypes.forEach(function(t) {
+        if (activePolyTypes.has(t[0])) {
+          if (!hasZones) { html += '<em style="font-size:0.75em;color:#666;display:block;margin-bottom:3px;">Zones</em>'; hasZones = true; }
+          html += zoneSwatch(t[1]) + ' ' + t[2] + '<br>';
+          hasAny = true;
+        }
+      });
+
+      // Linear types
+      var lineTypes = [
+        [0, '#D13438', false, 'Road Closed'],
+        [1, '#F4A41B', true,  'Construction Zone'],
+        [2, '#888888', true,  'Out of Order'],
+        [3, '#cc5500', false, 'Hazard'],
+        [4, '#b8a800', true,  'Other'],
+        [5, '#0066cc', true,  'Detour']
+      ];
+      var hasLines = false;
+      lineTypes.forEach(function(t) {
+        if (activeLineTypes.has(t[0])) {
+          if (!hasLines) {
+            if (hasZones) html += '<div style="margin:4px 0;"></div>';
+            html += '<em style="font-size:0.75em;color:#666;display:block;margin-bottom:3px;">Routes</em>';
+            hasLines = true;
+          }
+          html += alertSwatch(t[1], t[2]) + ' ' + t[3] + '<br>';
+          hasAny = true;
+        }
+      });
+
+      if (!hasAny) {
+        html += '<span style="font-size:0.8em;color:#888;font-style:italic;">No active alerts</span><br>';
+      }
+
+      html += '<hr style="border:none;border-top:1px solid #eee;margin:8px 0;">' +
+              '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
+              '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
+
+      // Update stored legend HTML and refresh if currently visible
+      window._legendAlertsHTML = html;
+      if (activeOverlay === 'alerts' && window._legendDiv) {
+        window._legendDiv.innerHTML = html;
+      }
+    }
+
     function loadPublicAlerts() {
       var nowStr = new Date().toISOString().replace('T',' ').substring(0,19);
       var where  = encodeURIComponent(
@@ -286,6 +357,10 @@
         var polyData = results[0];
         var lineData = results[1];
 
+        // Track active types for dynamic legend
+        var activePolyTypes = new Set();
+        var activeLineTypes = new Set();
+
         // Polygons
         (polyData.features || []).forEach(function(f) {
           var p     = f.properties;
@@ -299,6 +374,7 @@
           L.marker(center, { icon: makeAlertIcon(p.Alert_Type), zIndexOffset: 1000 })
            .bindPopup(popup, { maxWidth: 300 })
            .addTo(alertsLayer);
+          activePolyTypes.add(p.Alert_Type);
         });
 
         // Lines
@@ -316,7 +392,12 @@
           L.marker(center, { icon: makeAlertIcon(p.Alert_Type), zIndexOffset: 1000 })
            .bindPopup(popup, { maxWidth: 300 })
            .addTo(alertsLayer);
+          activeLineTypes.add(p.Alert_Type);
         });
+
+        // Rebuild legend from active types only
+        buildAlertsLegend(activePolyTypes, activeLineTypes);
+
       }).catch(function(e) {
         console.warn('Campus alerts could not be loaded:', e);
       });
@@ -445,14 +526,11 @@
         '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
         '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
 
+      // alertsHTML is built dynamically by buildAlertsLegend() after each fetch
+      // Default shown before first load
       var alertsHTML =
         '<strong style="display:block;margin-bottom:6px;">Campus Alerts</strong>' +
-        alertSwatch('#D13438', false) + ' Road Closed<br>' +
-        alertSwatch('#F4A41B', true)  + ' Construction Zone<br>' +
-        alertSwatch('#888888', true)  + ' Out of Order<br>' +
-        alertSwatch('#cc5500', false) + ' Hazard<br>' +
-        alertSwatch('#0066cc', true)  + ' Detour<br>' +
-        alertSwatch('#b8a800', true)  + ' Other<br>' +
+        '<span style="font-size:0.8em;color:#888;font-style:italic;">Loading...</span><br>' +
         '<hr style="border:none;border-top:1px solid #eee;margin:8px 0;">' +
         '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
         '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
@@ -479,11 +557,11 @@
 
     // ── CAMPUS BOOKMARKS ──────────────────────────────────────────
     var campuses = {
-      'Blue Ridge':  [34.88866, -84.29174, 18],
-      'Cumming':     [34.22394, -84.10806, 17],
-      'Dahlonega':   [34.5297,  -83.9849, 15],
-      'Gainesville': [34.23474, -83.86722, 16],
-      'Oconee':      [33.86621, -83.42595, 17]
+      'Blue Ridge':  [34.88866, -84.29174],
+      'Cumming':     [34.22394, -84.10806],
+      'Dahlonega':   [34.5297,  -83.9849],
+      'Gainesville': [34.23474, -83.86722],
+      'Oconee':      [33.86621, -83.42595]
     };
 
     var bookmarkControl = L.control({ position: 'topleft' });
@@ -517,10 +595,7 @@
         btn.style.textAlign      = 'left';
         btn.onmouseover = function() { this.style.background = '#C8952A'; };
         btn.onmouseout  = function() { this.style.background = '#003366'; };
-        btn.onclick = function() {
-          var c = campuses[name];
-          map.setView([c[0], c[1]], c[2]);
-        };
+        btn.onclick = function() { map.setView(campuses[name], 15); };
         div.appendChild(btn);
       });
 
