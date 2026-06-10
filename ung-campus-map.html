@@ -1,634 +1,777 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>UNG Campus Map</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
-  <style>
-    .building-tooltip {
-      background: #003366;
-      color: #ffffff;
-      border: none;
-      border-radius: 4px;
-      padding: 4px 8px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-    .building-tooltip::before {
-      border-top-color: #003366;
-    }
-    /* Alert popup styling */
-    .leaflet-popup-content-wrapper {
-      border-radius: 8px !important;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.25) !important;
-      padding: 0 !important;
-      overflow: hidden;
-    }
-    .leaflet-popup-content {
-      margin: 0 !important;
-      min-width: 220px;
-    }
-    .alert-popup-header {
-      padding: 8px 12px;
-      background: #f8f9fc;
-      border-bottom: 1px solid #e0e4ee;
-    }
-    .alert-popup-title {
-      font-weight: 700;
-      font-size: 0.95rem;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .alert-popup-body {
-      padding: 8px 12px 10px;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .alert-popup-msg {
-      font-size: 0.82rem;
-      color: #2a3050;
-      line-height: 1.5;
-      margin-bottom: 8px;
-    }
-    .alert-popup-footer {
-      font-size: 0.72rem;
-      color: #7a84a0;
-      border-top: 1px solid #eee;
-      padding-top: 6px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNG Campus Waypoint Map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --navy:#0a2240;
+    --navy-mid:#0d2d54;
+    --gold:#c9a84c;
+    --gold-lt:#e8d49a;
+    --red:#c0392b;
+    --green:#7ecf9a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Lato',sans-serif;font-weight:300;background:var(--navy);color:#fff;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+  /* ── HEADER ── */
+  header{
+    background:var(--navy);border-bottom:2px solid var(--gold);
+    padding:0 14px;height:52px;flex-shrink:0;z-index:1000;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .hd-left{display:flex;align-items:center;gap:10px;min-width:0;}
+  .wordmark{font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-lt);line-height:1.3;white-space:nowrap;}
+  .wordmark span{display:block;font-size:8px;font-weight:400;letter-spacing:.15em;color:var(--gold);opacity:.85;}
+  .dvdr{width:1px;height:28px;background:var(--gold);opacity:.38;flex-shrink:0;}
+  .map-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:400;font-style:italic;color:#fff;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hd-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .badge{background:var(--gold);color:var(--navy);font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:2px;white-space:nowrap;}
+  .load-pill{font-size:8px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;border:1px solid rgba(201,168,76,.3);color:rgba(201,168,76,.55);font-style:italic;transition:all .4s;white-space:nowrap;}
+  .load-pill.ok{color:var(--green);border-color:var(--green);}
+  .load-pill.err{color:var(--red);border-color:var(--red);}
+
+  /* ── TOOLBAR: two rows ── */
+  .toolbar{display:flex;flex-direction:column;flex-shrink:0;background:var(--navy-mid);border-bottom:1px solid rgba(201,168,76,.2);z-index:900;}
+  .tb-row{display:flex;align-items:center;height:36px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;}
+  .tb-row::-webkit-scrollbar{height:2px;}
+  .tb-row::-webkit-scrollbar-thumb{background:rgba(201,168,76,.3);}
+  .tb-row+.tb-row{border-top:1px solid rgba(201,168,76,.1);}
+  .tb-section{display:flex;align-items:center;padding:0 10px;flex-shrink:0;}
+  .tb-sep{width:1px;height:18px;background:rgba(201,168,76,.22);flex-shrink:0;}
+  .tb-label{font-size:8px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:rgba(201,168,76,.52);padding-right:8px;white-space:nowrap;font-style:italic;}
+
+  .campus-btn{height:22px;padding:0 9px;margin-right:3px;font-family:'Lato',sans-serif;font-size:8px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;border:1px solid rgba(201,168,76,.2);border-radius:2px;cursor:pointer;transition:all .18s;background:rgba(255,255,255,.03);color:#7a90a8;white-space:nowrap;}
+  .campus-btn:hover{background:rgba(201,168,76,.1);color:var(--gold-lt);border-color:rgba(201,168,76,.48);}
+  .campus-btn.active{background:rgba(10,34,64,.85);color:var(--gold);border-color:var(--gold);}
+
+  .tog-btn{height:24px;padding:0 11px;font-family:'Lato',sans-serif;font-size:8px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;border:1px solid rgba(201,168,76,.28);border-radius:3px;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.04);color:#8aa0b8;white-space:nowrap;}
+  .tog-btn.active{background:var(--navy);color:var(--gold);border-color:var(--gold);box-shadow:0 0 6px rgba(201,168,76,.18);}
+
+  .locate-btn{height:24px;padding:0 11px;font-family:'Lato',sans-serif;font-size:8px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;border:1px solid rgba(126,207,154,.4);border-radius:3px;cursor:pointer;background:rgba(126,207,154,.08);color:#7ecf9a;transition:all .2s;white-space:nowrap;}
+  .locate-btn:hover{background:rgba(126,207,154,.18);border-color:var(--green);}
+  .locate-btn.locating{animation:pulse-green 1s infinite;}
+  @keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(126,207,154,.4);}50%{box-shadow:0 0 0 5px rgba(126,207,154,.0);}}
+
+  .dir-btn{height:24px;padding:0 11px;font-family:'Lato',sans-serif;font-size:8px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;border:1px solid rgba(201,168,76,.4);border-radius:3px;cursor:pointer;background:rgba(201,168,76,.08);color:var(--gold);transition:all .2s;white-space:nowrap;}
+  .dir-btn:hover{background:rgba(201,168,76,.18);}
+  .dir-btn.active{background:var(--navy);color:var(--gold);border-color:var(--gold);box-shadow:0 0 6px rgba(201,168,76,.18);}
+
+  .-link{height:22px;padding:0 9px;display:flex;align-items:center;font-family:'Lato',sans-serif;font-size:8px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;border:1px solid rgba(201,168,76,.5);border-radius:2px;cursor:pointer;background:rgba(201,168,76,.08);color:var(--gold);text-decoration:none;transition:all .18s;white-space:nowrap;}
+  .-link:hover{background:rgba(201,168,76,.18);}
+
+  /* ── MAP ── */
+  #map{flex:1;width:100%;position:relative;}
+
+  #viewLabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:rgba(255,255,255,.95);background:rgba(10,34,64,.84);padding:9px 24px;border-radius:4px;border:1px solid rgba(201,168,76,.45);pointer-events:none;opacity:0;transition:opacity .25s;z-index:800;white-space:nowrap;backdrop-filter:blur(4px);}
+  #viewLabel.show{opacity:1;}
+
+  /* ── ROUTING BANNER (shows when markers hidden) ── */
+  #routingBanner{
+    position:absolute;top:10px;left:50%;transform:translateX(-50%);
+    background:rgba(10,34,64,.95);border:1px solid var(--gold);border-radius:4px;
+    padding:6px 16px;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--gold);z-index:1100;pointer-events:none;
+    opacity:0;transition:opacity .3s;white-space:nowrap;backdrop-filter:blur(4px);
+  }
+  #routingBanner.show{opacity:1;}
+
+  /* ── ROUTING PANEL ── */
+  #routePanel{position:absolute;top:10px;left:10px;z-index:1200;background:rgba(10,34,64,.97);border:1px solid rgba(201,168,76,.45);border-radius:5px;padding:13px 15px;width:260px;backdrop-filter:blur(6px);box-shadow:0 4px 20px rgba(0,0,0,.5);}
+  #routePanel.hidden{display:none;}
+  .rp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid rgba(201,168,76,.25);}
+  .rp-title{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);}
+  .rp-close{background:none;border:none;color:rgba(201,168,76,.6);font-size:15px;cursor:pointer;line-height:1;padding:0 2px;transition:color .15s;}
+  .rp-close:hover{color:var(--gold);}
+  .rp-row{margin-bottom:9px;}
+  .rp-label{font-size:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(201,168,76,.7);margin-bottom:4px;}
+  .rp-from-box{background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.25);border-radius:3px;padding:6px 9px;font-family:'Lato',sans-serif;font-size:10px;font-weight:300;color:rgba(255,255,255,.7);min-height:28px;line-height:1.4;display:flex;align-items:center;gap:8px;}
+  .loc-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 6px rgba(126,207,154,.6);}
+  .loc-dot.qr{background:var(--gold);}
+  .rp-select{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(201,168,76,.35);border-radius:3px;padding:6px 28px 6px 9px;font-family:'Lato',sans-serif;font-size:10px;font-weight:300;color:#fff;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c9a84c'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;}
+  .rp-select:focus{outline:none;border-color:var(--gold);}
+  .rp-select option{background:#0a2240;color:#fff;}
+  .rp-btn-row{display:flex;gap:7px;margin-top:11px;}
+  .rp-btn{flex:1;height:30px;font-family:'Lato',sans-serif;font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:none;border-radius:3px;cursor:pointer;transition:all .18s;}
+  .rp-btn.go{background:var(--gold);color:var(--navy);}
+  .rp-btn.go:hover{background:var(--gold-lt);}
+  .rp-btn.go:disabled{background:rgba(201,168,76,.3);color:rgba(10,34,64,.5);cursor:not-allowed;}
+  .rp-btn.clear{background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.15);}
+  .rp-btn.clear:hover{background:rgba(255,255,255,.12);color:#fff;}
+  .rp-status{font-size:9px;font-weight:300;color:rgba(255,255,255,.45);text-align:center;margin-top:7px;font-style:italic;min-height:13px;}
+  .rp-status.active{color:var(--gold-lt);}
+  .rp-status.err{color:var(--red);}
+
+  /* ── GPS DOT ── */
+  .gps-dot{width:16px;height:16px;border-radius:50%;background:var(--green);border:3px solid #fff;box-shadow:0 0 0 4px rgba(126,207,154,.35),0 2px 8px rgba(0,0,0,.4);}
+
+  /* ── WAYPOINT ICONS ── */
+  .wp-icon{width:32px;height:32px;border-radius:50%;border:2px solid var(--gold);background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.45);cursor:pointer;transition:transform .15s;}
+  .wp-icon:hover{transform:scale(1.15);}
+  .wp-icon.active-wp{border-color:#fff;background:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.4),0 2px 12px rgba(0,0,0,.5);}
+  .wp-icon.dest-wp{border-color:var(--green);box-shadow:0 0 0 3px rgba(126,207,154,.35),0 2px 12px rgba(0,0,0,.5);}
+
+  /* ── POPUP ── */
+  .leaflet-popup-content-wrapper{background:rgba(10,34,64,.97)!important;border:1px solid rgba(201,168,76,.45)!important;border-radius:5px!important;color:#fff!important;box-shadow:0 4px 20px rgba(0,0,0,.5)!important;padding:0!important;}
+  .leaflet-popup-content{margin:0!important;width:255px!important;}
+  .leaflet-popup-tip{background:rgba(10,34,64,.97)!important;}
+  .leaflet-popup-close-button{color:var(--gold)!important;font-size:16px!important;top:8px!important;right:10px!important;}
+  .popup-inner{padding:13px 15px 11px;}
+  .popup-eyebrow{font-size:8px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:4px;}
+  .popup-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#fff;line-height:1.2;margin-bottom:2px;}
+  .popup-sub{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:var(--gold-lt);opacity:.75;margin-bottom:9px;}
+  .popup-divider{width:100%;height:1px;background:rgba(201,168,76,.2);margin-bottom:9px;}
+  .popup-body{font-size:11px;font-weight:300;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:9px;}
+  .popup-meta{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;}
+  .popup-meta-row{display:flex;gap:6px;font-size:10px;}
+  .popup-meta-key{font-weight:700;color:rgba(201,168,76,.75);min-width:68px;text-transform:uppercase;letter-spacing:.07em;}
+  .popup-meta-val{color:rgba(255,255,255,.65);}
+  .popup-nav-btn{display:block;width:100%;font-family:'Lato',sans-serif;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:var(--gold);color:var(--navy);border:none;border-radius:3px;padding:7px 0;text-align:center;cursor:pointer;text-decoration:none;transition:background .18s;margin-bottom:6px;}
+  .popup-nav-btn:hover{background:var(--gold-lt);}
+  .popup-report-btn{display:block;width:100%;font-family:'Lato',sans-serif;font-size:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:var(--navy);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.15);padding:5px 0;text-align:center;cursor:pointer;text-decoration:none;border-radius:3px;}
+  .popup-report-btn:hover{background:rgba(255,255,255,.07);}
+  .popup-source{font-size:8px;color:rgba(255,255,255,.22);text-align:center;margin-top:7px;font-style:italic;}
+
+  /* ── LEGEND ── */
+  .legend{position:fixed;bottom:22px;right:10px;z-index:9000;background:rgba(10,34,64,.93);border:1px solid rgba(201,168,76,.32);border-radius:4px;padding:9px 13px;min-width:185px;backdrop-filter:blur(4px);pointer-events:auto;transition:all .25s ease;}
+  .legend-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid rgba(201,168,76,.25);}
+  .legend-header h4{font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:0;padding:0;border:none;}
+  .legend-chevron{font-size:10px;color:var(--gold);transition:transform .25s;line-height:1;padding-left:8px;}
+  .legend.collapsed .legend-chevron{transform:rotate(-90deg);}
+  .legend.collapsed .legend-body{display:none;}
+  .legend.collapsed{min-width:auto;}
+  .li{display:flex;align-items:center;gap:7px;margin-bottom:4px;font-size:10px;font-weight:300;color:#c0d0e0;}
+  .li-icon{width:17px;height:17px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;}
+
+  /* ── LEAFLET OVERRIDES ── */
+  .leaflet-control-attribution{background:rgba(10,34,64,.75)!important;color:rgba(255,255,255,.4)!important;font-size:8px!important;}
+  .leaflet-control-attribution a{color:rgba(201,168,76,.65)!important;}
+  .leaflet-control-zoom a{background:rgba(10,34,64,.9)!important;color:var(--gold)!important;border-color:rgba(201,168,76,.26)!important;}
+  .leaflet-routing-container{display:none!important;}
+
+  /* ── COORDINATE PICKER ── */
+  #map.picking{cursor:crosshair!important;}
+  #coordPanel{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(10,34,64,.96);border:1px solid var(--gold);border-radius:4px;padding:9px 14px;font-size:10px;color:#fff;letter-spacing:.06em;z-index:900;backdrop-filter:blur(4px);display:none;min-width:300px;text-align:center;}
+  #coordPanel.show{display:block;}
+  #coordPanel .coord-label{font-size:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:5px;}
+  #coordPanel .coord-values{font-family:monospace;font-size:12px;color:#fff;margin-bottom:5px;}
+  #coordPanel .coord-geojson{font-family:monospace;font-size:10px;color:var(--gold-lt);margin-bottom:7px;}
+  #coordPanel .coord-actions{display:flex;gap:7px;justify-content:center;}
+  #coordPanel .coord-copy{font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--gold);color:var(--navy);border:none;border-radius:2px;padding:4px 10px;cursor:pointer;}
+  #coordPanel .coord-hint{font-size:8px;color:rgba(255,255,255,.35);margin-top:5px;font-style:italic;}
+  .pick-btn.active{background:var(--navy)!important;color:var(--gold)!important;border-color:var(--gold)!important;}
+
+  /* ── NO-WAYPOINT NOTICE ── */
+  #noWpNotice{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(10,34,64,.92);border:1px solid rgba(201,168,76,.4);border-radius:4px;padding:7px 18px;font-size:10px;font-weight:300;color:var(--gold-lt);letter-spacing:.08em;pointer-events:none;opacity:0;transition:opacity .4s;white-space:nowrap;z-index:800;}
+  #noWpNotice.show{opacity:1;}
+
+  /* ── CONSTRUCTION ZONE POPUP ── */
+  .cz-popup-header{padding:7px 11px 6px;background:rgba(244,164,27,.12);border-bottom:1px solid rgba(244,164,27,.3);}
+  .cz-popup-title{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--gold);}
+  .cz-popup-body{padding:8px 11px 10px;font-size:10px;font-weight:300;color:rgba(255,255,255,.75);line-height:1.6;}
+  .cz-popup-footer{font-size:9px;color:rgba(255,255,255,.35);border-top:1px solid rgba(255,255,255,.08);padding-top:5px;margin-top:6px;font-style:italic;}
+</style>
 </head>
-<body style="margin:0;padding:0;">
-  <div style="background:#003366; color:#ffffff; text-align:center; padding:8px; font-family:Arial; font-size:14px; font-weight:bold; border-radius:6px 6px 0 0;">
-    UNG Campus Life Safety &amp; Building Map
+<body>
+
+<header>
+  <div class="hd-left">
+    <div class="wordmark">University of North Georgia<span>Facilities GIS &nbsp;&middot;&nbsp; Campus Waypoints</span></div>
+    <div class="dvdr"></div>
+    <div class="map-title">Campus Waypoint Map</div>
   </div>
-  <div id="ungmap" style="height:430px; width:100%; border-radius:0 0 6px 6px;"></div>
-  <script>
-    var map = L.map('ungmap', { maxZoom: 21 }).setView([34.53, -83.98], 15);
+  <div class="hd-right">
+    <div id="statusPill" class="load-pill">Loading&hellip;</div>
+    <div class="badge">Public</div>
+  </div>
+</header>
 
-    map.createPane('buildings');
-    map.getPane('buildings').style.zIndex = 400;
+<div class="toolbar">
+  <!-- Row 1: Campus navigation -->
+  <div class="tb-row">
+    <div class="tb-section">
+      <span class="tb-label">Campus:</span>
+      <button class="campus-btn" id="cb-br" onclick="flyTo('blueridge')">Blue Ridge</button>
+      <button class="campus-btn" id="cb-cu" onclick="flyTo('cumming')">Cumming</button>
+      <button class="campus-btn" id="cb-da" onclick="flyTo('dahlonega')">Dahlonega</button>
+      <button class="campus-btn" id="cb-gv" onclick="flyTo('gainesville')">Gainesville</button>
+      <button class="campus-btn" id="cb-oc" onclick="flyTo('oconee')">Oconee</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-section">
+      <button class="tog-btn" id="btnAll" onclick="showAll()">All</button>
+    </div>
+  </div>
+  <!-- Row 2: Actions -->
+  <div class="tb-row">
+    <div class="tb-section">
+      <button class="locate-btn" id="btnLocate" onclick="locateMe()">&#9678;&nbsp;Locate Me</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-section">
+      <button class="dir-btn" id="btnDirections" onclick="toggleDirectionsPanel()">&#8594;&nbsp;Directions</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-section">
+      <button class="tog-btn" id="btnMarkers" onclick="toggleMarkers()">&#9678;&nbsp;Markers</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-section">
+      <button class="tog-btn pick-btn" id="btnPick" onclick="togglePicker()">&#9678;&nbsp;Coords</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-section">
+      <button class="tog-btn" id="btnConstruction" onclick="toggleConstruction()">🚨&nbsp;Alerts</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-section">
+      <a class="-link" href="https://arcg.is/X9SK5?embed" target="_blank">&#9888;&nbsp;Report Issue</a>
+    </div>
+  </div>
+</div>
 
-    map.createPane('lifesafety');
-    map.getPane('lifesafety').style.zIndex = 450;
+<!-- Routing panel -->
+<div id="routePanel" class="hidden">
+  <div class="rp-header">
+    <div class="rp-title">&#8594; Get Directions</div>
+    <button class="rp-close" onclick="toggleDirectionsPanel()">&#10005;</button>
+  </div>
+  <div class="rp-row">
+    <div class="rp-label">&#9679;&nbsp; From</div>
+    <div class="rp-from-box">
+      <div class="loc-dot" id="rpFromDot"></div>
+      <div id="rpFromText">Use &ldquo;Locate Me&rdquo; or scan a QR code</div>
+    </div>
+  </div>
+  <div class="rp-row">
+    <div class="rp-label">&#9679;&nbsp; To &mdash; select destination</div>
+    <select class="rp-select" id="rpDestSelect" onchange="onDestChange()">
+      <option value="">— Choose a waypoint —</option>
+    </select>
+  </div>
+  <div class="rp-btn-row">
+    <button class="rp-btn go" id="rpGoBtn" onclick="getDirections()" disabled>Go</button>
+    <button class="rp-btn clear" onclick="clearRoute()">Clear</button>
+  </div>
+  <div class="rp-status" id="rpStatus">Set your location and choose a destination.</div>
+</div>
 
-    map.createPane('alerts');
-    map.getPane('alerts').style.zIndex = 500;
+<div id="map">
+  <div id="viewLabel"></div>
+  <div id="routingBanner">&#8594;&nbsp; Directions mode &mdash; waypoint markers hidden</div>
+  <div id="coordPanel">
+    <div class="coord-label">&#9678; Coordinate Picker — Click anywhere on the map</div>
+    <div class="coord-values" id="coordLatLng">—</div>
+    <div class="coord-geojson" id="coordGeoJSON">GeoJSON: —</div>
+    <div class="coord-actions">
+      <button class="coord-copy" onclick="copyLatLng()">Copy Lat, Lng</button>
+      <button class="coord-copy" onclick="copyGeoJSON()">Copy GeoJSON</button>
+    </div>
+    <div class="coord-hint">GeoJSON coordinates are [longitude, latitude]</div>
+  </div>
+  <div id="noWpNotice">Scan a QR code at a campus location to open a specific waypoint.</div>
+</div>
 
-    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors | John Segars, UNG Facilities GIS',
-      maxZoom: 19
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
+<script>
+
+var GITHUB_BASE   = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/waypoints/';
+var WAYPOINTS_URL = GITHUB_BASE + 'waypoints.geojson';
+var SURVEY_URL    = 'https://arcg.is/X9SK5?embed';
+
+var CAMPUSES = {
+  dahlonega:   {center:[34.5281,-83.9864], zoom:16, id:'cb-da', label:'Dahlonega'  },
+  gainesville: {center:[34.2352,-83.8668], zoom:17, id:'cb-gv', label:'Gainesville'},
+  cumming:     {center:[34.2244,-84.1078], zoom:18, id:'cb-cu', label:'Cumming'    },
+  blueridge:   {center:[34.8890,-84.2920], zoom:19, id:'cb-br', label:'Blue Ridge' },
+  oconee:      {center:[33.8665,-83.4258], zoom:19, id:'cb-oc', label:'Oconee'     }
+};
+var ALL_CENTER=[34.3,-83.85], ALL_ZOOM=9;
+
+var CAT_ICONS={entrance:'🚪',parking:'🅿',building:'🏛',emergency:'🚨',services:'🛎',recreation:'⛳',poi:'⭐',default:'📍'};
+
+var params      = new URLSearchParams(window.location.search);
+var paramCampus = (params.get('campus')  ||'').toLowerCase().trim();
+var paramWP     = (params.get('waypoint')||'').toLowerCase().trim();
+
+var initialCampus = CAMPUSES[paramCampus] ? paramCampus : 'dahlonega';
+var map = L.map('map',{center:CAMPUSES[initialCampus].center, zoom:CAMPUSES[initialCampus].zoom});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'&copy; OpenStreetMap contributors | UNG Facilities GIS', maxZoom:19
+}).addTo(map);
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+var allMarkers=[]; var waypointData=null;
+var activeCampus=initialCampus; var isAllView=false;
+var markersVisible=true; var routingActive=false;
+var userLatLng=null; var userMarker=null; var fromIsQR=false;
+var routingControl=null; var destMarkerObj=null;
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+var lbl=document.getElementById('viewLabel');
+function flash(txt){lbl.textContent=txt;lbl.classList.add('show');setTimeout(function(){lbl.classList.remove('show');},1400);}
+
+function setActiveCampusBtn(key){
+  Object.keys(CAMPUSES).forEach(function(k){document.getElementById(CAMPUSES[k].id).classList.remove('active');});
+  document.getElementById('btnAll').classList.remove('active');
+  if(key&&CAMPUSES[key]) document.getElementById(CAMPUSES[key].id).classList.add('active');
+}
+
+function flyTo(key){
+  var c=CAMPUSES[key];if(!c)return;
+  isAllView=false;activeCampus=key;
+  setActiveCampusBtn(key);
+  map.flyTo(c.center,c.zoom,{animate:true,duration:1.1});
+  flash(c.label+' Campus');
+  populateDestDropdown(key);
+}
+function showAll(){
+  isAllView=true;setActiveCampusBtn(null);
+  document.getElementById('btnAll').classList.add('active');
+  map.flyTo(ALL_CENTER,ALL_ZOOM,{animate:true,duration:1.2});
+  flash('All Campuses');
+  populateDestDropdown(null);
+}
+
+// ── ICONS ─────────────────────────────────────────────────────────────────────
+function makeIcon(category,isActive,isDest){
+  var emoji=CAT_ICONS[category]||CAT_ICONS.default;
+  var cls='wp-icon'+(isActive?' active-wp':'')+(isDest?' dest-wp':'');
+  return L.divIcon({html:'<div class="'+cls+'">'+emoji+'</div>',className:'',iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-18]});
+}
+function makeGpsIcon(){
+  return L.divIcon({html:'<div class="gps-dot"></div>',className:'',iconSize:[16,16],iconAnchor:[8,8]});
+}
+
+// ── SHOW/HIDE MARKERS ─────────────────────────────────────────────────────────
+function setMarkersVisible(visible){
+  markersVisible=visible;
+  var btn=document.getElementById('btnMarkers');
+  var banner=document.getElementById('routingBanner');
+  allMarkers.forEach(function(m){
+    var isDestination=destMarkerObj&&m.id===destMarkerObj.id;
+    if(visible||isDestination){
+      if(!map.hasLayer(m.marker)) m.marker.addTo(map);
+    } else {
+      if(map.hasLayer(m.marker)) map.removeLayer(m.marker);
+    }
+  });
+  if(visible){
+    btn.classList.remove('active');btn.innerHTML='&#9678;&nbsp;Markers';banner.classList.remove('show');
+  } else {
+    btn.classList.add('active');btn.innerHTML='&#10005;&nbsp;Markers';banner.classList.add('show');
+  }
+}
+function toggleMarkers(){ setMarkersVisible(!markersVisible); }
+
+// ── POPUP ─────────────────────────────────────────────────────────────────────
+function buildPopup(p,wpId){
+  var meta='';
+  if(p.campus)   meta+=mr('Campus',p.campus);
+  if(p.building) meta+=mr('Building',p.building);
+  if(p.floor)    meta+=mr('Floor',p.floor);
+  if(p.hours)    meta+=mr('Hours',p.hours);
+  if(p.parking)  meta+=mr('Parking',p.parking);
+  if(p.url)      meta+=mr('Website','<a href="'+p.url+'" target="_blank" style="color:var(--gold);text-decoration:none;">&#8594;&nbsp;Visit</a>');
+  var desc=p.description?'<div class="popup-body">'+p.description+'</div>':'';
+  var nav='<button class="popup-nav-btn" onclick="navigateToWaypoint(\''+wpId+'\')">&#8594;&nbsp; Navigate Here</button>';
+  return '<div class="popup-inner">'+
+    '<div class="popup-eyebrow">'+(p.campus||'UNG')+' &middot; '+(p.category||'Waypoint')+'</div>'+
+    '<div class="popup-title">'+(p.name||'Campus Location')+'</div>'+
+    (p.subtitle?'<div class="popup-sub">'+p.subtitle+'</div>':'')+
+    '<div class="popup-divider"></div>'+desc+
+    (meta?'<div class="popup-meta">'+meta+'</div>':'')+
+    '<div class="popup-divider"></div>'+nav+
+    '<a class="popup-report-btn" href="'+SURVEY_URL+'" target="_blank">&#9888;&nbsp; Report a Facilities Issue</a>'+
+    '<div class="popup-source">UNG Facilities GIS &mdash; unggis.github.io</div></div>';
+}
+function mr(k,v){return '<div class="popup-meta-row"><span class="popup-meta-key">'+k+'</span><span class="popup-meta-val">'+v+'</span></div>';}
+
+// ── DROPDOWN ──────────────────────────────────────────────────────────────────
+function populateDestDropdown(campusKey){
+  var sel=document.getElementById('rpDestSelect');
+  sel.innerHTML='<option value="">— Choose a waypoint —</option>';
+  if(!waypointData) return;
+  var features=waypointData.features.filter(function(f){
+    if(!campusKey) return true;
+    return (f.properties.campus||'').toLowerCase()===campusKey;
+  });
+  features.sort(function(a,b){return(a.properties.name||'').localeCompare(b.properties.name||'');});
+  features.forEach(function(f){
+    var p=f.properties,id=(p.id||'').toLowerCase().trim();
+    var opt=document.createElement('option');
+    opt.value=id;
+    opt.textContent=(p.name||id)+(campusKey?'':' ('+(p.campus||'')+')');
+    sel.appendChild(opt);
+  });
+  checkGoReady();
+}
+
+// ── DIRECTIONS PANEL ──────────────────────────────────────────────────────────
+function toggleDirectionsPanel(){
+  var panel=document.getElementById('routePanel');
+  var btn=document.getElementById('btnDirections');
+  var hidden=panel.classList.toggle('hidden');
+  btn.classList.toggle('active',!hidden);
+  if(!hidden){populateDestDropdown(isAllView?null:activeCampus);updateFromBox();}
+}
+function updateFromBox(){
+  var dot=document.getElementById('rpFromDot');
+  var text=document.getElementById('rpFromText');
+  if(userLatLng){
+    dot.className='loc-dot'+(fromIsQR?' qr':'');
+    text.textContent=fromIsQR?'QR scan location':'GPS: '+userLatLng.lat.toFixed(5)+', '+userLatLng.lng.toFixed(5);
+  } else {
+    dot.className='loc-dot';
+    text.textContent='Use \u201cLocate Me\u201d or scan a QR code';
+  }
+  checkGoReady();
+}
+function checkGoReady(){
+  var sel=document.getElementById('rpDestSelect');
+  document.getElementById('rpGoBtn').disabled=!(userLatLng&&sel.value);
+}
+function onDestChange(){checkGoReady();}
+
+// ── LOCATE ME ─────────────────────────────────────────────────────────────────
+function locateMe(){
+  var btn=document.getElementById('btnLocate');
+  btn.classList.add('locating');btn.innerHTML='&#8635;&nbsp;Locating…';
+  setStatus('Acquiring GPS…','active');
+  if(!navigator.geolocation){
+    btn.classList.remove('locating');btn.innerHTML='&#9678;&nbsp;Locate Me';
+    setStatus('GPS not available on this device.','err');return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    function(pos){
+      userLatLng=L.latLng(pos.coords.latitude,pos.coords.longitude);fromIsQR=false;
+      placeUserMarker(userLatLng);
+      map.flyTo(userLatLng,17,{animate:true,duration:0.9});
+      flash('Location found');
+      btn.classList.remove('locating');btn.innerHTML='&#10003;&nbsp;Located';
+      setTimeout(function(){btn.innerHTML='&#9678;&nbsp;Locate Me';},3000);
+      setStatus('Location set. Choose a destination.','active');
+      updateFromBox();
+      if(document.getElementById('routePanel').classList.contains('hidden')) toggleDirectionsPanel();
+    },
+    function(err){
+      btn.classList.remove('locating');btn.innerHTML='&#9678;&nbsp;Locate Me';
+      setStatus(err.code===1?'Location permission denied.':err.code===2?'Position unavailable.':'GPS timed out.','err');
+      flash('GPS error');
+    },
+    {enableHighAccuracy:true,timeout:12000,maximumAge:0}
+  );
+}
+function placeUserMarker(ll){
+  if(userMarker) map.removeLayer(userMarker);
+  userMarker=L.marker(ll,{icon:makeGpsIcon(),zIndexOffset:1000}).addTo(map);
+  userMarker.bindTooltip('You are here',{permanent:false,direction:'top',offset:[0,-10]});
+}
+
+// ── NAVIGATE FROM POPUP ───────────────────────────────────────────────────────
+function navigateToWaypoint(wpId){
+  var sel=document.getElementById('rpDestSelect');
+  if(!sel.querySelector('option[value="'+wpId+'"]')) populateDestDropdown(null);
+  sel.value=wpId;
+  if(document.getElementById('routePanel').classList.contains('hidden')) toggleDirectionsPanel();
+  checkGoReady();
+  if(userLatLng&&sel.value) getDirections();
+  else setStatus('Set your location first with \u201cLocate Me\u201d.','active');
+}
+
+// ── GET DIRECTIONS ────────────────────────────────────────────────────────────
+function getDirections(){
+  var destId=document.getElementById('rpDestSelect').value;
+  if(!destId||!userLatLng) return;
+  var destEntry=allMarkers.find(function(m){return m.id===destId;});
+  if(!destEntry){setStatus('Destination not found.','err');return;}
+  var coords=destEntry.feature.geometry.coordinates;
+  var destLL=L.latLng(coords[1],coords[0]);
+
+  // Reset old destination icon
+  if(destMarkerObj){
+    var po=destMarkerObj.feature.properties;
+    destMarkerObj.marker.setIcon(makeIcon(po.category,destMarkerObj.id===paramWP,false));
+  }
+  destEntry.marker.setIcon(makeIcon(destEntry.feature.properties.category,false,true));
+  destMarkerObj=destEntry;
+
+  clearRoute(true);
+
+  // Auto-hide all markers — keep destination visible
+  routingActive=true;
+  setMarkersVisible(false);
+  if(!map.hasLayer(destEntry.marker)) destEntry.marker.addTo(map);
+
+  setStatus('Calculating route…','active');
+
+  routingControl=L.Routing.control({
+    waypoints:[L.latLng(userLatLng.lat,userLatLng.lng),destLL],
+    router:L.Routing.osrmv1({serviceUrl:'https://router.project-osrm.org/route/v1',profile:'foot'}),
+    lineOptions:{
+      styles:[
+        {color:'#0a2240',weight:7,opacity:0.4},
+        {color:'#c9a84c',weight:3.5,opacity:0.95}
+      ],
+      extendToWaypoints:true,missingRouteTolerance:0
+    },
+    createMarker:function(){return null;},
+    addWaypoints:false,draggableWaypoints:false,
+    fitSelectedRoutes:true,showAlternatives:false
+  }).addTo(map);
+
+  routingControl.on('routesfound',function(e){
+    var s=e.routes[0].summary;
+    setStatus('\u2713 '+(s.totalDistance/1000).toFixed(2)+' km \u2014 ~'+Math.ceil(s.totalTime/60)+' min walk','active');
+  });
+  routingControl.on('routingerror',function(){
+    setStatus('Route unavailable. OSRM may lack path data here.','err');
+  });
+}
+
+// ── CLEAR ROUTE ───────────────────────────────────────────────────────────────
+function clearRoute(keepPanel){
+  if(routingControl){map.removeControl(routingControl);routingControl=null;}
+  if(destMarkerObj){
+    var p=destMarkerObj.feature.properties;
+    destMarkerObj.marker.setIcon(makeIcon(p.category,destMarkerObj.id===paramWP,false));
+    destMarkerObj=null;
+  }
+  if(routingActive){routingActive=false;setMarkersVisible(true);}
+  if(!keepPanel){
+    document.getElementById('rpDestSelect').value='';
+    setStatus('Route cleared.','');checkGoReady();
+  }
+}
+
+function setStatus(msg,type){
+  var el=document.getElementById('rpStatus');if(!el)return;
+  el.innerHTML=msg;el.className='rp-status'+(type?' '+type:'');
+}
+
+// ── LOAD WAYPOINTS ────────────────────────────────────────────────────────────
+var statusPill=document.getElementById('statusPill');
+var noWpNotice=document.getElementById('noWpNotice');
+
+fetch(WAYPOINTS_URL)
+  .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+  .then(function(data){
+    waypointData=data;
+    var n=data.features?data.features.length:0;
+    statusPill.textContent='\u2713 '+n+' waypoint'+(n!==1?'s':'')+' loaded';
+    statusPill.classList.add('ok');
+
+    data.features.forEach(function(f){
+      var p=f.properties,id=(p.id||'').toLowerCase().trim();
+      var ll=[f.geometry.coordinates[1],f.geometry.coordinates[0]];
+      var isTarget=paramWP&&(id===paramWP);
+      var marker=L.marker(ll,{icon:makeIcon(p.category,isTarget,false)});
+      marker.bindPopup(buildPopup(p,id),{maxWidth:275,className:'ung-popup'});
+      marker.addTo(map);
+      allMarkers.push({marker:marker,feature:f,id:id});
     });
 
-    var esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, GeoEye, Earthstar Geographics',
-      maxZoom: 21
+    if(paramWP){
+      var target=allMarkers.find(function(m){return m.id===paramWP;});
+      if(target){
+        var coords=target.feature.geometry.coordinates;
+        userLatLng=L.latLng(coords[1],coords[0]);fromIsQR=true;
+        placeUserMarker(userLatLng);
+        map.flyTo([coords[1],coords[0]],18,{animate:true,duration:1.0});
+        setTimeout(function(){target.marker.openPopup();},1100);
+        var wpCampus=(target.feature.properties.campus||'').toLowerCase();
+        Object.keys(CAMPUSES).forEach(function(k){if(CAMPUSES[k].label.toLowerCase()===wpCampus)activeCampus=k;});
+        populateDestDropdown(activeCampus);updateFromBox();
+      }
+    } else {
+      noWpNotice.classList.add('show');
+      setTimeout(function(){noWpNotice.classList.remove('show');},4000);
+      populateDestDropdown(activeCampus);
+    }
+    setActiveCampusBtn(initialCampus);
+  })
+  .catch(function(err){
+    statusPill.textContent='\u26a0 Waypoints unavailable';statusPill.classList.add('err');
+    console.warn('Waypoints fetch failed:',err);setActiveCampusBtn(initialCampus);
+  });
+
+// ── LEGEND ────────────────────────────────────────────────────────────────────
+var legendDiv=document.createElement('div');
+legendDiv.className='legend';
+legendDiv.innerHTML=
+  '<div class="legend-header" onclick="toggleLegend()"><h4>Waypoint Types</h4><span class="legend-chevron">&#9660;</span></div>'+
+  '<div class="legend-body">'+
+  '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">🚪</div>Entrance / Access</div>'+
+  '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">🏛</div>Building</div>'+
+  '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">🅿</div>Parking</div>'+
+  '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">🛎</div>Services</div>'+
+  '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">⛳</div>Recreation</div>'+
+  '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">🚨</div>Emergency</div>'+
+  '<div class="li"><div class="li-icon" style="background:var(--navy);border:1px solid var(--gold);">⭐</div>POI / Monument / Memorial</div>'+
+  '<div style="margin-top:7px;padding-top:5px;border-top:1px solid rgba(201,168,76,.25);">'+
+  '<div class="li"><div class="li-icon" style="background:var(--green);border:2px solid #fff;border-radius:50%;width:11px;height:11px;margin:3px;"></div>Your location</div>'+
+  '<div class="li"><div class="li-icon" style="background:var(--navy);border:2px solid var(--green);">📍</div>Selected destination</div>'+
+  '</div>'+
+  '<div id="legendAlertsSection" style="display:none;margin-top:7px;padding-top:5px;border-top:1px solid rgba(201,168,76,.25);">'+
+  '<div class="li"><div style="width:14px;height:14px;background:rgba(209,52,56,.4);border:2px solid #D13438;border-radius:2px;flex-shrink:0;margin-right:3px;"></div>🚫 Road Closed</div>'+
+  '<div class="li"><div style="width:14px;height:14px;background:rgba(244,164,27,.4);border:2px solid #F4A41B;border-radius:2px;flex-shrink:0;margin-right:3px;"></div>🚧 Construction Zone</div>'+
+  '<div class="li"><div style="width:14px;height:14px;background:rgba(136,136,136,.4);border:2px solid #888;border-radius:2px;flex-shrink:0;margin-right:3px;"></div>⚠️ Out of Order</div>'+
+  '<div class="li"><div style="width:14px;height:14px;background:rgba(204,85,0,.4);border:2px solid #cc5500;border-radius:2px;flex-shrink:0;margin-right:3px;"></div>☢️ Hazard</div>'+
+  '<div class="li"><div style="width:14px;height:14px;background:rgba(184,168,0,.4);border:2px solid #b8a800;border-radius:2px;flex-shrink:0;margin-right:3px;"></div>📍 Other</div>'+
+  '<div class="li"><span style="display:inline-block;width:14px;height:3px;border-top:3px dashed #0066cc;flex-shrink:0;margin-right:3px;margin-top:7px;"></span>↪️ Detour Route</div>'+
+  '</div></div>';
+document.body.appendChild(legendDiv);
+function toggleLegend(){document.querySelector('.legend').classList.toggle('collapsed');}
+
+
+
+// ── CAMPUS ALERTS ─────────────────────────────────────────────────────────────
+var POLYGON_ALERTS = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Campus_Alerts/FeatureServer/43';
+var LINEAR_ALERTS  = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Alerts_Linear/FeatureServer/44';
+
+var ALERT_COLORS = {0:'#D13438',1:'#F4A41B',2:'#888888',3:'#cc5500',4:'#b8a800',5:'#0066cc'};
+var ALERT_LABELS = {0:'Road Closed',1:'Construction Zone',2:'Out of Order',3:'Hazard',4:'Other',5:'Detour'};
+var ALERT_ICONS  = {0:'🚫',1:'🚧',2:'⚠️',3:'☢️',4:'📍',5:'↪️'};
+var LINE_STYLES  = {
+  0:['#D13438',5,null],
+  1:['#F4A41B',4,'10,6'],
+  2:['#888888',3,'6,4'],
+  3:['#cc5500',4,null],
+  4:['#b8a800',3,'4,4'],
+  5:['#0066cc',4,'12,5,3,5']
+};
+
+var alertsLayer = L.featureGroup();
+var alertsVisible = false;
+
+map.createPane('alerts');
+map.getPane('alerts').style.zIndex = 450;
+
+function makeAlertIcon(alertType){
+  var color=ALERT_COLORS[alertType]||'#999';
+  var emoji=ALERT_ICONS[alertType]||'📍';
+  return L.divIcon({
+    html:'<div style="background:'+color+';border:3px solid #fff;border-radius:50%;'+
+         'width:30px;height:30px;display:flex;align-items:center;justify-content:center;'+
+         'font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.45);">'+emoji+'</div>',
+    className:'',iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-20]
+  });
+}
+
+function buildAlertPopup(p){
+  var color=ALERT_COLORS[p.Alert_Type]||'#999';
+  var expires=p.End_Date
+    ? new Date(p.End_Date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    : 'No expiration set';
+  var msg=(p.Message||'No additional details.')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  return '<div class="cz-popup-header" style="border-left:4px solid '+color+';">'+
+    '<div class="cz-popup-title">'+(ALERT_ICONS[p.Alert_Type]||'📍')+' '+(ALERT_LABELS[p.Alert_Type]||'Alert')+'</div></div>'+
+    '<div class="cz-popup-body">'+msg+
+    '<div class="cz-popup-footer">⏱ Expires: '+expires+'</div></div>';
+}
+
+function loadAlerts(){
+  var where=encodeURIComponent('Active=1');
+  var q='?where='+where+'&outFields=*&f=geojson&returnGeometry=true';
+
+  alertsLayer.clearLayers();
+
+  Promise.all([
+    fetch(POLYGON_ALERTS+'/query'+q).then(function(r){return r.json();}),
+    fetch(LINEAR_ALERTS +'/query'+q).then(function(r){return r.json();})
+  ]).then(function(results){
+    var polyData=results[0];
+    var lineData=results[1];
+    console.log('[Alerts] Layer 43 (polygons):', polyData);
+    console.log('[Alerts] Layer 44 (lines):', lineData);
+    var count=0;
+
+    // Polygon zones
+    (polyData.features||[]).forEach(function(f){
+      var p=f.properties;
+      var color=ALERT_COLORS[p.Alert_Type]||'#999';
+      var popup=buildAlertPopup(p);
+      var layer=L.geoJSON(f,{
+        style:{color:color,weight:2.5,fillColor:color,fillOpacity:0.28,pane:'alerts'}
+      }).bindPopup(popup,{maxWidth:275,className:'ung-popup'});
+      layer.addTo(alertsLayer);
+      L.marker(layer.getBounds().getCenter(),{
+        icon:makeAlertIcon(p.Alert_Type),zIndexOffset:900
+      }).bindPopup(popup,{maxWidth:275,className:'ung-popup'}).addTo(alertsLayer);
+      count++;
     });
 
-    var esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Labels &copy; Esri',
-      maxZoom: 21
+    // Linear routes
+    (lineData.features||[]).forEach(function(f){
+      var p=f.properties;
+      var ls=LINE_STYLES[p.Alert_Type]||['#999',3,null];
+      var style={color:ls[0],weight:ls[1],opacity:0.95,pane:'alerts'};
+      if(ls[2]) style.dashArray=ls[2];
+      var popup=buildAlertPopup(p);
+      var layer=L.geoJSON(f,{style:style})
+        .bindPopup(popup,{maxWidth:275,className:'ung-popup'});
+      layer.addTo(alertsLayer);
+      L.marker(layer.getBounds().getCenter(),{
+        icon:makeAlertIcon(p.Alert_Type),zIndexOffset:900
+      }).bindPopup(popup,{maxWidth:275,className:'ung-popup'}).addTo(alertsLayer);
+      count++;
     });
 
-    var imagery = L.layerGroup([esriImagery, esriLabels]);
-    osm.addTo(map);
+    if(count===0) flash('No active campus alerts');
+  }).catch(function(e){
+    console.warn('[Alerts] Fetch failed:',e);
+    flash('Alerts data unavailable');
+  });
+}
 
-    var baseMaps = {
-      'Street Map': osm,
-      'Satellite':  imagery
-    };
+var alertsRefreshTimer=null;
+function toggleConstruction(){
+  alertsVisible=!alertsVisible;
+  var btn=document.getElementById('btnConstruction');
+  var legendSection=document.getElementById('legendAlertsSection');
+  if(alertsVisible){
+    alertsLayer.addTo(map);
+    loadAlerts();
+    if(btn) btn.classList.add('active');
+    if(legendSection) legendSection.style.display='block';
+    flash('Campus alerts on');
+    alertsRefreshTimer=setInterval(function(){if(alertsVisible)loadAlerts();},120000);
+  } else {
+    map.removeLayer(alertsLayer);
+    if(btn) btn.classList.remove('active');
+    if(legendSection) legendSection.style.display='none';
+    flash('Campus alerts off');
+    if(alertsRefreshTimer){clearInterval(alertsRefreshTimer);alertsRefreshTimer=null;}
+  }
+}
 
-    // Building Footprints
-    L.esri.featureLayer({
-      url: 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Building_Footprints_2_view/FeatureServer/5',
-      pane: 'buildings',
-      style: {
-        color: '#003366',
-        weight: 1.5,
-        fillColor: '#C8952A',
-        fillOpacity: 0.4
-      },
-      onEachFeature: function(feature, layer) {
-        var props = feature.properties;
-        var label = (props.Building || 'Building');
-        if (props.campus) label += ' — ' + props.campus;
-        layer.bindTooltip(label, {
-          permanent: false,
-          sticky: true,
-          direction: 'top',
-          className: 'building-tooltip'
-        });
-        layer.on('click', function(e) {
-          var point = e.latlng;
-          var closest = null;
-          var closestDist = Infinity;
-          map.eachLayer(function(l) {
-            if (l instanceof L.Marker && !(l instanceof L.CircleMarker)) {
-              var dist = map.distance(point, l.getLatLng());
-              if (dist < closestDist) {
-                closestDist = dist;
-                closest = l;
-              }
-            }
-          });
-          if (closest && closestDist < 50) {
-            closest.openPopup();
-          }
-        });
-      }
-    }).addTo(map);
+// ── COORDINATE PICKER ─────────────────────────────────────────────────────────
+var picking=false,lastLatLng=null;
+var coordPanel=document.getElementById('coordPanel');
+function togglePicker(){
+  picking=!picking;
+  var btn=document.getElementById('btnPick');
+  if(picking){btn.classList.add('active');btn.innerHTML='&#10005;&nbsp;Coords';document.getElementById('map').classList.add('picking');coordPanel.classList.add('show');flash('Click map to pick coordinates');}
+  else{btn.classList.remove('active');btn.innerHTML='&#9678;&nbsp;Coords';document.getElementById('map').classList.remove('picking');coordPanel.classList.remove('show');}
+}
+map.on('click',function(e){
+  if(!picking)return;
+  lastLatLng=e.latlng;
+  var lat=e.latlng.lat.toFixed(6),lng=e.latlng.lng.toFixed(6);
+  document.getElementById('coordLatLng').textContent=lat+', '+lng;
+  document.getElementById('coordGeoJSON').textContent='GeoJSON: ['+lng+', '+lat+']';
+});
+function copyLatLng(){if(!lastLatLng)return;navigator.clipboard.writeText(lastLatLng.lat.toFixed(6)+', '+lastLatLng.lng.toFixed(6)).then(function(){flash('Lat, Lng copied!');});}
+function copyGeoJSON(){if(!lastLatLng)return;navigator.clipboard.writeText('['+lastLatLng.lng.toFixed(6)+', '+lastLatLng.lat.toFixed(6)+']').then(function(){flash('GeoJSON coords copied!');});}
 
-    // Life Safety lookup tables
-    var deviceTypes = {
-      0: 'Fire Hydrant',
-      1: 'Stand Pipe',
-      2: 'AED',
-      3: 'Stairway Gurney',
-      4: 'Call Box',
-      5: 'Fire Extinguisher',
-      6: 'Fire Department Connection'
-    };
-
-    var floorTypes = {
-      0: 'Crawlspace',
-      1: 'Basement',
-      2: '1st Level',
-      3: '2nd Level',
-      4: '3rd Level',
-      5: '4th Level',
-      6: '5th Level',
-      7: '6th Level'
-    };
-
-    // SVG Icons
-    var deviceSVGs = {
-      0: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10" fill="#cc0000"/><text x="12" y="16" text-anchor="middle" font-size="11" fill="white" font-family="Arial">H</text></svg>',
-      1: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="4" fill="#8b0000"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">SP</text></svg>',
-      2: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="4" fill="#006400"/><text x="12" y="16" text-anchor="middle" font-size="8" fill="white" font-family="Arial">AED</text></svg>',
-      3: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><polygon points="12,2 22,22 2,22" fill="#6a0dad"/><text x="12" y="19" text-anchor="middle" font-size="8" fill="white" font-family="Arial">SG</text></svg>',
-      4: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10" fill="#0057b8"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">CB</text></svg>',
-      5: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="4" fill="#ff6600"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">FE</text></svg>',
-      6: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><polygon points="12,2 22,22 2,22" fill="#990000"/><text x="12" y="19" text-anchor="middle" font-size="7" fill="white" font-family="Arial">FDC</text></svg>'
-    };
-
-    function makeIcon(key) {
-      var svg = deviceSVGs[key] !== undefined ? deviceSVGs[key] : deviceSVGs[0];
-      return L.divIcon({
-        html: svg,
-        iconSize: [22, 22],
-        iconAnchor: [11, 11],
-        popupAnchor: [0, -14],
-        className: ''
-      });
-    }
-
-    var deviceIcons = {
-      0: makeIcon(0), 1: makeIcon(1), 2: makeIcon(2),
-      3: makeIcon(3), 4: makeIcon(4), 5: makeIcon(5), 6: makeIcon(6)
-    };
-
-    // Life Safety Features — stored as a layer group for toggle control
-    var lifeSafetyLayer = L.featureGroup();
-
-    L.esri.featureLayer({
-      url: 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Life_Safety_view/FeatureServer/28',
-      pane: 'lifesafety',
-      pointToLayer: function(feature, latlng) {
-        var icon = deviceIcons[feature.properties.DeviceType] !== undefined
-          ? deviceIcons[feature.properties.DeviceType] : makeIcon(0);
-        return L.marker(latlng, { icon: icon });
-      },
-      onEachFeature: function(feature, layer) {
-        var props = feature.properties;
-        var deviceLabel = deviceTypes[props.DeviceType] || 'Life Safety Device';
-        var popup = '<strong>' + deviceLabel + '</strong>';
-        if (props.Building) popup += '<br>Building: ' + props.Building;
-        if (props.Floor !== null && props.Floor !== undefined)
-          popup += '<br>Floor: ' + (floorTypes[props.Floor] || props.Floor);
-        if (props.Notes) popup += '<br>Notes: ' + props.Notes;
-        layer.bindPopup(popup);
-      }
-    }).addTo(lifeSafetyLayer);
-
-    lifeSafetyLayer.addTo(map);
-
-    // ── CAMPUS ALERTS ─────────────────────────────────────────────
-    var POLYGON_ALERTS = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Campus_Alerts/FeatureServer/43';
-    var LINEAR_ALERTS  = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Alerts_Linear/FeatureServer/44';
-
-    var ALERT_COLORS = {
-      0: '#D13438', 1: '#F4A41B', 2: '#888888',
-      3: '#cc5500', 4: '#b8a800', 5: '#0066cc'
-    };
-    var ALERT_LABELS = {
-      0: 'Road Closed', 1: 'Construction Zone', 2: 'Out of Order',
-      3: 'Hazard',      4: 'Other',             5: 'Detour'
-    };
-    var ALERT_ICONS = {
-      0: '🚫', 1: '🚧', 2: '⚠️', 3: '☢️', 4: '📍', 5: '↪️'
-    };
-    var LINE_STYLES = {
-      0: ['#D13438', 5, null],
-      1: ['#F4A41B', 4, '10,6'],
-      2: ['#888888', 3, '6,4'],
-      3: ['#cc5500', 4, null],
-      4: ['#b8a800', 3, '4,4'],
-      5: ['#0066cc', 4, '12,5,3,5']
-    };
-
-    function makeAlertIcon(alertType) {
-      var color = ALERT_COLORS[alertType] || '#999';
-      var emoji = ALERT_ICONS[alertType]  || '📍';
-      return L.divIcon({
-        html: '<div style="background:' + color + ';border:3px solid white;border-radius:50%;' +
-              'width:34px;height:34px;display:flex;align-items:center;justify-content:center;' +
-              'font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.4);cursor:pointer;">' + emoji + '</div>',
-        className: '',
-        iconSize:    [34, 34],
-        iconAnchor:  [17, 17],
-        popupAnchor: [0, -20]
-      });
-    }
-
-    function buildAlertPopup(p) {
-      var color   = ALERT_COLORS[p.Alert_Type] || '#999';
-      var expires = p.End_Date
-        ? new Date(p.End_Date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
-        : 'No expiration set';
-      var msg = (p.Message || '')
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/\n/g,'<br>');
-      return '<div class="alert-popup-header" style="border-left:5px solid ' + color + ';">' +
-               '<div class="alert-popup-title">' + (ALERT_LABELS[p.Alert_Type] || 'Alert') + '</div>' +
-             '</div>' +
-             '<div class="alert-popup-body">' +
-               '<div class="alert-popup-msg">' + msg + '</div>' +
-               '<div class="alert-popup-footer">⏱ Expires: ' + expires + '</div>' +
-             '</div>';
-    }
-
-    // Alerts live in their own featureGroup for layer control toggle
-    var alertsLayer = L.featureGroup({ pane: 'alerts' });
-
-    // Campus filter state — null means show all campuses
-    var currentCampusFilter = null;
-
-    // Maps campus name to domain code for filtering
-    var CAMPUS_CODES = {
-      'Blue Ridge':  0,
-      'Cumming':     1,
-      'Dahlonega':   2,
-      'Gainesville': 3,
-      'Oconee':      4
-    };
-
-    // Build alerts legend dynamically from active features only
-    function buildAlertsLegend(activePolyTypes, activeLineTypes) {
-      function alertSwatch(color, dash) {
-        var border = dash
-          ? 'border-top:3px dashed ' + color + ';background:none;'
-          : 'background:' + color + ';';
-        return '<span style="display:inline-block;width:18px;height:3px;' + border +
-               'vertical-align:middle;margin-right:6px;"></span>';
-      }
-      function zoneSwatch(color) {
-        return '<span style="display:inline-block;width:14px;height:14px;background:' + color +
-               ';opacity:0.5;border:2px solid ' + color + ';vertical-align:middle;margin-right:6px;"></span>';
-      }
-
-      var html = '<strong style="display:block;margin-bottom:6px;">Campus Alerts</strong>';
-      var hasAny = false;
-
-      // Zone types (polygon)
-      var zoneTypes = [
-        [0, '#D13438', 'Road Closed'],
-        [1, '#F4A41B', 'Construction Zone'],
-        [2, '#888888', 'Out of Order'],
-        [3, '#cc5500', 'Hazard'],
-        [4, '#b8a800', 'Other']
-      ];
-      var hasZones = false;
-      zoneTypes.forEach(function(t) {
-        if (activePolyTypes.has(t[0])) {
-          if (!hasZones) { html += '<em style="font-size:0.75em;color:#666;display:block;margin-bottom:3px;">Zones</em>'; hasZones = true; }
-          html += zoneSwatch(t[1]) + ' ' + t[2] + '<br>';
-          hasAny = true;
-        }
-      });
-
-      // Linear types
-      var lineTypes = [
-        [0, '#D13438', false, 'Road Closed'],
-        [1, '#F4A41B', true,  'Construction Zone'],
-        [2, '#888888', true,  'Out of Order'],
-        [3, '#cc5500', false, 'Hazard'],
-        [4, '#b8a800', true,  'Other'],
-        [5, '#0066cc', true,  'Detour']
-      ];
-      var hasLines = false;
-      lineTypes.forEach(function(t) {
-        if (activeLineTypes.has(t[0])) {
-          if (!hasLines) {
-            if (hasZones) html += '<div style="margin:4px 0;"></div>';
-            html += '<em style="font-size:0.75em;color:#666;display:block;margin-bottom:3px;">Routes</em>';
-            hasLines = true;
-          }
-          html += alertSwatch(t[1], t[2]) + ' ' + t[3] + '<br>';
-          hasAny = true;
-        }
-      });
-
-      if (!hasAny) {
-        html += '<span style="font-size:0.8em;color:#888;font-style:italic;">No active alerts</span><br>';
-      }
-
-      html += '<hr style="border:none;border-top:1px solid #eee;margin:8px 0;">' +
-              '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
-              '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
-
-      // Update stored legend HTML and refresh if currently visible
-      window._legendAlertsHTML = html;
-      if (activeOverlay === 'alerts' && window._legendDiv) {
-        window._legendDiv.innerHTML = html;
-      }
-    }
-
-    function loadPublicAlerts(campusCode) {
-      var nowStr = new Date().toISOString().replace('T',' ').substring(0,19);
-      var campusClause = (campusCode !== undefined && campusCode !== null)
-        ? " AND Campus=" + campusCode
-        : "";
-      var where  = encodeURIComponent(
-        "Active=1 AND Start_Date <= DATE '" + nowStr + "' AND (End_Date IS NULL OR End_Date >= DATE '" + nowStr + "')" + campusClause
-      );
-      var q = '?where=' + where + '&outFields=Alert_Type,Message,End_Date&f=geojson&returnGeometry=true';
-
-      alertsLayer.clearLayers();
-
-      Promise.all([
-        fetch(POLYGON_ALERTS + '/query' + q).then(function(r){ return r.json(); }),
-        fetch(LINEAR_ALERTS  + '/query' + q).then(function(r){ return r.json(); })
-      ]).then(function(results) {
-        var polyData = results[0];
-        var lineData = results[1];
-
-        // Track active types for dynamic legend
-        var activePolyTypes = new Set();
-        var activeLineTypes = new Set();
-
-        // Polygons
-        (polyData.features || []).forEach(function(f) {
-          var p     = f.properties;
-          var color = ALERT_COLORS[p.Alert_Type] || '#999';
-          var popup = buildAlertPopup(p);
-          var layer = L.geoJSON(f, {
-            style: { color: color, weight: 3, fillColor: color, fillOpacity: 0.3, pane: 'alerts' }
-          }).bindPopup(popup, { maxWidth: 300 });
-          layer.addTo(alertsLayer);
-          var center = layer.getBounds().getCenter();
-          L.marker(center, { icon: makeAlertIcon(p.Alert_Type), zIndexOffset: 1000 })
-           .bindPopup(popup, { maxWidth: 300 })
-           .addTo(alertsLayer);
-          activePolyTypes.add(p.Alert_Type);
-        });
-
-        // Lines
-        (lineData.features || []).forEach(function(f) {
-          var p = f.properties;
-          var ls = LINE_STYLES[p.Alert_Type] || ['#999', 3, null];
-          var color = ls[0], weight = ls[1], dashArray = ls[2];
-          var popup = buildAlertPopup(p);
-          var style = { color: color, weight: weight, opacity: 0.95, pane: 'alerts' };
-          if (dashArray) style.dashArray = dashArray;
-          var layer = L.geoJSON(f, { style: style })
-            .bindPopup(popup, { maxWidth: 300 });
-          layer.addTo(alertsLayer);
-          var center = layer.getBounds().getCenter();
-          L.marker(center, { icon: makeAlertIcon(p.Alert_Type), zIndexOffset: 1000 })
-           .bindPopup(popup, { maxWidth: 300 })
-           .addTo(alertsLayer);
-          activeLineTypes.add(p.Alert_Type);
-        });
-
-        // Rebuild legend from active types only
-        buildAlertsLegend(activePolyTypes, activeLineTypes);
-
-      }).catch(function(e) {
-        console.warn('Campus alerts could not be loaded:', e);
-      });
-    }
-
-    // Alerts start hidden — Life Safety is default overlay
-    loadPublicAlerts(currentCampusFilter);
-    setInterval(function() { loadPublicAlerts(currentCampusFilter); }, 120000); // refresh every 2 min
-
-    // ── BASE MAP CONTROL only — overlays handled by custom toggle ──
-    L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
-
-    // ── CUSTOM MUTUALLY EXCLUSIVE OVERLAY TOGGLE ──────────────────
-    var activeOverlay = 'lifesafety'; // default
-
-    var toggleControl = L.control({ position: 'topleft' });
-    toggleControl.onAdd = function() {
-      var div = L.DomUtil.create('div');
-      div.style.background   = 'white';
-      div.style.padding      = '8px';
-      div.style.borderRadius = '6px';
-      div.style.boxShadow    = '0 1px 4px rgba(0,0,0,0.3)';
-      div.style.fontSize     = '12px';
-      div.style.marginTop    = '8px';
-
-      var label = document.createElement('strong');
-      label.textContent        = 'Overlay';
-      label.style.display      = 'block';
-      label.style.marginBottom = '6px';
-      div.appendChild(label);
-
-      var options = [
-        { key: 'lifesafety', label: '🔴 Life Safety',   layer: lifeSafetyLayer },
-        { key: 'alerts',     label: '🚧 Campus Alerts', layer: alertsLayer     }
-      ];
-
-      options.forEach(function(opt) {
-        var btn = document.createElement('button');
-        btn.textContent        = opt.label;
-        btn.dataset.key        = opt.key;
-        btn.style.display      = 'block';
-        btn.style.width        = '100%';
-        btn.style.marginBottom = '4px';
-        btn.style.padding      = '4px 8px';
-        btn.style.border       = 'none';
-        btn.style.borderRadius = '3px';
-        btn.style.cursor       = 'pointer';
-        btn.style.textAlign    = 'left';
-        btn.style.fontFamily   = 'Arial, sans-serif';
-        btn.style.fontSize     = '12px';
-        btn.style.transition   = 'background 0.15s';
-
-        function updateStyle() {
-          if (activeOverlay === opt.key) {
-            btn.style.background = '#C8952A';
-            btn.style.color      = '#ffffff';
-            btn.style.fontWeight = 'bold';
-          } else {
-            btn.style.background = '#003366';
-            btn.style.color      = '#ffffff';
-            btn.style.fontWeight = 'normal';
-          }
-        }
-        updateStyle();
-
-        btn.onclick = function() {
-          // Remove all overlays
-          options.forEach(function(o) {
-            if (map.hasLayer(o.layer)) map.removeLayer(o.layer);
-          });
-          // Add selected
-          activeOverlay = opt.key;
-          map.addLayer(opt.layer);
-          // Update button styles
-          div.querySelectorAll('button[data-key]').forEach(function(b) {
-            var isActive = b.dataset.key === activeOverlay;
-            b.style.background = isActive ? '#C8952A' : '#003366';
-            b.style.fontWeight = isActive ? 'bold' : 'normal';
-          });
-          // Swap legend section
-          updateLegendVisibility();
-        };
-
-        div.appendChild(btn);
-      });
-
-      // Stop map clicks propagating through control
-      L.DomEvent.disableClickPropagation(div);
-      return div;
-    };
-    toggleControl.addTo(map);
-
-    // ── LEGEND ────────────────────────────────────────────────────
-    var legend = L.control({ position: 'bottomright' });
-
-    legend.onAdd = function(map) {
-      var div = L.DomUtil.create('div', 'legend');
-      div.style.background   = 'white';
-      div.style.padding      = '10px';
-      div.style.borderRadius = '6px';
-      div.style.boxShadow    = '0 1px 4px rgba(0,0,0,0.3)';
-      div.style.lineHeight   = '1.8';
-      div.style.fontSize     = '12px';
-
-      function svgIcon(svg) {
-        return '<span style="display:inline-block;vertical-align:middle;margin-right:6px;">' + svg + '</span>';
-      }
-      function alertSwatch(color, dash) {
-        var border = dash
-          ? 'border-top:3px dashed ' + color + ';background:none;'
-          : 'background:' + color + ';';
-        return '<span style="display:inline-block;width:18px;height:3px;' + border +
-               'vertical-align:middle;margin-right:6px;"></span>';
-      }
-
-      var lifeSafetyHTML =
-        '<strong style="display:block;margin-bottom:6px;">Life Safety</strong>' +
-        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="#cc0000"/><text x="12" y="16" text-anchor="middle" font-size="11" fill="white" font-family="Arial">H</text></svg>') + ' Fire Hydrant<br>' +
-        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#8b0000"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">SP</text></svg>') + ' Stand Pipe<br>' +
-        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#006400"/><text x="12" y="16" text-anchor="middle" font-size="8" fill="white" font-family="Arial">AED</text></svg>') + ' AED<br>' +
-        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><polygon points="12,2 22,22 2,22" fill="#6a0dad"/><text x="12" y="19" text-anchor="middle" font-size="8" fill="white" font-family="Arial">SG</text></svg>') + ' Stairway Gurney<br>' +
-        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="#0057b8"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">CB</text></svg>') + ' Call Box<br>' +
-        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#ff6600"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">FE</text></svg>') + ' Fire Extinguisher<br>' +
-        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><polygon points="12,2 22,22 2,22" fill="#990000"/><text x="12" y="19" text-anchor="middle" font-size="7" fill="white" font-family="Arial">FDC</text></svg>') + ' Fire Dept Connection<br>' +
-        '<hr style="border:none;border-top:1px solid #eee;margin:8px 0;">' +
-        '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
-        '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
-
-      // alertsHTML is built dynamically by buildAlertsLegend() after each fetch
-      // Default shown before first load
-      var alertsHTML =
-        '<strong style="display:block;margin-bottom:6px;">Campus Alerts</strong>' +
-        '<span style="font-size:0.8em;color:#888;font-style:italic;">Loading...</span><br>' +
-        '<hr style="border:none;border-top:1px solid #eee;margin:8px 0;">' +
-        '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
-        '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
-
-      div.innerHTML = lifeSafetyHTML; // default matches activeOverlay default
-
-      // Store references for swapping
-      window._legendLifeSafetyHTML = lifeSafetyHTML;
-      window._legendAlertsHTML     = alertsHTML;
-      window._legendDiv            = div;
-
-      return div;
-    };
-
-    legend.addTo(map);
-
-    // Called by toggle buttons to swap legend content
-    function updateLegendVisibility() {
-      if (!window._legendDiv) return;
-      window._legendDiv.innerHTML = activeOverlay === 'alerts'
-        ? window._legendAlertsHTML
-        : window._legendLifeSafetyHTML;
-    }
-
-    // ── CAMPUS BOOKMARKS ──────────────────────────────────────────
-    var campuses = {
-      'Blue Ridge':  [34.88866, -84.29174, 18],
-      'Cumming':     [34.22394, -84.10806, 17],
-      'Dahlonega':   [34.5297,  -83.9849,  15],
-      'Gainesville': [34.23474, -83.86722, 16],
-      'Oconee':      [33.86621, -83.42595, 17]
-    };
-
-    var bookmarkControl = L.control({ position: 'topleft' });
-
-    bookmarkControl.onAdd = function(map) {
-      var div = L.DomUtil.create('div');
-      div.style.background   = 'white';
-      div.style.padding      = '8px';
-      div.style.borderRadius = '6px';
-      div.style.boxShadow    = '0 1px 4px rgba(0,0,0,0.3)';
-      div.style.fontSize     = '12px';
-
-      var label = document.createElement('strong');
-      label.textContent    = 'Campus';
-      label.style.display  = 'block';
-      label.style.marginBottom = '6px';
-      div.appendChild(label);
-
-      Object.keys(campuses).forEach(function(name) {
-        var btn = document.createElement('button');
-        btn.textContent          = name;
-        btn.style.display        = 'block';
-        btn.style.width          = '100%';
-        btn.style.marginBottom   = '4px';
-        btn.style.padding        = '4px 8px';
-        btn.style.background     = '#003366';
-        btn.style.color          = '#ffffff';
-        btn.style.border         = 'none';
-        btn.style.borderRadius   = '3px';
-        btn.style.cursor         = 'pointer';
-        btn.style.textAlign      = 'left';
-        btn.onmouseover = function() { this.style.background = '#C8952A'; };
-        btn.onmouseout  = function() { this.style.background = '#003366'; };
-        btn.onclick = (function(campusName) {
-          return function() {
-            map.setView([campuses[campusName][0], campuses[campusName][1]], campuses[campusName][2] || 15);
-            currentCampusFilter = CAMPUS_CODES[campusName];
-            loadPublicAlerts(currentCampusFilter);
-            // Highlight active button
-            div.querySelectorAll('button').forEach(function(b) {
-              b.style.background = '#003366';
-            });
-            this.style.background = '#C8952A';
-          };
-        })(name);
-        div.appendChild(btn);
-      });
-
-      return div;
-    };
-
-    bookmarkControl.addTo(map);
-  </script>
+</script>
 </body>
 </html>
