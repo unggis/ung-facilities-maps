@@ -3,7 +3,7 @@
 HTML map application for the UNG Campus Construction Projects viewer,
 embedded in the UNG Facilities GIS Hub experience.
 
-**Hub experience:** [UNG Campus Construction Projects](https://experience.arcgis.com/experience/7b063270c2154678b98ea2b397584a0d)
+**Hub page:** [gis-ung-facilities.hub.arcgis.com/pages/construction](https://gis-ung-facilities.hub.arcgis.com/pages/construction)
 
 ---
 
@@ -11,7 +11,7 @@ embedded in the UNG Facilities GIS Hub experience.
 
 | File | Description |
 |------|-------------|
-| construction_projects.html | Interactive map — pulls live data from AGOL Construction Project Areas feature service |
+| construction-projects.html | Interactive map served via iframe on the Hub construction page |
 
 ---
 
