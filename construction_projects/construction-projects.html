@@ -8,360 +8,240 @@
   <script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
   <style>
     * { box-sizing: border-box; }
-
     body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-
-    /* ── Header bar — matches life safety page ── */
     #page-header {
-      background: #003366;
-      color: #ffffff;
-      text-align: center;
-      padding: 8px 12px;
-      font-size: 14px;
-      font-weight: bold;
+      background: #003366; color: #ffffff; text-align: center;
+      padding: 8px 12px; font-size: 14px; font-weight: bold;
       border-radius: 6px 6px 0 0;
     }
-
-    #ungmap {
-      height: 430px;
-      width: 100%;
-      border-radius: 0 0 6px 6px;
-    }
-
-    /* ── Building tooltip — matches life safety page ── */
+    #ungmap { height: 430px; width: 100%; border-radius: 0 0 6px 6px; }
     .building-tooltip {
-      background: #003366;
-      color: #ffffff;
-      border: none;
-      border-radius: 4px;
-      padding: 4px 8px;
-      font-size: 12px;
-      font-weight: bold;
+      background: #003366; color: #ffffff; border: none;
+      border-radius: 4px; padding: 4px 8px; font-size: 12px; font-weight: bold;
     }
     .building-tooltip::before { border-top-color: #003366; }
-
-    /* ── Popup wrapper ── */
     .leaflet-popup-content-wrapper {
-      border-radius: 6px;
-      border-top: 4px solid #C8952A;
-      font-size: 12px;
-      min-width: 260px;
-      max-width: 340px;
+      border-radius: 6px; border-top: 4px solid #C8952A;
+      font-size: 12px; min-width: 260px; max-width: 340px;
     }
-    .popup-building {
-      font-weight: bold;
-      font-size: 14px;
-      color: #003366;
-      margin-bottom: 2px;
-    }
-    .popup-campus {
-      font-size: 11px;
-      color: #666;
-      padding-bottom: 6px;
-      margin-bottom: 8px;
-      border-bottom: 1px solid #e0e0e0;
-    }
-    .popup-count {
-      font-size: 11px;
-      color: #555;
-      margin-bottom: 8px;
-    }
-
-    /* ── Accordion ── */
-    .popup-accordion {
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .popup-accordion-row {
-      border-bottom: 1px solid #ddd;
-    }
+    .popup-building { font-weight: bold; font-size: 14px; color: #003366; margin-bottom: 2px; }
+    .popup-campus { font-size: 11px; color: #666; padding-bottom: 6px; margin-bottom: 8px; border-bottom: 1px solid #e0e0e0; }
+    .popup-count { font-size: 11px; color: #555; margin-bottom: 8px; }
+    .popup-accordion { border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
+    .popup-accordion-row { border-bottom: 1px solid #ddd; }
     .popup-accordion-row:last-child { border-bottom: none; }
-
     .popup-accordion-header {
-      display: flex;
-      align-items: center;
-      padding: 7px 10px;
-      background: #f5f5f5;
-      cursor: pointer;
-      user-select: none;
-      gap: 6px;
+      display: flex; align-items: center; padding: 7px 10px;
+      background: #f5f5f5; cursor: pointer; user-select: none; gap: 6px;
     }
     .popup-accordion-header:hover { background: #eaeaea; }
-    .popup-accordion-header.open {
-      background: #003366;
-      color: #fff;
-    }
-    .popup-accordion-title {
-      font-weight: bold;
-      font-size: 12px;
-      flex: 1;
-    }
+    .popup-accordion-header.open { background: #003366; color: #fff; }
+    .popup-accordion-title { font-weight: bold; font-size: 12px; flex: 1; }
     .popup-accordion-status {
-      padding: 1px 7px;
-      border-radius: 10px;
-      font-size: 10px;
-      font-weight: bold;
-      color: #fff;
-      background: #e06000;
-      white-space: nowrap;
+      padding: 1px 7px; border-radius: 10px; font-size: 10px;
+      font-weight: bold; color: #fff; background: #e06000; white-space: nowrap;
     }
-    .popup-accordion-header.open .popup-accordion-status {
-      background: rgba(255,255,255,0.22);
-    }
-    .popup-accordion-chevron {
-      font-size: 10px;
-      color: #aaa;
-      transition: transform 0.2s;
-      flex-shrink: 0;
-    }
-    .popup-accordion-header.open .popup-accordion-chevron {
-      transform: rotate(180deg);
-      color: #C8952A;
-    }
-
-    /* Body hidden by default; JS toggles .open */
-    .popup-accordion-body {
-      display: none;
-      padding: 8px 10px;
-      background: #fff;
-      border-top: 1px solid #eee;
-    }
+    .popup-accordion-header.open .popup-accordion-status { background: rgba(255,255,255,0.22); }
+    .popup-accordion-chevron { font-size: 10px; color: #aaa; transition: transform 0.2s; flex-shrink: 0; }
+    .popup-accordion-header.open .popup-accordion-chevron { transform: rotate(180deg); color: #C8952A; }
+    .popup-accordion-body { display: none; padding: 8px 10px; background: #fff; border-top: 1px solid #eee; }
     .popup-accordion-body.open { display: block; }
-
-    .popup-row {
-      display: flex;
-      gap: 4px;
-      margin: 3px 0;
-      font-size: 11px;
-    }
-    .popup-label {
-      font-weight: bold;
-      color: #555;
-      white-space: nowrap;
-      min-width: 56px;
-    }
-    .popup-loading {
-      color: #888;
-      font-style: italic;
-      font-size: 11px;
-    }
-    .popup-none {
-      color: #999;
-      font-style: italic;
-      font-size: 11px;
-    }
+    .popup-row { display: flex; gap: 4px; margin: 3px 0; font-size: 11px; }
+    .popup-label { font-weight: bold; color: #555; white-space: nowrap; min-width: 56px; }
+    .popup-loading { color: #888; font-style: italic; font-size: 11px; }
+    .popup-none { color: #999; font-style: italic; font-size: 11px; }
+    .cz-popup-header { padding: 7px 11px 6px; background: rgba(244,164,27,.12); border-bottom: 1px solid rgba(244,164,27,.3); }
+    .cz-popup-title { font-size: 14px; font-weight: bold; color: #003366; }
+    .cz-popup-body { padding: 8px 11px 10px; font-size: 11px; color: #333; line-height: 1.6; }
+    .cz-popup-footer { font-size: 10px; color: #888; border-top: 1px solid #eee; padding-top: 5px; margin-top: 6px; font-style: italic; }
   </style>
 </head>
 <body>
-
   <div id="page-header">UNG Campus Construction Projects</div>
   <div id="ungmap"></div>
-
   <script>
-
-    // ── Service endpoints ──
     var PROJECT_AREAS_URL  = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Construction_Project_Areas/FeatureServer/0';
     var PROJECTS_TABLE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Construction_Project_Areas/FeatureServer/8';
     var BUILDINGS_URL      = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Building_Footprints_2_view/FeatureServer/5';
+    var POLYGON_ALERTS     = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Campus_Alerts/FeatureServer/43';
+    var LINEAR_ALERTS      = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Alerts_Linear/FeatureServer/44';
 
-    // ── Map init ──
+    var ALERT_COLORS = {0:'#D13438',1:'#F4A41B',2:'#888888',3:'#cc5500',4:'#b8a800',5:'#0066cc'};
+    var ALERT_LABELS = {0:'Road Closed',1:'Construction Zone',2:'Out of Order',3:'Hazard',4:'Other',5:'Detour'};
+    var ALERT_ICONS  = {0:'🚫',1:'🚧',2:'⚠️',3:'☢️',4:'📍',5:'↪️'};
+    var LINE_STYLES  = {
+      0:['#D13438',5,null], 1:['#F4A41B',4,'10,6'], 2:['#888888',3,'6,4'],
+      3:['#cc5500',4,null], 4:['#b8a800',3,'4,4'],  5:['#0066cc',4,'12,5,3,5']
+    };
+
     var map = L.map('ungmap', { maxZoom: 21, scrollWheelZoom: false }).setView([34.53, -83.98], 15);
+    map.once('focus', function() { map.scrollWheelZoom.enable(); });
 
-    map.once('focus', function() {
-      map.scrollWheelZoom.enable();
-    });
+    map.createPane('buildings');  map.getPane('buildings').style.zIndex  = 400;
+    map.createPane('construction'); map.getPane('construction').style.zIndex = 450;
+    map.createPane('alerts');     map.getPane('alerts').style.zIndex     = 500;
 
-    map.createPane('buildings');
-    map.getPane('buildings').style.zIndex = 400;
-
-    map.createPane('construction');
-    map.getPane('construction').style.zIndex = 450;
-
-    // ── Basemaps ──
     var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors | John Segars, UNG Facilities GIS',
-      maxZoom: 19
+      attribution: '&copy; OpenStreetMap contributors | John Segars, UNG Facilities GIS', maxZoom: 19
     });
     var esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, GeoEye, Earthstar Geographics',
-      maxZoom: 21
+      attribution: 'Tiles &copy; Esri', maxZoom: 21
     });
     var esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Labels &copy; Esri',
-      maxZoom: 21
+      attribution: 'Labels &copy; Esri', maxZoom: 21
     });
-
     osm.addTo(map);
-    L.control.layers(
-      { 'Street Map': osm, 'Satellite': L.layerGroup([esriImagery, esriLabels]) },
-      null,
-      { position: 'topright' }
-    ).addTo(map);
+    L.control.layers({ 'Street Map': osm, 'Satellite': L.layerGroup([esriImagery, esriLabels]) }, null, { position: 'topright' }).addTo(map);
 
-    // ── Background building footprints (spatial context only) ──
+    // Building footprints
     L.esri.featureLayer({
-      url: BUILDINGS_URL,
-      pane: 'buildings',
-      style: {
-        color: '#003366',
-        weight: 1.5,
-        fillColor: '#C8952A',
-        fillOpacity: 0.4
-      },
+      url: BUILDINGS_URL, pane: 'buildings',
+      style: { color: '#003366', weight: 1.5, fillColor: '#C8952A', fillOpacity: 0.4 },
       onEachFeature: function(feature, layer) {
-        var props = feature.properties;
-        var label = props.Building || props.name || 'Building';
-        layer.bindTooltip(label, {
-          permanent: false,
-          sticky: true,
-          direction: 'top',
-          className: 'building-tooltip'
-        });
+        var label = feature.properties.Building || feature.properties.name || 'Building';
+        layer.bindTooltip(label, { permanent: false, sticky: true, direction: 'top', className: 'building-tooltip' });
       }
     }).addTo(map);
 
-    // ── Build a detail row ──
+    // Alert helpers
+    function makeAlertIcon(alertType) {
+      var color = ALERT_COLORS[alertType] || '#999';
+      var emoji = ALERT_ICONS[alertType] || '📍';
+      return L.divIcon({
+        html: '<div style="background:' + color + ';border:3px solid #fff;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.45);">' + emoji + '</div>',
+        className: '', iconSize: [30,30], iconAnchor: [15,15], popupAnchor: [0,-20]
+      });
+    }
+
+    function buildAlertPopup(p) {
+      var color = ALERT_COLORS[p.Alert_Type] || '#999';
+      var expires = p.End_Date
+        ? new Date(p.End_Date).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+        : 'No expiration set';
+      var msg = (p.Message || 'No additional details.')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+      return '<div class="cz-popup-header" style="border-left:4px solid ' + color + ';">'
+        + '<div class="cz-popup-title">' + (ALERT_ICONS[p.Alert_Type] || '📍') + ' ' + (ALERT_LABELS[p.Alert_Type] || 'Alert') + '</div></div>'
+        + '<div class="cz-popup-body">' + msg
+        + '<div class="cz-popup-footer">⏱ Expires: ' + expires + '</div></div>';
+    }
+
+    // Load alerts on init
+    function loadAlerts() {
+      var q = '?where=' + encodeURIComponent('Active=1') + '&outFields=*&f=geojson&returnGeometry=true';
+      Promise.all([
+        fetch(POLYGON_ALERTS + '/query' + q).then(function(r) { return r.json(); }),
+        fetch(LINEAR_ALERTS  + '/query' + q).then(function(r) { return r.json(); })
+      ]).then(function(results) {
+        (results[0].features || []).forEach(function(f) {
+          var p = f.properties;
+          var color = ALERT_COLORS[p.Alert_Type] || '#999';
+          var popup = buildAlertPopup(p);
+          var layer = L.geoJSON(f, { style: { color:color, weight:2.5, fillColor:color, fillOpacity:0.28, pane:'alerts' } })
+            .bindPopup(popup, { maxWidth: 275 });
+          layer.addTo(map);
+          L.marker(layer.getBounds().getCenter(), { icon: makeAlertIcon(p.Alert_Type), zIndexOffset: 900 })
+            .bindPopup(popup, { maxWidth: 275 }).addTo(map);
+        });
+        (results[1].features || []).forEach(function(f) {
+          var p = f.properties;
+          var ls = LINE_STYLES[p.Alert_Type] || ['#999',3,null];
+          var style = { color:ls[0], weight:ls[1], opacity:0.95, pane:'alerts' };
+          if (ls[2]) style.dashArray = ls[2];
+          var popup = buildAlertPopup(p);
+          var layer = L.geoJSON(f, { style: style }).bindPopup(popup, { maxWidth: 275 });
+          layer.addTo(map);
+          L.marker(layer.getBounds().getCenter(), { icon: makeAlertIcon(p.Alert_Type), zIndexOffset: 900 })
+            .bindPopup(popup, { maxWidth: 275 }).addTo(map);
+        });
+      }).catch(function(e) { console.warn('[Alerts] Fetch failed:', e); });
+    }
+
+    // Project helpers
     function detailRow(label, value) {
       return '<div class="popup-row"><span class="popup-label">' + label + ':</span><span>' + value + '</span></div>';
     }
 
-    // ── Query Projects_Table by Area_ID, render collapsible accordion ──
     function queryProjects(areaId, buildingName, campusName, popup) {
-      var queryUrl = PROJECTS_TABLE_URL
-        + '/query?where=Area_ID%3D' + encodeURIComponent(areaId)
-        + '&outFields=Project,Location,Vendor,Status,Notes,Cost,PO,Acct'
-        + '&f=json';
-
-      fetch(queryUrl)
+      fetch(PROJECTS_TABLE_URL + '/query?where=Area_ID%3D' + encodeURIComponent(areaId)
+        + '&outFields=Project,Location,Vendor,Status,Notes,Cost,PO,Acct&f=json')
         .then(function(r) { return r.json(); })
         .then(function(data) {
           var features = data.features || [];
-
           var html = '<div class="popup-building">' + (buildingName || 'Project Area') + '</div>';
           if (campusName) html += '<div class="popup-campus">' + campusName + '</div>';
-
-          if (features.length === 0) {
-            html += '<div class="popup-none">No project records found.</div>';
-            popup.setContent(html);
-            return;
-          }
-
-          // Single project — expand immediately, no accordion needed
+          if (features.length === 0) { html += '<div class="popup-none">No project records found.</div>'; popup.setContent(html); return; }
           if (features.length === 1) {
             var p = features[0].attributes;
-            if (p.Project) html += '<div style="font-weight:bold;color:#003366;margin-bottom:6px;">' + p.Project + '</div>';
-            if (p.Status)  html += detailRow('Status', '<span style="background:#e06000;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:bold;">' + p.Status + '</span>');
+            if (p.Project)  html += '<div style="font-weight:bold;color:#003366;margin-bottom:6px;">' + p.Project + '</div>';
+            if (p.Status)   html += detailRow('Status','<span style="background:#e06000;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:bold;">' + p.Status + '</span>');
             if (p.Location) html += detailRow('Location', p.Location);
             if (p.Vendor)   html += detailRow('Vendor', p.Vendor);
-            if (p.Cost !== null && p.Cost !== undefined && p.Cost !== '')
-              html += detailRow('Cost', '$' + Number(p.Cost).toLocaleString('en-US', { maximumFractionDigits: 0 }));
+            if (p.Cost !== null && p.Cost !== undefined && p.Cost !== '') html += detailRow('Cost','$' + Number(p.Cost).toLocaleString('en-US',{maximumFractionDigits:0}));
             if (p.PO)    html += detailRow('PO', p.PO);
             if (p.Acct)  html += detailRow('Acct', p.Acct);
             if (p.Notes) html += detailRow('Notes', p.Notes);
-            popup.setContent(html);
-            return;
+            popup.setContent(html); return;
           }
-
-          // Multiple projects — accordion
-          var count = features.length;
-          html += '<div class="popup-count">' + count + ' projects — click to expand</div>';
-          html += '<div class="popup-accordion">';
-
+          html += '<div class="popup-count">' + features.length + ' projects — click to expand</div><div class="popup-accordion">';
           features.forEach(function(f, i) {
-            var p = f.attributes;
-            var title = p.Project || ('Project ' + (i + 1));
-            var status = p.Status || '';
-
-            var body = '';
-            if (p.Status)   body += detailRow('Status', '<span style="background:#e06000;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:bold;">' + p.Status + '</span>');
+            var p = f.attributes, title = p.Project || ('Project ' + (i+1)), status = p.Status || '', body = '';
+            if (p.Status)   body += detailRow('Status','<span style="background:#e06000;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:bold;">' + p.Status + '</span>');
             if (p.Location) body += detailRow('Location', p.Location);
             if (p.Vendor)   body += detailRow('Vendor', p.Vendor);
-            if (p.Cost !== null && p.Cost !== undefined && p.Cost !== '')
-              body += detailRow('Cost', '$' + Number(p.Cost).toLocaleString('en-US', { maximumFractionDigits: 0 }));
+            if (p.Cost !== null && p.Cost !== undefined && p.Cost !== '') body += detailRow('Cost','$' + Number(p.Cost).toLocaleString('en-US',{maximumFractionDigits:0}));
             if (p.PO)    body += detailRow('PO', p.PO);
             if (p.Acct)  body += detailRow('Acct', p.Acct);
             if (p.Notes) body += detailRow('Notes', p.Notes);
             if (!body)   body  = '<div class="popup-none">No additional details.</div>';
-
             html += '<div class="popup-accordion-row">'
               + '<div class="popup-accordion-header" onclick="toggleAccordion(this)" data-idx="' + i + '">'
               + '<span class="popup-accordion-title">' + title + '</span>'
               + (status ? '<span class="popup-accordion-status">' + status + '</span>' : '')
-              + '<span class="popup-accordion-chevron">&#9660;</span>'
-              + '</div>'
-              + '<div class="popup-accordion-body" id="acc-body-' + i + '">' + body + '</div>'
-              + '</div>';
+              + '<span class="popup-accordion-chevron">&#9660;</span></div>'
+              + '<div class="popup-accordion-body" id="acc-body-' + i + '">' + body + '</div></div>';
           });
-
-          html += '</div>'; // .popup-accordion
-          popup.setContent(html);
+          html += '</div>'; popup.setContent(html);
         })
-        .catch(function() {
-          popup.setContent('<div style="color:red;font-size:12px;">Error loading project details.</div>');
-        });
+        .catch(function() { popup.setContent('<div style="color:red;font-size:12px;">Error loading project details.</div>'); });
     }
 
-    // ── Accordion toggle (global so inline onclick can reach it) ──
     function toggleAccordion(header) {
       var isOpen = header.classList.contains('open');
-      var allHeaders = header.closest('.popup-accordion').querySelectorAll('.popup-accordion-header');
-      var allBodies  = header.closest('.popup-accordion').querySelectorAll('.popup-accordion-body');
-      allHeaders.forEach(function(h) { h.classList.remove('open'); });
-      allBodies.forEach(function(b)  { b.classList.remove('open'); });
+      var acc = header.closest('.popup-accordion');
+      acc.querySelectorAll('.popup-accordion-header').forEach(function(h) { h.classList.remove('open'); });
+      acc.querySelectorAll('.popup-accordion-body').forEach(function(b)  { b.classList.remove('open'); });
       if (!isOpen) {
         header.classList.add('open');
-        var idx = header.getAttribute('data-idx');
-        var body = document.getElementById('acc-body-' + idx);
+        var body = document.getElementById('acc-body-' + header.getAttribute('data-idx'));
         if (body) body.classList.add('open');
-        setTimeout(function() { header.closest('.leaflet-popup') && map.invalidateSize(); }, 50);
+        setTimeout(function() { map.invalidateSize(); }, 50);
       }
     }
 
-    // ── Construction Project Areas (polygons) ──
+    // Construction project areas
     var constructionLayer = L.esri.featureLayer({
-      url: PROJECT_AREAS_URL,
-      pane: 'construction',
-      style: {
-        color: '#e06000',
-        weight: 2.5,
-        fillColor: '#f59a45',
-        fillOpacity: 0.55,
-        dashArray: '6 3'
-      },
+      url: PROJECT_AREAS_URL, pane: 'construction',
+      style: { color:'#e06000', weight:2.5, fillColor:'#f59a45', fillOpacity:0.55, dashArray:'6 3' },
       onEachFeature: function(feature, layer) {
-        var props = feature.properties;
-        var count = props.Project_Count || 0;
-
-        var tooltipHtml = '<strong>' + (props.Building_Name || 'Project Area') + '</strong>'
-          + (count
-              ? ' &nbsp;<span style="background:#e06000;color:#fff;border-radius:9px;padding:1px 6px;font-size:11px;">'
-                + count + ' project' + (count !== 1 ? 's' : '') + '</span>'
-              : '');
-
-        layer.bindTooltip(tooltipHtml, {
-          permanent: false,
-          sticky: true,
-          direction: 'top',
-          className: 'building-tooltip'
-        });
-
+        var props = feature.properties, count = props.Project_Count || 0;
+        layer.bindTooltip(
+          '<strong>' + (props.Building_Name||'Project Area') + '</strong>'
+          + (count ? ' &nbsp;<span style="background:#e06000;color:#fff;border-radius:9px;padding:1px 6px;font-size:11px;">' + count + ' project' + (count!==1?'s':'') + '</span>' : ''),
+          { permanent:false, sticky:true, direction:'top', className:'building-tooltip' }
+        );
         layer.on('click', function() {
           var center = layer.getBounds ? layer.getBounds().getCenter() : layer.getLatLng();
-          var popup = L.popup({ maxWidth: 340 })
-            .setLatLng(center)
-            .setContent('<div class="popup-loading">Loading project details\u2026</div>')
-            .openOn(map);
-
+          var popup = L.popup({ maxWidth:340 }).setLatLng(center)
+            .setContent('<div class="popup-loading">Loading project details\u2026</div>').openOn(map);
           queryProjects(props.Area_ID, props.Building_Name, props.Campus_Name, popup);
         });
-
-        layer.on('mouseover', function() { layer.setStyle({ fillOpacity: 0.8, weight: 3.5 }); });
+        layer.on('mouseover', function() { layer.setStyle({ fillOpacity:0.8, weight:3.5 }); });
         layer.on('mouseout',  function() { constructionLayer.resetStyle(layer); });
       }
     }).addTo(map);
 
-    // ── Legend ──
+    // Legend
     var legend = L.control({ position: 'bottomright' });
     legend.onAdd = function() {
       var div = L.DomUtil.create('div');
@@ -369,31 +249,34 @@
       div.innerHTML =
         '<strong style="display:block;margin-bottom:6px;">Construction</strong>'
         + '<span style="display:inline-block;width:28px;height:14px;background:#f59a45;border:2.5px dashed #e06000;margin-right:6px;vertical-align:middle;"></span> Project Area<br><br>'
+        + '<strong style="display:block;margin-bottom:4px;">Campus Alerts</strong>'
+        + '<span style="display:inline-block;width:14px;height:14px;background:rgba(209,52,56,.4);border:2px solid #D13438;margin-right:6px;vertical-align:middle;border-radius:2px;"></span>🚫 Road Closed<br>'
+        + '<span style="display:inline-block;width:14px;height:14px;background:rgba(244,164,27,.4);border:2px solid #F4A41B;margin-right:6px;vertical-align:middle;border-radius:2px;"></span>🚧 Construction Zone<br>'
+        + '<span style="display:inline-block;width:14px;height:14px;background:rgba(136,136,136,.4);border:2px solid #888;margin-right:6px;vertical-align:middle;border-radius:2px;"></span>⚠️ Out of Order<br>'
+        + '<span style="display:inline-block;width:14px;height:14px;background:rgba(204,85,0,.4);border:2px solid #cc5500;margin-right:6px;vertical-align:middle;border-radius:2px;"></span>☢️ Hazard<br>'
+        + '<span style="display:inline-block;width:14px;height:14px;background:rgba(184,168,0,.4);border:2px solid #b8a800;margin-right:6px;vertical-align:middle;border-radius:2px;"></span>📍 Other<br>'
+        + '<span style="display:inline-block;width:28px;border-top:3px dashed #0066cc;margin-right:6px;vertical-align:middle;margin-top:8px;"></span>↪️ Detour<br><br>'
         + '<strong style="display:block;margin-bottom:6px;">Buildings</strong>'
         + '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
       return div;
     };
     legend.addTo(map);
 
-    // ── Campus Bookmarks ──
+    // Campus bookmarks
     var campuses = {
-      'Blue Ridge':  { latlng: [34.88866, -84.29174], zoom: 18 },
-      'Cumming':     { latlng: [34.22394, -84.10806], zoom: 17 },
-      'Dahlonega':   { latlng: [34.5297,  -83.9849],  zoom: 15 },
-      'Gainesville': { latlng: [34.23474, -83.86722], zoom: 16 },
-      'Oconee':      { latlng: [33.86621, -83.42595], zoom: 17 }
+      'Blue Ridge':  { latlng:[34.88866,-84.29174], zoom:18 },
+      'Cumming':     { latlng:[34.22394,-84.10806], zoom:17 },
+      'Dahlonega':   { latlng:[34.5297, -83.9849],  zoom:15 },
+      'Gainesville': { latlng:[34.23474,-83.86722], zoom:16 },
+      'Oconee':      { latlng:[33.86621,-83.42595], zoom:17 }
     };
-
     var bookmarkControl = L.control({ position: 'topleft' });
     bookmarkControl.onAdd = function() {
       var div = L.DomUtil.create('div');
       div.style.cssText = 'background:white;padding:8px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.3);font-size:12px;font-family:Arial;';
-
       var label = document.createElement('strong');
-      label.textContent = 'Campus';
-      label.style.cssText = 'display:block;margin-bottom:6px;';
+      label.textContent = 'Campus'; label.style.cssText = 'display:block;margin-bottom:6px;';
       div.appendChild(label);
-
       Object.keys(campuses).forEach(function(name) {
         var btn = document.createElement('button');
         btn.textContent = name;
@@ -403,11 +286,12 @@
         btn.onclick = function() { map.setView(campuses[name].latlng, campuses[name].zoom); };
         div.appendChild(btn);
       });
-
       return div;
     };
     bookmarkControl.addTo(map);
 
+    // Init
+    loadAlerts();
   </script>
 </body>
 </html>
