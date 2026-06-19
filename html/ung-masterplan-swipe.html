@@ -225,12 +225,7 @@ function getCategoryLabel(p) {
 }
 
 // ── MAP INIT ─────────────────────────────────────────────────────────────────
-var map = L.map('map', { center:[34.5281,-83.9864], zoom:16, scrollWheelZoom:false });
-
-map.once('focus', function() {
-  map.scrollWheelZoom.enable();
-});
-
+var map = L.map('map', { center:[34.5281,-83.9864], zoom:16 });
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution:'&copy; OpenStreetMap contributors | UNG Facilities GIS',
   maxZoom:20
