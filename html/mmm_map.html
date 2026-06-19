@@ -172,6 +172,11 @@ const map = L.map('map', {
   center: [34.3408, -83.9439],
   zoom: 9, minZoom: 7, maxZoom: 18,
   attributionControl: true,
+  scrollWheelZoom: false,
+});
+
+map.once('focus', function() {
+  map.scrollWheelZoom.enable();
 });
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
