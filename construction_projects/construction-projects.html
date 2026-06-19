@@ -166,7 +166,11 @@
     var BUILDINGS_URL      = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Building_Footprints_2_view/FeatureServer/5';
 
     // ── Map init ──
-    var map = L.map('ungmap', { maxZoom: 21 }).setView([34.53, -83.98], 15);
+    var map = L.map('ungmap', { maxZoom: 21, scrollWheelZoom: false }).setView([34.53, -83.98], 15);
+
+    map.once('focus', function() {
+      map.scrollWheelZoom.enable();
+    });
 
     map.createPane('buildings');
     map.getPane('buildings').style.zIndex = 400;
@@ -207,7 +211,6 @@
       },
       onEachFeature: function(feature, layer) {
         var props = feature.properties;
-        // 'Building' = building name field; 'name' = display/domain field as fallback
         var label = props.Building || props.name || 'Building';
         layer.bindTooltip(label, {
           permanent: false,
@@ -270,7 +273,6 @@
             var title = p.Project || ('Project ' + (i + 1));
             var status = p.Status || '';
 
-            // Build body content
             var body = '';
             if (p.Status)   body += detailRow('Status', '<span style="background:#e06000;color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:bold;">' + p.Status + '</span>');
             if (p.Location) body += detailRow('Location', p.Location);
@@ -303,18 +305,15 @@
     // ── Accordion toggle (global so inline onclick can reach it) ──
     function toggleAccordion(header) {
       var isOpen = header.classList.contains('open');
-      // Close all in this popup
       var allHeaders = header.closest('.popup-accordion').querySelectorAll('.popup-accordion-header');
       var allBodies  = header.closest('.popup-accordion').querySelectorAll('.popup-accordion-body');
       allHeaders.forEach(function(h) { h.classList.remove('open'); });
       allBodies.forEach(function(b)  { b.classList.remove('open'); });
-      // Open clicked one (unless it was already open — toggle off)
       if (!isOpen) {
         header.classList.add('open');
         var idx = header.getAttribute('data-idx');
         var body = document.getElementById('acc-body-' + idx);
         if (body) body.classList.add('open');
-        // Refit popup after DOM change
         setTimeout(function() { header.closest('.leaflet-popup') && map.invalidateSize(); }, 50);
       }
     }
@@ -334,7 +333,6 @@
         var props = feature.properties;
         var count = props.Project_Count || 0;
 
-        // Tooltip with project count badge
         var tooltipHtml = '<strong>' + (props.Building_Name || 'Project Area') + '</strong>'
           + (count
               ? ' &nbsp;<span style="background:#e06000;color:#fff;border-radius:9px;padding:1px 6px;font-size:11px;">'
@@ -348,7 +346,6 @@
           className: 'building-tooltip'
         });
 
-        // Click: open popup with loading state, then fetch related projects
         layer.on('click', function() {
           var center = layer.getBounds ? layer.getBounds().getCenter() : layer.getLatLng();
           var popup = L.popup({ maxWidth: 340 })
@@ -359,7 +356,6 @@
           queryProjects(props.Area_ID, props.Building_Name, props.Campus_Name, popup);
         });
 
-        // Hover highlight
         layer.on('mouseover', function() { layer.setStyle({ fillOpacity: 0.8, weight: 3.5 }); });
         layer.on('mouseout',  function() { constructionLayer.resetStyle(layer); });
       }
