@@ -302,7 +302,12 @@ var paramCampus = (params.get('campus')  ||'').toLowerCase().trim();
 var paramWP     = (params.get('waypoint')||'').toLowerCase().trim();
 
 var initialCampus = CAMPUSES[paramCampus] ? paramCampus : 'dahlonega';
-var map = L.map('map',{center:CAMPUSES[initialCampus].center, zoom:CAMPUSES[initialCampus].zoom});
+var map = L.map('map',{center:CAMPUSES[initialCampus].center, zoom:CAMPUSES[initialCampus].zoom, scrollWheelZoom:false});
+
+map.once('focus', function() {
+  map.scrollWheelZoom.enable();
+});
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
   attribution:'&copy; OpenStreetMap contributors | UNG Facilities GIS', maxZoom:19
 }).addTo(map);
@@ -629,8 +634,6 @@ legendDiv.innerHTML=
   '</div></div>';
 document.body.appendChild(legendDiv);
 function toggleLegend(){document.querySelector('.legend').classList.toggle('collapsed');}
-
-
 
 // ── CAMPUS ALERTS ─────────────────────────────────────────────────────────────
 var POLYGON_ALERTS = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Campus_Alerts/FeatureServer/43';
