@@ -169,6 +169,12 @@
   /* ── NO-WAYPOINT NOTICE ── */
   #noWpNotice{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(10,34,64,.92);border:1px solid rgba(201,168,76,.4);border-radius:4px;padding:7px 18px;font-size:10px;font-weight:300;color:var(--gold-lt);letter-spacing:.08em;pointer-events:none;opacity:0;transition:opacity .4s;white-space:nowrap;z-index:800;}
   #noWpNotice.show{opacity:1;}
+
+  /* ── CONSTRUCTION ZONE POPUP ── */
+  .cz-popup-header{padding:7px 11px 6px;background:rgba(244,164,27,.12);border-bottom:1px solid rgba(244,164,27,.3);}
+  .cz-popup-title{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--gold);}
+  .cz-popup-body{padding:8px 11px 10px;font-size:10px;font-weight:300;color:rgba(255,255,255,.75);line-height:1.6;}
+  .cz-popup-footer{font-size:9px;color:rgba(255,255,255,.35);border-top:1px solid rgba(255,255,255,.08);padding-top:5px;margin-top:6px;font-style:italic;}
 </style>
 </head>
 <body>
@@ -217,6 +223,10 @@
     <div class="tb-sep"></div>
     <div class="tb-section">
       <button class="tog-btn pick-btn" id="btnPick" onclick="togglePicker()">&#9678;&nbsp;Coords</button>
+    </div>
+    <div class="tb-sep"></div>
+    <div class="tb-section">
+      <button class="tog-btn" id="btnConstruction" onclick="toggleConstruction()">🚨&nbsp;Alerts</button>
     </div>
     <div class="tb-sep"></div>
     <div class="tb-section">
@@ -269,6 +279,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.min.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
 <script>
 
 var GITHUB_BASE   = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/waypoints/';
@@ -291,7 +302,12 @@ var paramCampus = (params.get('campus')  ||'').toLowerCase().trim();
 var paramWP     = (params.get('waypoint')||'').toLowerCase().trim();
 
 var initialCampus = CAMPUSES[paramCampus] ? paramCampus : 'dahlonega';
-var map = L.map('map',{center:CAMPUSES[initialCampus].center, zoom:CAMPUSES[initialCampus].zoom});
+var map = L.map('map',{center:CAMPUSES[initialCampus].center, zoom:CAMPUSES[initialCampus].zoom, scrollWheelZoom:false});
+
+map.once('focus', function() {
+  map.scrollWheelZoom.enable();
+});
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
   attribution:'&copy; OpenStreetMap contributors | UNG Facilities GIS', maxZoom:19
 }).addTo(map);
@@ -607,9 +623,138 @@ legendDiv.innerHTML=
   '<div style="margin-top:7px;padding-top:5px;border-top:1px solid rgba(201,168,76,.25);">'+
   '<div class="li"><div class="li-icon" style="background:var(--green);border:2px solid #fff;border-radius:50%;width:11px;height:11px;margin:3px;"></div>Your location</div>'+
   '<div class="li"><div class="li-icon" style="background:var(--navy);border:2px solid var(--green);">📍</div>Selected destination</div>'+
+  '</div>'+
+  '<div id="legendAlertsSection" style="display:none;margin-top:7px;padding-top:5px;border-top:1px solid rgba(201,168,76,.25);">'+
+  '<div class="li"><div style="width:14px;height:14px;background:rgba(209,52,56,.4);border:2px solid #D13438;border-radius:2px;flex-shrink:0;margin-right:3px;"></div>🚫 Road Closed</div>'+
+  '<div class="li"><div style="width:14px;height:14px;background:rgba(244,164,27,.4);border:2px solid #F4A41B;border-radius:2px;flex-shrink:0;margin-right:3px;"></div>🚧 Construction Zone</div>'+
+  '<div class="li"><div style="width:14px;height:14px;background:rgba(136,136,136,.4);border:2px solid #888;border-radius:2px;flex-shrink:0;margin-right:3px;"></div>⚠️ Out of Order</div>'+
+  '<div class="li"><div style="width:14px;height:14px;background:rgba(204,85,0,.4);border:2px solid #cc5500;border-radius:2px;flex-shrink:0;margin-right:3px;"></div>☢️ Hazard</div>'+
+  '<div class="li"><div style="width:14px;height:14px;background:rgba(184,168,0,.4);border:2px solid #b8a800;border-radius:2px;flex-shrink:0;margin-right:3px;"></div>📍 Other</div>'+
+  '<div class="li"><span style="display:inline-block;width:14px;height:3px;border-top:3px dashed #0066cc;flex-shrink:0;margin-right:3px;margin-top:7px;"></span>↪️ Detour Route</div>'+
   '</div></div>';
 document.body.appendChild(legendDiv);
 function toggleLegend(){document.querySelector('.legend').classList.toggle('collapsed');}
+
+// ── CAMPUS ALERTS ─────────────────────────────────────────────────────────────
+var POLYGON_ALERTS = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Campus_Alerts/FeatureServer/43';
+var LINEAR_ALERTS  = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Alerts_Linear/FeatureServer/44';
+
+var ALERT_COLORS = {0:'#D13438',1:'#F4A41B',2:'#888888',3:'#cc5500',4:'#b8a800',5:'#0066cc'};
+var ALERT_LABELS = {0:'Road Closed',1:'Construction Zone',2:'Out of Order',3:'Hazard',4:'Other',5:'Detour'};
+var ALERT_ICONS  = {0:'🚫',1:'🚧',2:'⚠️',3:'☢️',4:'📍',5:'↪️'};
+var LINE_STYLES  = {
+  0:['#D13438',5,null],
+  1:['#F4A41B',4,'10,6'],
+  2:['#888888',3,'6,4'],
+  3:['#cc5500',4,null],
+  4:['#b8a800',3,'4,4'],
+  5:['#0066cc',4,'12,5,3,5']
+};
+
+var alertsLayer = L.featureGroup();
+var alertsVisible = false;
+
+map.createPane('alerts');
+map.getPane('alerts').style.zIndex = 450;
+
+function makeAlertIcon(alertType){
+  var color=ALERT_COLORS[alertType]||'#999';
+  var emoji=ALERT_ICONS[alertType]||'📍';
+  return L.divIcon({
+    html:'<div style="background:'+color+';border:3px solid #fff;border-radius:50%;'+
+         'width:30px;height:30px;display:flex;align-items:center;justify-content:center;'+
+         'font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.45);">'+emoji+'</div>',
+    className:'',iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-20]
+  });
+}
+
+function buildAlertPopup(p){
+  var color=ALERT_COLORS[p.Alert_Type]||'#999';
+  var expires=p.End_Date
+    ? new Date(p.End_Date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    : 'No expiration set';
+  var msg=(p.Message||'No additional details.')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  return '<div class="cz-popup-header" style="border-left:4px solid '+color+';">'+
+    '<div class="cz-popup-title">'+(ALERT_ICONS[p.Alert_Type]||'📍')+' '+(ALERT_LABELS[p.Alert_Type]||'Alert')+'</div></div>'+
+    '<div class="cz-popup-body">'+msg+
+    '<div class="cz-popup-footer">⏱ Expires: '+expires+'</div></div>';
+}
+
+function loadAlerts(){
+  var where=encodeURIComponent('Active=1');
+  var q='?where='+where+'&outFields=*&f=geojson&returnGeometry=true';
+
+  alertsLayer.clearLayers();
+
+  Promise.all([
+    fetch(POLYGON_ALERTS+'/query'+q).then(function(r){return r.json();}),
+    fetch(LINEAR_ALERTS +'/query'+q).then(function(r){return r.json();})
+  ]).then(function(results){
+    var polyData=results[0];
+    var lineData=results[1];
+    console.log('[Alerts] Layer 43 (polygons):', polyData);
+    console.log('[Alerts] Layer 44 (lines):', lineData);
+    var count=0;
+
+    // Polygon zones
+    (polyData.features||[]).forEach(function(f){
+      var p=f.properties;
+      var color=ALERT_COLORS[p.Alert_Type]||'#999';
+      var popup=buildAlertPopup(p);
+      var layer=L.geoJSON(f,{
+        style:{color:color,weight:2.5,fillColor:color,fillOpacity:0.28,pane:'alerts'}
+      }).bindPopup(popup,{maxWidth:275,className:'ung-popup'});
+      layer.addTo(alertsLayer);
+      L.marker(layer.getBounds().getCenter(),{
+        icon:makeAlertIcon(p.Alert_Type),zIndexOffset:900
+      }).bindPopup(popup,{maxWidth:275,className:'ung-popup'}).addTo(alertsLayer);
+      count++;
+    });
+
+    // Linear routes
+    (lineData.features||[]).forEach(function(f){
+      var p=f.properties;
+      var ls=LINE_STYLES[p.Alert_Type]||['#999',3,null];
+      var style={color:ls[0],weight:ls[1],opacity:0.95,pane:'alerts'};
+      if(ls[2]) style.dashArray=ls[2];
+      var popup=buildAlertPopup(p);
+      var layer=L.geoJSON(f,{style:style})
+        .bindPopup(popup,{maxWidth:275,className:'ung-popup'});
+      layer.addTo(alertsLayer);
+      L.marker(layer.getBounds().getCenter(),{
+        icon:makeAlertIcon(p.Alert_Type),zIndexOffset:900
+      }).bindPopup(popup,{maxWidth:275,className:'ung-popup'}).addTo(alertsLayer);
+      count++;
+    });
+
+    if(count===0) flash('No active campus alerts');
+  }).catch(function(e){
+    console.warn('[Alerts] Fetch failed:',e);
+    flash('Alerts data unavailable');
+  });
+}
+
+var alertsRefreshTimer=null;
+function toggleConstruction(){
+  alertsVisible=!alertsVisible;
+  var btn=document.getElementById('btnConstruction');
+  var legendSection=document.getElementById('legendAlertsSection');
+  if(alertsVisible){
+    alertsLayer.addTo(map);
+    loadAlerts();
+    if(btn) btn.classList.add('active');
+    if(legendSection) legendSection.style.display='block';
+    flash('Campus alerts on');
+    alertsRefreshTimer=setInterval(function(){if(alertsVisible)loadAlerts();},120000);
+  } else {
+    map.removeLayer(alertsLayer);
+    if(btn) btn.classList.remove('active');
+    if(legendSection) legendSection.style.display='none';
+    flash('Campus alerts off');
+    if(alertsRefreshTimer){clearInterval(alertsRefreshTimer);alertsRefreshTimer=null;}
+  }
+}
 
 // ── COORDINATE PICKER ─────────────────────────────────────────────────────────
 var picking=false,lastLatLng=null;
