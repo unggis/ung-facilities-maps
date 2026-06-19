@@ -193,7 +193,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-
+<script>
 // ── CONFIGURATION ────────────────────────────────────────────────────────────
 var GITHUB_BASE  = 'https://raw.githubusercontent.com/unggis/ung-facilities-maps/main/';
 var EXISTING_URL = GITHUB_BASE + 'data/MPBUILDINGSOUTjson.geojson';
@@ -225,7 +225,12 @@ function getCategoryLabel(p) {
 }
 
 // ── MAP INIT ─────────────────────────────────────────────────────────────────
-var map = L.map('map', { center:[34.5281,-83.9864], zoom:16 });
+var map = L.map('map', { center:[34.5281,-83.9864], zoom:16, scrollWheelZoom:false });
+
+map.once('focus', function() {
+  map.scrollWheelZoom.enable();
+});
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution:'&copy; OpenStreetMap contributors | UNG Facilities GIS',
   maxZoom:20
@@ -406,7 +411,6 @@ function flyTo(key){
 // ── WELCOME OVERLAY ───────────────────────────────────────────────────────────
 var dataReady = false;
 
-// Update the stat counters in the card as data arrives
 function updateStats(){
   if(exLoaded){
     var n = existingLayer.getLayers().length;
@@ -429,10 +433,7 @@ function dismissOverlay(){
   setTimeout(function(){ ov.style.display = 'none'; }, 500);
 }
 
-// "Explore the Plan" button
 function dismissAndDemo(){ dismissOverlay(); }
-
-// "Skip intro" link — same behaviour, kept for clarity
 function dismissOnly(){ dismissOverlay(); }
 
 // ── LEGEND ────────────────────────────────────────────────────────────────────
