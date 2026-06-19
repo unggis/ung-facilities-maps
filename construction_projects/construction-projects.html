@@ -78,8 +78,8 @@
     map.once('focus', function() { map.scrollWheelZoom.enable(); });
 
     map.createPane('buildings');  map.getPane('buildings').style.zIndex  = 400;
+    map.createPane('alerts');     map.getPane('alerts').style.zIndex     = 425;
     map.createPane('construction'); map.getPane('construction').style.zIndex = 450;
-    map.createPane('alerts');     map.getPane('alerts').style.zIndex     = 500;
 
     var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors | John Segars, UNG Facilities GIS', maxZoom: 19
