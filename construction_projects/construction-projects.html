@@ -241,6 +241,8 @@
       }
     }).addTo(map);
 
+
+
     // Legend
     var legend = L.control({ position: 'bottomright' });
     legend.onAdd = function() {
@@ -249,13 +251,6 @@
       div.innerHTML =
         '<strong style="display:block;margin-bottom:6px;">Construction</strong>'
         + '<span style="display:inline-block;width:28px;height:14px;background:#f59a45;border:2.5px dashed #e06000;margin-right:6px;vertical-align:middle;"></span> Project Area<br><br>'
-        + '<strong style="display:block;margin-bottom:4px;">Campus Alerts</strong>'
-        + '<span style="display:inline-block;width:14px;height:14px;background:rgba(209,52,56,.4);border:2px solid #D13438;margin-right:6px;vertical-align:middle;border-radius:2px;"></span>🚫 Road Closed<br>'
-        + '<span style="display:inline-block;width:14px;height:14px;background:rgba(244,164,27,.4);border:2px solid #F4A41B;margin-right:6px;vertical-align:middle;border-radius:2px;"></span>🚧 Construction Zone<br>'
-        + '<span style="display:inline-block;width:14px;height:14px;background:rgba(136,136,136,.4);border:2px solid #888;margin-right:6px;vertical-align:middle;border-radius:2px;"></span>⚠️ Out of Order<br>'
-        + '<span style="display:inline-block;width:14px;height:14px;background:rgba(204,85,0,.4);border:2px solid #cc5500;margin-right:6px;vertical-align:middle;border-radius:2px;"></span>☢️ Hazard<br>'
-        + '<span style="display:inline-block;width:14px;height:14px;background:rgba(184,168,0,.4);border:2px solid #b8a800;margin-right:6px;vertical-align:middle;border-radius:2px;"></span>📍 Other<br>'
-        + '<span style="display:inline-block;width:28px;border-top:3px dashed #0066cc;margin-right:6px;vertical-align:middle;margin-top:8px;"></span>↪️ Detour<br><br>'
         + '<strong style="display:block;margin-bottom:6px;">Buildings</strong>'
         + '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
       return div;
