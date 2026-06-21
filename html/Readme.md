@@ -8,6 +8,8 @@ Each file is an interactive map embedded in the UNG Facilities Hub.
 | File | Description | Hub Page |
 |------|-------------|----------|
 | ung-campus-map.html | Campus waypoint map with routing and campus alerts | Wayfinding |
+| ung-campus-map_original.htm | backup | Wayfinding |
+| ung-lifesafety-map.html | Campus Alerts and life safety features | Public Safety |
 | ung-masterplan-swipe.html | Existing vs. proposed master plan toggle viewer | Planning |
 | mmm_map.html | Monuments, Markers & Memorials multi-campus map | MMM |
 | walkway.html | Walkway of Service brick viewer — Dahlonega Campus | Walkway |
