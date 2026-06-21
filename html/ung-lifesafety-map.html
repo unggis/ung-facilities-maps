@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>UNG Campus Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script>
+  <style>
+    .building-tooltip {
+      background: #003366;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .building-tooltip::before {
+      border-top-color: #003366;
+    }
+    /* Alert popup styling */
+    .leaflet-popup-content-wrapper {
+      border-radius: 8px !important;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25) !important;
+      padding: 0 !important;
+      overflow: hidden;
+    }
+    .leaflet-popup-content {
+      margin: 0 !important;
+      min-width: 220px;
+    }
+    .alert-popup-header {
+      padding: 8px 12px;
+      background: #f8f9fc;
+      border-bottom: 1px solid #e0e4ee;
+    }
+    .alert-popup-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .alert-popup-body {
+      padding: 8px 12px 10px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .alert-popup-msg {
+      font-size: 0.82rem;
+      color: #2a3050;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .alert-popup-footer {
+      font-size: 0.72rem;
+      color: #7a84a0;
+      border-top: 1px solid #eee;
+      padding-top: 6px;
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;">
+  <div style="background:#003366; color:#ffffff; text-align:center; padding:8px; font-family:Arial; font-size:14px; font-weight:bold; border-radius:6px 6px 0 0;">
+    UNG Campus Life Safety &amp; Building Map
+  </div>
+  <div id="ungmap" style="height:430px; width:100%; border-radius:0 0 6px 6px;"></div>
+  <script>
+    var map = L.map('ungmap', { maxZoom: 21 }).setView([34.53, -83.98], 15);
+
+    map.createPane('buildings');
+    map.getPane('buildings').style.zIndex = 400;
+
+    map.createPane('lifesafety');
+    map.getPane('lifesafety').style.zIndex = 450;
+
+    map.createPane('alerts');
+    map.getPane('alerts').style.zIndex = 500;
+
+    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors | John Segars, UNG Facilities GIS',
+      maxZoom: 19
+    });
+
+    var esriImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, GeoEye, Earthstar Geographics',
+      maxZoom: 21
+    });
+
+    var esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Labels &copy; Esri',
+      maxZoom: 21
+    });
+
+    var imagery = L.layerGroup([esriImagery, esriLabels]);
+    osm.addTo(map);
+
+    var baseMaps = {
+      'Street Map': osm,
+      'Satellite':  imagery
+    };
+
+    // Building Footprints
+    L.esri.featureLayer({
+      url: 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Building_Footprints_2_view/FeatureServer/5',
+      pane: 'buildings',
+      style: {
+        color: '#003366',
+        weight: 1.5,
+        fillColor: '#C8952A',
+        fillOpacity: 0.4
+      },
+      onEachFeature: function(feature, layer) {
+        var props = feature.properties;
+        var label = (props.Building || 'Building');
+        if (props.campus) label += ' — ' + props.campus;
+        layer.bindTooltip(label, {
+          permanent: false,
+          sticky: true,
+          direction: 'top',
+          className: 'building-tooltip'
+        });
+        layer.on('click', function(e) {
+          var point = e.latlng;
+          var closest = null;
+          var closestDist = Infinity;
+          map.eachLayer(function(l) {
+            if (l instanceof L.Marker && !(l instanceof L.CircleMarker)) {
+              var dist = map.distance(point, l.getLatLng());
+              if (dist < closestDist) {
+                closestDist = dist;
+                closest = l;
+              }
+            }
+          });
+          if (closest && closestDist < 50) {
+            closest.openPopup();
+          }
+        });
+      }
+    }).addTo(map);
+
+    // Life Safety lookup tables
+    var deviceTypes = {
+      0: 'Fire Hydrant',
+      1: 'Stand Pipe',
+      2: 'AED',
+      3: 'Stairway Gurney',
+      4: 'Call Box',
+      5: 'Fire Extinguisher',
+      6: 'Fire Department Connection'
+    };
+
+    var floorTypes = {
+      0: 'Crawlspace',
+      1: 'Basement',
+      2: '1st Level',
+      3: '2nd Level',
+      4: '3rd Level',
+      5: '4th Level',
+      6: '5th Level',
+      7: '6th Level'
+    };
+
+    // SVG Icons
+    var deviceSVGs = {
+      0: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10" fill="#cc0000"/><text x="12" y="16" text-anchor="middle" font-size="11" fill="white" font-family="Arial">H</text></svg>',
+      1: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="4" fill="#8b0000"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">SP</text></svg>',
+      2: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="4" fill="#006400"/><text x="12" y="16" text-anchor="middle" font-size="8" fill="white" font-family="Arial">AED</text></svg>',
+      3: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><polygon points="12,2 22,22 2,22" fill="#6a0dad"/><text x="12" y="19" text-anchor="middle" font-size="8" fill="white" font-family="Arial">SG</text></svg>',
+      4: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="10" fill="#0057b8"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">CB</text></svg>',
+      5: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><rect x="2" y="2" width="20" height="20" rx="4" fill="#ff6600"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">FE</text></svg>',
+      6: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><polygon points="12,2 22,22 2,22" fill="#990000"/><text x="12" y="19" text-anchor="middle" font-size="7" fill="white" font-family="Arial">FDC</text></svg>'
+    };
+
+    function makeIcon(key) {
+      var svg = deviceSVGs[key] !== undefined ? deviceSVGs[key] : deviceSVGs[0];
+      return L.divIcon({
+        html: svg,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11],
+        popupAnchor: [0, -14],
+        className: ''
+      });
+    }
+
+    var deviceIcons = {
+      0: makeIcon(0), 1: makeIcon(1), 2: makeIcon(2),
+      3: makeIcon(3), 4: makeIcon(4), 5: makeIcon(5), 6: makeIcon(6)
+    };
+
+    // Life Safety Features — stored as a layer group for toggle control
+    var lifeSafetyLayer = L.featureGroup();
+
+    L.esri.featureLayer({
+      url: 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Life_Safety_view/FeatureServer/28',
+      pane: 'lifesafety',
+      pointToLayer: function(feature, latlng) {
+        var icon = deviceIcons[feature.properties.DeviceType] !== undefined
+          ? deviceIcons[feature.properties.DeviceType] : makeIcon(0);
+        return L.marker(latlng, { icon: icon });
+      },
+      onEachFeature: function(feature, layer) {
+        var props = feature.properties;
+        var deviceLabel = deviceTypes[props.DeviceType] || 'Life Safety Device';
+        var popup = '<strong>' + deviceLabel + '</strong>';
+        if (props.Building) popup += '<br>Building: ' + props.Building;
+        if (props.Floor !== null && props.Floor !== undefined)
+          popup += '<br>Floor: ' + (floorTypes[props.Floor] || props.Floor);
+        if (props.Notes) popup += '<br>Notes: ' + props.Notes;
+        layer.bindPopup(popup);
+      }
+    }).addTo(lifeSafetyLayer);
+
+    lifeSafetyLayer.addTo(map);
+
+    // ── CAMPUS ALERTS ─────────────────────────────────────────────
+    var POLYGON_ALERTS = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Campus_Alerts/FeatureServer/43';
+    var LINEAR_ALERTS  = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Alerts_Linear/FeatureServer/44';
+
+    var ALERT_COLORS = {
+      0: '#D13438', 1: '#F4A41B', 2: '#888888',
+      3: '#cc5500', 4: '#b8a800', 5: '#0066cc'
+    };
+    var ALERT_LABELS = {
+      0: 'Road Closed', 1: 'Construction Zone', 2: 'Out of Order',
+      3: 'Hazard',      4: 'Other',             5: 'Detour'
+    };
+    var ALERT_ICONS = {
+      0: '🚫', 1: '🚧', 2: '⚠️', 3: '☢️', 4: '📍', 5: '↪️'
+    };
+    var LINE_STYLES = {
+      0: ['#D13438', 5, null],
+      1: ['#F4A41B', 4, '10,6'],
+      2: ['#888888', 3, '6,4'],
+      3: ['#cc5500', 4, null],
+      4: ['#b8a800', 3, '4,4'],
+      5: ['#0066cc', 4, '12,5,3,5']
+    };
+
+    function makeAlertIcon(alertType) {
+      var color = ALERT_COLORS[alertType] || '#999';
+      var emoji = ALERT_ICONS[alertType]  || '📍';
+      return L.divIcon({
+        html: '<div style="background:' + color + ';border:3px solid white;border-radius:50%;' +
+              'width:34px;height:34px;display:flex;align-items:center;justify-content:center;' +
+              'font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.4);cursor:pointer;">' + emoji + '</div>',
+        className: '',
+        iconSize:    [34, 34],
+        iconAnchor:  [17, 17],
+        popupAnchor: [0, -20]
+      });
+    }
+
+    function buildAlertPopup(p) {
+      var color   = ALERT_COLORS[p.Alert_Type] || '#999';
+      var expires = p.End_Date
+        ? new Date(p.End_Date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' })
+        : 'No expiration set';
+      var msg = (p.Message || '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/\n/g,'<br>');
+      return '<div class="alert-popup-header" style="border-left:5px solid ' + color + ';">' +
+               '<div class="alert-popup-title">' + (ALERT_LABELS[p.Alert_Type] || 'Alert') + '</div>' +
+             '</div>' +
+             '<div class="alert-popup-body">' +
+               '<div class="alert-popup-msg">' + msg + '</div>' +
+               '<div class="alert-popup-footer">⏱ Expires: ' + expires + '</div>' +
+             '</div>';
+    }
+
+    // Alerts live in their own featureGroup for layer control toggle
+    var alertsLayer = L.featureGroup({ pane: 'alerts' });
+
+    // Campus filter state — null means show all campuses
+    var currentCampusFilter = null;
+
+    // Maps campus name to domain code for filtering
+    var CAMPUS_CODES = {
+      'Blue Ridge':  0,
+      'Cumming':     1,
+      'Dahlonega':   2,
+      'Gainesville': 3,
+      'Oconee':      4
+    };
+
+    // Build alerts legend dynamically from active features only
+    function buildAlertsLegend(activePolyTypes, activeLineTypes) {
+      function alertSwatch(color, dash) {
+        var border = dash
+          ? 'border-top:3px dashed ' + color + ';background:none;'
+          : 'background:' + color + ';';
+        return '<span style="display:inline-block;width:18px;height:3px;' + border +
+               'vertical-align:middle;margin-right:6px;"></span>';
+      }
+      function zoneSwatch(color) {
+        return '<span style="display:inline-block;width:14px;height:14px;background:' + color +
+               ';opacity:0.5;border:2px solid ' + color + ';vertical-align:middle;margin-right:6px;"></span>';
+      }
+
+      var html = '<strong style="display:block;margin-bottom:6px;">Campus Alerts</strong>';
+      var hasAny = false;
+
+      // Zone types (polygon)
+      var zoneTypes = [
+        [0, '#D13438', 'Road Closed'],
+        [1, '#F4A41B', 'Construction Zone'],
+        [2, '#888888', 'Out of Order'],
+        [3, '#cc5500', 'Hazard'],
+        [4, '#b8a800', 'Other']
+      ];
+      var hasZones = false;
+      zoneTypes.forEach(function(t) {
+        if (activePolyTypes.has(t[0])) {
+          if (!hasZones) { html += '<em style="font-size:0.75em;color:#666;display:block;margin-bottom:3px;">Zones</em>'; hasZones = true; }
+          html += zoneSwatch(t[1]) + ' ' + t[2] + '<br>';
+          hasAny = true;
+        }
+      });
+
+      // Linear types
+      var lineTypes = [
+        [0, '#D13438', false, 'Road Closed'],
+        [1, '#F4A41B', true,  'Construction Zone'],
+        [2, '#888888', true,  'Out of Order'],
+        [3, '#cc5500', false, 'Hazard'],
+        [4, '#b8a800', true,  'Other'],
+        [5, '#0066cc', true,  'Detour']
+      ];
+      var hasLines = false;
+      lineTypes.forEach(function(t) {
+        if (activeLineTypes.has(t[0])) {
+          if (!hasLines) {
+            if (hasZones) html += '<div style="margin:4px 0;"></div>';
+            html += '<em style="font-size:0.75em;color:#666;display:block;margin-bottom:3px;">Routes</em>';
+            hasLines = true;
+          }
+          html += alertSwatch(t[1], t[2]) + ' ' + t[3] + '<br>';
+          hasAny = true;
+        }
+      });
+
+      if (!hasAny) {
+        html += '<span style="font-size:0.8em;color:#888;font-style:italic;">No active alerts</span><br>';
+      }
+
+      html += '<hr style="border:none;border-top:1px solid #eee;margin:8px 0;">' +
+              '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
+              '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
+
+      // Update stored legend HTML and refresh if currently visible
+      window._legendAlertsHTML = html;
+      if (activeOverlay === 'alerts' && window._legendDiv) {
+        window._legendDiv.innerHTML = html;
+      }
+    }
+
+    function loadPublicAlerts(campusCode) {
+      var nowStr = new Date().toISOString().replace('T',' ').substring(0,19);
+      var campusClause = (campusCode !== undefined && campusCode !== null)
+        ? " AND Campus=" + campusCode
+        : "";
+      var where  = encodeURIComponent(
+        "Active=1 AND Start_Date <= DATE '" + nowStr + "' AND (End_Date IS NULL OR End_Date >= DATE '" + nowStr + "')" + campusClause
+      );
+      var q = '?where=' + where + '&outFields=Alert_Type,Message,End_Date&f=geojson&returnGeometry=true';
+
+      alertsLayer.clearLayers();
+
+      Promise.all([
+        fetch(POLYGON_ALERTS + '/query' + q).then(function(r){ return r.json(); }),
+        fetch(LINEAR_ALERTS  + '/query' + q).then(function(r){ return r.json(); })
+      ]).then(function(results) {
+        var polyData = results[0];
+        var lineData = results[1];
+
+        // Track active types for dynamic legend
+        var activePolyTypes = new Set();
+        var activeLineTypes = new Set();
+
+        // Polygons
+        (polyData.features || []).forEach(function(f) {
+          var p     = f.properties;
+          var color = ALERT_COLORS[p.Alert_Type] || '#999';
+          var popup = buildAlertPopup(p);
+          var layer = L.geoJSON(f, {
+            style: { color: color, weight: 3, fillColor: color, fillOpacity: 0.3, pane: 'alerts' }
+          }).bindPopup(popup, { maxWidth: 300 });
+          layer.addTo(alertsLayer);
+          var center = layer.getBounds().getCenter();
+          L.marker(center, { icon: makeAlertIcon(p.Alert_Type), zIndexOffset: 1000 })
+           .bindPopup(popup, { maxWidth: 300 })
+           .addTo(alertsLayer);
+          activePolyTypes.add(p.Alert_Type);
+        });
+
+        // Lines
+        (lineData.features || []).forEach(function(f) {
+          var p = f.properties;
+          var ls = LINE_STYLES[p.Alert_Type] || ['#999', 3, null];
+          var color = ls[0], weight = ls[1], dashArray = ls[2];
+          var popup = buildAlertPopup(p);
+          var style = { color: color, weight: weight, opacity: 0.95, pane: 'alerts' };
+          if (dashArray) style.dashArray = dashArray;
+          var layer = L.geoJSON(f, { style: style })
+            .bindPopup(popup, { maxWidth: 300 });
+          layer.addTo(alertsLayer);
+          var center = layer.getBounds().getCenter();
+          L.marker(center, { icon: makeAlertIcon(p.Alert_Type), zIndexOffset: 1000 })
+           .bindPopup(popup, { maxWidth: 300 })
+           .addTo(alertsLayer);
+          activeLineTypes.add(p.Alert_Type);
+        });
+
+        // Rebuild legend from active types only
+        buildAlertsLegend(activePolyTypes, activeLineTypes);
+
+      }).catch(function(e) {
+        console.warn('Campus alerts could not be loaded:', e);
+      });
+    }
+
+    // Alerts start hidden — Life Safety is default overlay
+    loadPublicAlerts(currentCampusFilter);
+    setInterval(function() { loadPublicAlerts(currentCampusFilter); }, 120000); // refresh every 2 min
+
+    // ── BASE MAP CONTROL only — overlays handled by custom toggle ──
+    L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+
+    // ── CUSTOM MUTUALLY EXCLUSIVE OVERLAY TOGGLE ──────────────────
+    var activeOverlay = 'lifesafety'; // default
+
+    var toggleControl = L.control({ position: 'topleft' });
+    toggleControl.onAdd = function() {
+      var div = L.DomUtil.create('div');
+      div.style.background   = 'white';
+      div.style.padding      = '8px';
+      div.style.borderRadius = '6px';
+      div.style.boxShadow    = '0 1px 4px rgba(0,0,0,0.3)';
+      div.style.fontSize     = '12px';
+      div.style.marginTop    = '8px';
+
+      var label = document.createElement('strong');
+      label.textContent        = 'Overlay';
+      label.style.display      = 'block';
+      label.style.marginBottom = '6px';
+      div.appendChild(label);
+
+      var options = [
+        { key: 'lifesafety', label: '🔴 Life Safety',   layer: lifeSafetyLayer },
+        { key: 'alerts',     label: '🚧 Campus Alerts', layer: alertsLayer     }
+      ];
+
+      options.forEach(function(opt) {
+        var btn = document.createElement('button');
+        btn.textContent        = opt.label;
+        btn.dataset.key        = opt.key;
+        btn.style.display      = 'block';
+        btn.style.width        = '100%';
+        btn.style.marginBottom = '4px';
+        btn.style.padding      = '4px 8px';
+        btn.style.border       = 'none';
+        btn.style.borderRadius = '3px';
+        btn.style.cursor       = 'pointer';
+        btn.style.textAlign    = 'left';
+        btn.style.fontFamily   = 'Arial, sans-serif';
+        btn.style.fontSize     = '12px';
+        btn.style.transition   = 'background 0.15s';
+
+        function updateStyle() {
+          if (activeOverlay === opt.key) {
+            btn.style.background = '#C8952A';
+            btn.style.color      = '#ffffff';
+            btn.style.fontWeight = 'bold';
+          } else {
+            btn.style.background = '#003366';
+            btn.style.color      = '#ffffff';
+            btn.style.fontWeight = 'normal';
+          }
+        }
+        updateStyle();
+
+        btn.onclick = function() {
+          // Remove all overlays
+          options.forEach(function(o) {
+            if (map.hasLayer(o.layer)) map.removeLayer(o.layer);
+          });
+          // Add selected
+          activeOverlay = opt.key;
+          map.addLayer(opt.layer);
+          // Update button styles
+          div.querySelectorAll('button[data-key]').forEach(function(b) {
+            var isActive = b.dataset.key === activeOverlay;
+            b.style.background = isActive ? '#C8952A' : '#003366';
+            b.style.fontWeight = isActive ? 'bold' : 'normal';
+          });
+          // Swap legend section
+          updateLegendVisibility();
+        };
+
+        div.appendChild(btn);
+      });
+
+      // Stop map clicks propagating through control
+      L.DomEvent.disableClickPropagation(div);
+      return div;
+    };
+    toggleControl.addTo(map);
+
+    // ── LEGEND ────────────────────────────────────────────────────
+    var legend = L.control({ position: 'bottomright' });
+
+    legend.onAdd = function(map) {
+      var div = L.DomUtil.create('div', 'legend');
+      div.style.background   = 'white';
+      div.style.padding      = '10px';
+      div.style.borderRadius = '6px';
+      div.style.boxShadow    = '0 1px 4px rgba(0,0,0,0.3)';
+      div.style.lineHeight   = '1.8';
+      div.style.fontSize     = '12px';
+
+      function svgIcon(svg) {
+        return '<span style="display:inline-block;vertical-align:middle;margin-right:6px;">' + svg + '</span>';
+      }
+      function alertSwatch(color, dash) {
+        var border = dash
+          ? 'border-top:3px dashed ' + color + ';background:none;'
+          : 'background:' + color + ';';
+        return '<span style="display:inline-block;width:18px;height:3px;' + border +
+               'vertical-align:middle;margin-right:6px;"></span>';
+      }
+
+      var lifeSafetyHTML =
+        '<strong style="display:block;margin-bottom:6px;">Life Safety</strong>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="#cc0000"/><text x="12" y="16" text-anchor="middle" font-size="11" fill="white" font-family="Arial">H</text></svg>') + ' Fire Hydrant<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#8b0000"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">SP</text></svg>') + ' Stand Pipe<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#006400"/><text x="12" y="16" text-anchor="middle" font-size="8" fill="white" font-family="Arial">AED</text></svg>') + ' AED<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><polygon points="12,2 22,22 2,22" fill="#6a0dad"/><text x="12" y="19" text-anchor="middle" font-size="8" fill="white" font-family="Arial">SG</text></svg>') + ' Stairway Gurney<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="#0057b8"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">CB</text></svg>') + ' Call Box<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="4" fill="#ff6600"/><text x="12" y="16" text-anchor="middle" font-size="9" fill="white" font-family="Arial">FE</text></svg>') + ' Fire Extinguisher<br>' +
+        svgIcon('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16"><polygon points="12,2 22,22 2,22" fill="#990000"/><text x="12" y="19" text-anchor="middle" font-size="7" fill="white" font-family="Arial">FDC</text></svg>') + ' Fire Dept Connection<br>' +
+        '<hr style="border:none;border-top:1px solid #eee;margin:8px 0;">' +
+        '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
+        '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
+
+      // alertsHTML is built dynamically by buildAlertsLegend() after each fetch
+      // Default shown before first load
+      var alertsHTML =
+        '<strong style="display:block;margin-bottom:6px;">Campus Alerts</strong>' +
+        '<span style="font-size:0.8em;color:#888;font-style:italic;">Loading...</span><br>' +
+        '<hr style="border:none;border-top:1px solid #eee;margin:8px 0;">' +
+        '<strong style="display:block;margin-bottom:6px;">Buildings</strong>' +
+        '<span style="display:inline-block;width:14px;height:14px;background:#C8952A;border:2px solid #003366;margin-right:6px;vertical-align:middle;"></span> Building Footprint';
+
+      div.innerHTML = lifeSafetyHTML; // default matches activeOverlay default
+
+      // Store references for swapping
+      window._legendLifeSafetyHTML = lifeSafetyHTML;
+      window._legendAlertsHTML     = alertsHTML;
+      window._legendDiv            = div;
+
+      return div;
+    };
+
+    legend.addTo(map);
+
+    // Called by toggle buttons to swap legend content
+    function updateLegendVisibility() {
+      if (!window._legendDiv) return;
+      window._legendDiv.innerHTML = activeOverlay === 'alerts'
+        ? window._legendAlertsHTML
+        : window._legendLifeSafetyHTML;
+    }
+
+    // ── CAMPUS BOOKMARKS ──────────────────────────────────────────
+    var campuses = {
+      'Blue Ridge':  [34.88866, -84.29174, 18],
+      'Cumming':     [34.22394, -84.10806, 17],
+      'Dahlonega':   [34.5297,  -83.9849,  15],
+      'Gainesville': [34.23474, -83.86722, 16],
+      'Oconee':      [33.86621, -83.42595, 17]
+    };
+
+    var bookmarkControl = L.control({ position: 'topleft' });
+
+    bookmarkControl.onAdd = function(map) {
+      var div = L.DomUtil.create('div');
+      div.style.background   = 'white';
+      div.style.padding      = '8px';
+      div.style.borderRadius = '6px';
+      div.style.boxShadow    = '0 1px 4px rgba(0,0,0,0.3)';
+      div.style.fontSize     = '12px';
+
+      var label = document.createElement('strong');
+      label.textContent    = 'Campus';
+      label.style.display  = 'block';
+      label.style.marginBottom = '6px';
+      div.appendChild(label);
+
+      Object.keys(campuses).forEach(function(name) {
+        var btn = document.createElement('button');
+        btn.textContent          = name;
+        btn.style.display        = 'block';
+        btn.style.width          = '100%';
+        btn.style.marginBottom   = '4px';
+        btn.style.padding        = '4px 8px';
+        btn.style.background     = '#003366';
+        btn.style.color          = '#ffffff';
+        btn.style.border         = 'none';
+        btn.style.borderRadius   = '3px';
+        btn.style.cursor         = 'pointer';
+        btn.style.textAlign      = 'left';
+        btn.onmouseover = function() { this.style.background = '#C8952A'; };
+        btn.onmouseout  = function() { this.style.background = '#003366'; };
+        btn.onclick = (function(campusName) {
+          return function() {
+            map.setView([campuses[campusName][0], campuses[campusName][1]], campuses[campusName][2] || 15);
+            currentCampusFilter = CAMPUS_CODES[campusName];
+            loadPublicAlerts(currentCampusFilter);
+            // Highlight active button
+            div.querySelectorAll('button').forEach(function(b) {
+              b.style.background = '#003366';
+            });
+            this.style.background = '#C8952A';
+          };
+        })(name);
+        div.appendChild(btn);
+      });
+
+      return div;
+    };
+
+    bookmarkControl.addTo(map);
+  </script>
+</body>
+</html>
