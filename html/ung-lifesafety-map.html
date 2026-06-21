@@ -60,11 +60,12 @@
 </head>
 <body style="margin:0;padding:0;">
   <div style="background:#003366; color:#ffffff; text-align:center; padding:8px; font-family:Arial; font-size:14px; font-weight:bold; border-radius:6px 6px 0 0;">
-    UNG Campus Alerts &amp; Life Safety Map
+    UNG Campus Life Safety &amp; Building Map
   </div>
   <div id="ungmap" style="height:430px; width:100%; border-radius:0 0 6px 6px;"></div>
   <script>
-    var map = L.map('ungmap', { maxZoom: 21 }).setView([34.53, -83.98], 15);
+    var map = L.map('ungmap', { maxZoom: 21, scrollWheelZoom: false }).setView([34.53, -83.98], 15);
+    map.once('focus', function() { map.scrollWheelZoom.enable(); });
 
     map.createPane('buildings');
     map.getPane('buildings').style.zIndex = 400;
