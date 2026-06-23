@@ -40,6 +40,22 @@ header { background:var(--navy); border-bottom:3px solid var(--gold); }
 main { max-width:960px; margin:0 auto; padding:36px 32px 60px; }
 .section-label { font-size:10px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--rule); }
 
+/* INTRO BLOCK */
+.intro-block { background:var(--white); border:1px solid var(--rule); border-top:3px solid var(--navy-mid); margin-bottom:32px; border-radius:2px; overflow:hidden; }
+.intro-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; background:none; border:none; padding:10px 16px; cursor:pointer; text-align:left; border-bottom:1px solid transparent; transition:background .15s, border-color .15s; }
+.intro-toggle:hover { background:var(--off-white); }
+.intro-toggle[aria-expanded="true"] { border-bottom-color:var(--rule); }
+.intro-toggle-left { display:flex; align-items:baseline; gap:0; }
+.intro-toggle-label { font-size:10px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+.intro-toggle-hint { font-size:11px; color:var(--muted); margin-left:8px; font-weight:300; text-transform:none; letter-spacing:0; }
+.intro-chevron { width:14px; height:14px; color:var(--muted); flex-shrink:0; transition:transform .25s ease; }
+.intro-toggle[aria-expanded="true"] .intro-chevron { transform:rotate(180deg); }
+.intro-body { display:none; padding:18px 20px 20px; }
+.intro-body.is-open { display:block; }
+.intro-body p { font-family:'Source Sans 3',sans-serif; font-size:13px; font-weight:300; line-height:1.75; color:var(--text); margin:0 0 10px 0; }
+.intro-body p:last-child { margin-bottom:0; }
+.intro-body strong { color:var(--navy); font-weight:600; }
+
 /* GOAL HERO */
 .goal-hero { background:var(--white); border:1px solid var(--rule); border-top:4px solid var(--navy); padding:28px 32px; margin-bottom:32px; border-radius:2px; }
 .goal-header { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px; }
@@ -122,6 +138,24 @@ footer { background:var(--navy); border-top:3px solid var(--gold); padding:18px 
 </header>
 
 <main>
+
+  <!-- INTRO -->
+  <div class="intro-block">
+    <button class="intro-toggle" aria-expanded="false" aria-controls="intro-body" onclick="toggleIntro(this)">
+      <span class="intro-toggle-left">
+        <span class="intro-toggle-label">About This Dashboard</span>
+        <span class="intro-toggle-hint" id="intro-hint">&nbsp;— click to expand</span>
+      </span>
+      <svg class="intro-chevron" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="intro-body" id="intro-body" role="region">
+      <p>The University of North Georgia maintains a GIS database of every assignable room across its five campuses. The <strong>AD&nbsp;&rarr;&nbsp;GIS Pipeline</strong> is a weekly process that matches each employee's Active Directory record to a physical room polygon &mdash; placing them on a map.</p>
+      <p>This dashboard tracks the placement rate over time: how many &ldquo;mappable&rdquo; employees (those who should have a room assignment) have been successfully located, what is in the gap, and what it would take to reach 100%. A successful placement does more than put a name on a room &mdash; it also ties that space to the correct department and division, making the map a live picture of how the institution actually occupies its buildings.</p>
+      <p>Gaps can have several causes: an employee&rsquo;s record in Active Directory may be missing room attributes or may have incorrect ones; the GIS polygon database may not yet reflect a recent move or renovation; or the physical space itself may be assigned differently than either system reflects. Each week&rsquo;s run helps surface these discrepancies so they can be corrected at the source.</p>
+    </div>
+  </div>
 
   <!-- GOAL HERO -->
   <div class="section-label" style="margin-top:0">Placement Rate — Progress Toward 100%</div>
@@ -209,130 +243,30 @@ footer { background:var(--navy); border-top:3px solid var(--gold); padding:18px 
 </footer>
 
 <script>
-// ── LOAD HISTORY ──────────────────────────────────────────────────────────────
-// In production this is fetched from pipeline_history.json in the same repo.
-// For the demo, data is embedded directly.
-
-const HISTORY = [
-  {
-    "run_date": "2026-05-22",
-    "run_label": "May 22, 2026",
-    "total_ad": 2462,
-    "mappable": 1751,
-    "lookup_ready": 1486,
-    "suspect": 716,
-    "online_blank": 211,
-    "missing_location": 238,
-    "no_gis_bldg": 236,
-    "no_room_excluded": 29,
-    "gis_populated": 1325,
-    "placement_rate": 75.7,
-    "gap_no_match": 83,
-    "gap_duplicates": 10,
-    "gap_gis_duplicates": 78
-  },
-  {
-    "run_date": "2026-05-25",
-    "run_label": "May 25, 2026",
-    "total_ad": 2461,
-    "mappable": 1749,
-    "lookup_ready": 1485,
-    "suspect": 717,
-    "online_blank": 211,
-    "missing_location": 237,
-    "no_gis_bldg": 236,
-    "no_room_excluded": 28,
-    "gis_populated": 1326,
-    "placement_rate": 75.8,
-    "gap_no_match": 83,
-    "gap_duplicates": 9,
-    "gap_gis_duplicates": 76
-  },
-  {
-    "run_date": "2026-06-01",
-    "run_label": "June 01, 2026",
-    "total_ad": 2452,
-    "mappable": 1743,
-    "lookup_ready": 1468,
-    "suspect": 714,
-    "online_blank": 212,
-    "missing_location": 248,
-    "no_gis_bldg": 249,
-    "no_room_excluded": 26,
-    "gis_populated": 1314,
-    "placement_rate": 75.4,
-    "gap_no_match": 80,
-    "gap_duplicates": 8,
-    "gap_gis_duplicates": 74
-  },
-  {
-    "run_date": "2026-06-08",
-    "run_label": "June 08, 2026",
-    "total_ad": 2415,
-    "mappable": 1763,
-    "lookup_ready": 1466,
-    "suspect": 657,
-    "online_blank": 214,
-    "missing_location": 269,
-    "no_gis_bldg": 269,
-    "no_room_excluded": 28,
-    "gis_populated": 1312,
-    "placement_rate": 74.4,
-    "gap_no_match": 80,
-    "gap_duplicates": 8,
-    "gap_gis_duplicates": 74
-  },
-  {
-    "run_date": "2026-06-10",
-    "run_label": "June 10, 2026",
-    "total_ad": 2424,
-    "mappable": 1761,
-    "lookup_ready": 1475,
-    "suspect": 662,
-    "online_blank": 214,
-    "missing_location": 264,
-    "no_gis_bldg": 264,
-    "no_room_excluded": 22,
-    "gis_populated": 1360,
-    "placement_rate": 77.2,
-    "gap_no_match": 73,
-    "gap_duplicates": 1,
-    "gap_gis_duplicates": 42
-  },
-  {
-    "run_date": "2026-06-15",
-    "run_label": "June 15, 2026",
-    "total_ad": 2411,
-    "mappable": 1749,
-    "lookup_ready": 1475,
-    "suspect": 661,
-    "online_blank": 214,
-    "missing_location": 252,
-    "no_gis_bldg": 252,
-    "no_room_excluded": 22,
-    "gis_populated": 1362,
-    "placement_rate": 77.9,
-    "gap_no_match": 72,
-    "gap_duplicates": 1,
-    "gap_gis_duplicates": 41
-  },
-  {
-    "run_date": "2026-06-22",
-    "run_label": "June 22, 2026",
-    "total_ad": 2417,
-    "mappable": 1753,
-    "lookup_ready": 1475,
-    "suspect": 663,
-    "online_blank": 214,
-    "missing_location": 256,
-    "no_gis_bldg": 254,
-    "no_room_excluded": 24,
-    "gis_populated": 1391,
-    "placement_rate": 79.3,
-    "gap_no_match": 74,
-    "gap_duplicates": 0,
-    "gap_gis_duplicates": 10
+// ── INTRO TOGGLE ──────────────────────────────────────────────────────────────
+function toggleIntro(btn) {
+  var expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', String(!expanded));
+  var body = document.getElementById('intro-body');
+  var hint = document.getElementById('intro-hint');
+  if (!expanded) {
+    body.classList.add('is-open');
+    hint.textContent = '\u00a0\u2014 click to collapse';
+  } else {
+    body.classList.remove('is-open');
+    hint.textContent = '\u00a0\u2014 click to expand';
   }
+}
+
+// ── LOAD HISTORY ──────────────────────────────────────────────────────────────
+const HISTORY = [
+  {"run_date":"2026-05-22","run_label":"May 22, 2026","total_ad":2462,"mappable":1751,"lookup_ready":1486,"suspect":716,"online_blank":211,"missing_location":238,"no_gis_bldg":236,"no_room_excluded":29,"gis_populated":1325,"placement_rate":75.7,"gap_no_match":83,"gap_duplicates":10,"gap_gis_duplicates":78},
+  {"run_date":"2026-05-25","run_label":"May 25, 2026","total_ad":2461,"mappable":1749,"lookup_ready":1485,"suspect":717,"online_blank":211,"missing_location":237,"no_gis_bldg":236,"no_room_excluded":28,"gis_populated":1326,"placement_rate":75.8,"gap_no_match":83,"gap_duplicates":9,"gap_gis_duplicates":76},
+  {"run_date":"2026-06-01","run_label":"June 01, 2026","total_ad":2452,"mappable":1743,"lookup_ready":1468,"suspect":714,"online_blank":212,"missing_location":248,"no_gis_bldg":249,"no_room_excluded":26,"gis_populated":1314,"placement_rate":75.4,"gap_no_match":80,"gap_duplicates":8,"gap_gis_duplicates":74},
+  {"run_date":"2026-06-08","run_label":"June 08, 2026","total_ad":2415,"mappable":1763,"lookup_ready":1466,"suspect":657,"online_blank":214,"missing_location":269,"no_gis_bldg":269,"no_room_excluded":28,"gis_populated":1312,"placement_rate":74.4,"gap_no_match":80,"gap_duplicates":8,"gap_gis_duplicates":74},
+  {"run_date":"2026-06-10","run_label":"June 10, 2026","total_ad":2424,"mappable":1761,"lookup_ready":1475,"suspect":662,"online_blank":214,"missing_location":264,"no_gis_bldg":264,"no_room_excluded":22,"gis_populated":1360,"placement_rate":77.2,"gap_no_match":73,"gap_duplicates":1,"gap_gis_duplicates":42},
+  {"run_date":"2026-06-15","run_label":"June 15, 2026","total_ad":2411,"mappable":1749,"lookup_ready":1475,"suspect":661,"online_blank":214,"missing_location":252,"no_gis_bldg":252,"no_room_excluded":22,"gis_populated":1362,"placement_rate":77.9,"gap_no_match":72,"gap_duplicates":1,"gap_gis_duplicates":41},
+  {"run_date":"2026-06-22","run_label":"June 22, 2026","total_ad":2417,"mappable":1753,"lookup_ready":1475,"suspect":663,"online_blank":214,"missing_location":256,"no_gis_bldg":254,"no_room_excluded":24,"gis_populated":1391,"placement_rate":79.3,"gap_no_match":74,"gap_duplicates":0,"gap_gis_duplicates":10}
 ];
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
@@ -341,15 +275,14 @@ function fmtRate(r) { return Number(r).toFixed(1); }
 function delta(curr, prev, invert) {
   if (prev === undefined || prev === null) return '';
   const d = curr - prev;
-  if (Math.abs(d) < 0.05) return '<span class="arrow-flat">→ no change</span>';
+  if (Math.abs(d) < 0.05) return '<span class="arrow-flat">\u2192 no change</span>';
   const up = invert ? d < 0 : d > 0;
   const sign = d > 0 ? '+' : '';
   const cls = up ? 'arrow-up' : 'arrow-down';
-  const arrow = up ? '↑' : '↓';
+  const arrow = up ? '\u2191' : '\u2193';
   return `<span class="${cls}">${arrow} ${sign}${typeof curr === 'number' && !Number.isInteger(curr) ? d.toFixed(1) : Math.round(d)}</span>`;
 }
 
-// Sort by date ascending
 const runs = [...HISTORY].sort((a,b) => new Date(a.run_date) - new Date(b.run_date));
 const latest = runs[runs.length - 1];
 const prev   = runs.length > 1 ? runs[runs.length - 2] : null;
@@ -389,8 +322,7 @@ if (prev) {
 
 // ── RUNS TABLE ────────────────────────────────────────────────────────────────
 const tbody = document.getElementById('runs-tbody');
-const tableRuns = runs.slice().reverse(); // latest first
-
+const tableRuns = runs.slice().reverse();
 tbody.innerHTML = tableRuns.map((run, i) => {
   const prevRun = tableRuns[i + 1];
   const isLatest = i === 0;
@@ -406,21 +338,17 @@ tbody.innerHTML = tableRuns.map((run, i) => {
 }).join('');
 
 // ── CHART COLORS ──────────────────────────────────────────────────────────────
-const NAVY_C   = '#1a2a4a';
-const GOLD_C   = '#c9a84c';
-const GREEN_C  = '#2d7a3a';
-const RED_C    = '#a63228';
-const AMBER_C  = '#b07d00';
-const LGRAY_C  = '#ddd8cc';
-
-const labels = runs.map(r => r.run_label || r.run_date);
+const NAVY_C  = '#1a2a4a';
+const GOLD_C  = '#c9a84c';
+const GREEN_C = '#2d7a3a';
+const RED_C   = '#a63228';
+const AMBER_C = '#b07d00';
+const LGRAY_C = '#ddd8cc';
+const labels  = runs.map(r => r.run_label || r.run_date);
 
 // ── RATE CHART ────────────────────────────────────────────────────────────────
-// Y-axis floor is dynamic — 5 points below the lowest recorded rate,
-// rounded down to nearest 5, so week-over-week movement is visible.
 const rates = runs.map(r => r.placement_rate);
 const rateFloor = Math.floor((Math.min(...rates) - 5) / 5) * 5;
-const rateCeil  = 100;
 
 new Chart(document.getElementById('rateChart'), {
   type: 'line',
@@ -454,25 +382,14 @@ new Chart(document.getElementById('rateChart'), {
       tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%' } }
     },
     scales: {
-      y: {
-        min: rateFloor, max: rateCeil,
-        grid: { color: LGRAY_C },
-        ticks: { callback: v => v + '%', font: { size: 10 } }
-      },
+      y: { min: rateFloor, max: 100, grid: { color: LGRAY_C }, ticks: { callback: v => v + '%', font: { size: 10 } } },
       x: { grid: { display: false }, ticks: { font: { size: 10 } } }
     }
   }
 });
 
-// ── GAP TREND LINE CHART ──────────────────────────────────────────────────────
-// Shows no_match and duplicates as separate lines over time.
-// Y-axis is dynamic so dropping no_match counts are clearly visible.
-// Duplicates are a GIS data quality item (flat until DC polygons fixed).
-// No_match drops as crosswalk entries are added and AD data improves.
-const allGapVals = [
-  ...runs.map(r => r.gap_no_match),
-  ...runs.map(r => r.gap_duplicates)
-];
+// ── GAP CHART ─────────────────────────────────────────────────────────────────
+const allGapVals = [...runs.map(r => r.gap_no_match), ...runs.map(r => r.gap_duplicates)];
 const gapFloor = Math.floor((Math.min(...allGapVals) - 10) / 10) * 10;
 const gapCeil  = Math.ceil((Math.max(...allGapVals) + 10) / 10) * 10;
 
@@ -512,12 +429,7 @@ new Chart(document.getElementById('gapChart'), {
       tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y } }
     },
     scales: {
-      y: {
-        min: Math.max(0, gapFloor),
-        max: gapCeil,
-        grid: { color: LGRAY_C },
-        ticks: { font: { size: 10 } }
-      },
+      y: { min: Math.max(0, gapFloor), max: gapCeil, grid: { color: LGRAY_C }, ticks: { font: { size: 10 } } },
       x: { grid: { display: false }, ticks: { font: { size: 10 } } }
     }
   }
