@@ -40,6 +40,22 @@ header { background:var(--navy); border-bottom:3px solid var(--gold); }
 main { max-width:960px; margin:0 auto; padding:36px 32px 60px; }
 .section-label { font-size:10px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid var(--rule); }
 
+/* INTRO BLOCK */
+.intro-block { background:var(--white); border:1px solid var(--rule); border-top:3px solid var(--navy-mid); margin-bottom:32px; border-radius:2px; overflow:hidden; }
+.intro-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; background:none; border:none; padding:10px 16px; cursor:pointer; text-align:left; border-bottom:1px solid transparent; transition:background .15s, border-color .15s; }
+.intro-toggle:hover { background:var(--off-white); }
+.intro-toggle[aria-expanded="true"] { border-bottom-color:var(--rule); }
+.intro-toggle-left { display:flex; align-items:baseline; gap:0; }
+.intro-toggle-label { font-size:10px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+.intro-toggle-hint { font-size:11px; color:var(--muted); margin-left:8px; font-weight:300; text-transform:none; letter-spacing:0; }
+.intro-chevron { width:14px; height:14px; color:var(--muted); flex-shrink:0; transition:transform .25s ease; }
+.intro-toggle[aria-expanded="true"] .intro-chevron { transform:rotate(180deg); }
+.intro-body { display:none; padding:18px 20px 20px; }
+.intro-body.is-open { display:block; }
+.intro-body p { font-family:'Source Sans 3',sans-serif; font-size:13px; font-weight:300; line-height:1.75; color:var(--text); margin:0 0 10px 0; }
+.intro-body p:last-child { margin-bottom:0; }
+.intro-body strong { color:var(--navy); font-weight:600; }
+
 /* GOAL HERO */
 .goal-hero { background:var(--white); border:1px solid var(--rule); border-top:4px solid var(--navy); padding:28px 32px; margin-bottom:32px; border-radius:2px; }
 .goal-header { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px; }
@@ -122,6 +138,24 @@ footer { background:var(--navy); border-top:3px solid var(--gold); padding:18px 
 </header>
 
 <main>
+
+  <!-- INTRO -->
+  <div class="intro-block">
+    <button class="intro-toggle" aria-expanded="false" aria-controls="intro-body" onclick="toggleIntro(this)">
+      <span class="intro-toggle-left">
+        <span class="intro-toggle-label">About This Dashboard</span>
+        <span class="intro-toggle-hint" id="intro-hint">&nbsp;— click to expand</span>
+      </span>
+      <svg class="intro-chevron" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="intro-body" id="intro-body" role="region">
+      <p>The University of North Georgia maintains a GIS database of every assignable room across its five campuses. The <strong>AD&nbsp;&rarr;&nbsp;GIS Pipeline</strong> is a weekly process that matches each employee's Active Directory record to a physical room polygon &mdash; placing them on a map.</p>
+      <p>This dashboard tracks the placement rate over time: how many &ldquo;mappable&rdquo; employees (those who should have a room assignment) have been successfully located, what is in the gap, and what it would take to reach 100%. A successful placement does more than put a name on a room &mdash; it also ties that space to the correct department and division, making the map a live picture of how the institution actually occupies its buildings.</p>
+      <p>Gaps can have several causes: an employee&rsquo;s record in Active Directory may be missing room attributes or may have incorrect ones; the GIS polygon database may not yet reflect a recent move or renovation; or the physical space itself may be assigned differently than either system reflects. Each week&rsquo;s run helps surface these discrepancies so they can be corrected at the source.</p>
+    </div>
+  </div>
 
   <!-- GOAL HERO -->
   <div class="section-label" style="margin-top:0">Placement Rate — Progress Toward 100%</div>
@@ -209,6 +243,21 @@ footer { background:var(--navy); border-top:3px solid var(--gold); padding:18px 
 </footer>
 
 <script>
+// ── INTRO TOGGLE ──────────────────────────────────────────────────────────────
+function toggleIntro(btn) {
+  var expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', String(!expanded));
+  var body = document.getElementById('intro-body');
+  var hint = document.getElementById('intro-hint');
+  if (!expanded) {
+    body.classList.add('is-open');
+    hint.textContent = '\u00a0\u2014 click to collapse';
+  } else {
+    body.classList.remove('is-open');
+    hint.textContent = '\u00a0\u2014 click to expand';
+  }
+}
+
 // ── LOAD HISTORY ──────────────────────────────────────────────────────────────
 // In production this is fetched from pipeline_history.json in the same repo.
 // For the demo, data is embedded directly.
