@@ -259,14 +259,146 @@ function toggleIntro(btn) {
 }
 
 // ── LOAD HISTORY ──────────────────────────────────────────────────────────────
+// In production this is fetched from pipeline_history.json in the same repo.
+// For the demo, data is embedded directly.
+
 const HISTORY = [
-  {"run_date":"2026-05-22","run_label":"May 22, 2026","total_ad":2462,"mappable":1751,"lookup_ready":1486,"suspect":716,"online_blank":211,"missing_location":238,"no_gis_bldg":236,"no_room_excluded":29,"gis_populated":1325,"placement_rate":75.7,"gap_no_match":83,"gap_duplicates":10,"gap_gis_duplicates":78},
-  {"run_date":"2026-05-25","run_label":"May 25, 2026","total_ad":2461,"mappable":1749,"lookup_ready":1485,"suspect":717,"online_blank":211,"missing_location":237,"no_gis_bldg":236,"no_room_excluded":28,"gis_populated":1326,"placement_rate":75.8,"gap_no_match":83,"gap_duplicates":9,"gap_gis_duplicates":76},
-  {"run_date":"2026-06-01","run_label":"June 01, 2026","total_ad":2452,"mappable":1743,"lookup_ready":1468,"suspect":714,"online_blank":212,"missing_location":248,"no_gis_bldg":249,"no_room_excluded":26,"gis_populated":1314,"placement_rate":75.4,"gap_no_match":80,"gap_duplicates":8,"gap_gis_duplicates":74},
-  {"run_date":"2026-06-08","run_label":"June 08, 2026","total_ad":2415,"mappable":1763,"lookup_ready":1466,"suspect":657,"online_blank":214,"missing_location":269,"no_gis_bldg":269,"no_room_excluded":28,"gis_populated":1312,"placement_rate":74.4,"gap_no_match":80,"gap_duplicates":8,"gap_gis_duplicates":74},
-  {"run_date":"2026-06-10","run_label":"June 10, 2026","total_ad":2424,"mappable":1761,"lookup_ready":1475,"suspect":662,"online_blank":214,"missing_location":264,"no_gis_bldg":264,"no_room_excluded":22,"gis_populated":1360,"placement_rate":77.2,"gap_no_match":73,"gap_duplicates":1,"gap_gis_duplicates":42},
-  {"run_date":"2026-06-15","run_label":"June 15, 2026","total_ad":2411,"mappable":1749,"lookup_ready":1475,"suspect":661,"online_blank":214,"missing_location":252,"no_gis_bldg":252,"no_room_excluded":22,"gis_populated":1362,"placement_rate":77.9,"gap_no_match":72,"gap_duplicates":1,"gap_gis_duplicates":41},
-  {"run_date":"2026-06-22","run_label":"June 22, 2026","total_ad":2417,"mappable":1753,"lookup_ready":1475,"suspect":663,"online_blank":214,"missing_location":256,"no_gis_bldg":254,"no_room_excluded":24,"gis_populated":1391,"placement_rate":79.3,"gap_no_match":74,"gap_duplicates":0,"gap_gis_duplicates":10}
+  {
+    "run_date": "2026-05-22",
+    "run_label": "May 22, 2026",
+    "total_ad": 2462,
+    "mappable": 1751,
+    "lookup_ready": 1486,
+    "suspect": 716,
+    "online_blank": 211,
+    "missing_location": 238,
+    "no_gis_bldg": 236,
+    "no_room_excluded": 29,
+    "gis_populated": 1325,
+    "placement_rate": 75.7,
+    "gap_no_match": 83,
+    "gap_duplicates": 10,
+    "gap_gis_duplicates": 78
+  },
+  {
+    "run_date": "2026-05-25",
+    "run_label": "May 25, 2026",
+    "total_ad": 2461,
+    "mappable": 1749,
+    "lookup_ready": 1485,
+    "suspect": 717,
+    "online_blank": 211,
+    "missing_location": 237,
+    "no_gis_bldg": 236,
+    "no_room_excluded": 28,
+    "gis_populated": 1326,
+    "placement_rate": 75.8,
+    "gap_no_match": 83,
+    "gap_duplicates": 9,
+    "gap_gis_duplicates": 76
+  },
+  {
+    "run_date": "2026-06-01",
+    "run_label": "June 01, 2026",
+    "total_ad": 2452,
+    "mappable": 1743,
+    "lookup_ready": 1468,
+    "suspect": 714,
+    "online_blank": 212,
+    "missing_location": 248,
+    "no_gis_bldg": 249,
+    "no_room_excluded": 26,
+    "gis_populated": 1314,
+    "placement_rate": 75.4,
+    "gap_no_match": 80,
+    "gap_duplicates": 8,
+    "gap_gis_duplicates": 74
+  },
+  {
+    "run_date": "2026-06-08",
+    "run_label": "June 08, 2026",
+    "total_ad": 2415,
+    "mappable": 1763,
+    "lookup_ready": 1466,
+    "suspect": 657,
+    "online_blank": 214,
+    "missing_location": 269,
+    "no_gis_bldg": 269,
+    "no_room_excluded": 28,
+    "gis_populated": 1312,
+    "placement_rate": 74.4,
+    "gap_no_match": 80,
+    "gap_duplicates": 8,
+    "gap_gis_duplicates": 74
+  },
+  {
+    "run_date": "2026-06-10",
+    "run_label": "June 10, 2026",
+    "total_ad": 2424,
+    "mappable": 1761,
+    "lookup_ready": 1475,
+    "suspect": 662,
+    "online_blank": 214,
+    "missing_location": 264,
+    "no_gis_bldg": 264,
+    "no_room_excluded": 22,
+    "gis_populated": 1360,
+    "placement_rate": 77.2,
+    "gap_no_match": 73,
+    "gap_duplicates": 1,
+    "gap_gis_duplicates": 42
+  },
+  {
+    "run_date": "2026-06-15",
+    "run_label": "June 15, 2026",
+    "total_ad": 2411,
+    "mappable": 1749,
+    "lookup_ready": 1475,
+    "suspect": 661,
+    "online_blank": 214,
+    "missing_location": 252,
+    "no_gis_bldg": 252,
+    "no_room_excluded": 22,
+    "gis_populated": 1362,
+    "placement_rate": 77.9,
+    "gap_no_match": 72,
+    "gap_duplicates": 1,
+    "gap_gis_duplicates": 41
+  },
+  {
+    "run_date": "2026-06-22",
+    "run_label": "June 22, 2026",
+    "total_ad": 2417,
+    "mappable": 1753,
+    "lookup_ready": 1475,
+    "suspect": 663,
+    "online_blank": 214,
+    "missing_location": 256,
+    "no_gis_bldg": 254,
+    "no_room_excluded": 24,
+    "gis_populated": 1391,
+    "placement_rate": 79.3,
+    "gap_no_match": 74,
+    "gap_duplicates": 0,
+    "gap_gis_duplicates": 10
+  },
+  {
+    "run_date": "2026-06-30",
+    "run_label": "June 30, 2026",
+    "total_ad": 2412,
+    "mappable": 1759,
+    "lookup_ready": 1473,
+    "suspect": 652,
+    "online_blank": 214,
+    "missing_location": 264,
+    "no_gis_bldg": 262,
+    "no_room_excluded": 24,
+    "gis_populated": 1389,
+    "placement_rate": 79.0,
+    "gap_no_match": 74,
+    "gap_duplicates": 0,
+    "gap_gis_duplicates": 10
+  }
 ];
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
@@ -275,14 +407,15 @@ function fmtRate(r) { return Number(r).toFixed(1); }
 function delta(curr, prev, invert) {
   if (prev === undefined || prev === null) return '';
   const d = curr - prev;
-  if (Math.abs(d) < 0.05) return '<span class="arrow-flat">\u2192 no change</span>';
+  if (Math.abs(d) < 0.05) return '<span class="arrow-flat">→ no change</span>';
   const up = invert ? d < 0 : d > 0;
   const sign = d > 0 ? '+' : '';
   const cls = up ? 'arrow-up' : 'arrow-down';
-  const arrow = up ? '\u2191' : '\u2193';
+  const arrow = up ? '↑' : '↓';
   return `<span class="${cls}">${arrow} ${sign}${typeof curr === 'number' && !Number.isInteger(curr) ? d.toFixed(1) : Math.round(d)}</span>`;
 }
 
+// Sort by date ascending
 const runs = [...HISTORY].sort((a,b) => new Date(a.run_date) - new Date(b.run_date));
 const latest = runs[runs.length - 1];
 const prev   = runs.length > 1 ? runs[runs.length - 2] : null;
@@ -322,7 +455,8 @@ if (prev) {
 
 // ── RUNS TABLE ────────────────────────────────────────────────────────────────
 const tbody = document.getElementById('runs-tbody');
-const tableRuns = runs.slice().reverse();
+const tableRuns = runs.slice().reverse(); // latest first
+
 tbody.innerHTML = tableRuns.map((run, i) => {
   const prevRun = tableRuns[i + 1];
   const isLatest = i === 0;
@@ -338,17 +472,21 @@ tbody.innerHTML = tableRuns.map((run, i) => {
 }).join('');
 
 // ── CHART COLORS ──────────────────────────────────────────────────────────────
-const NAVY_C  = '#1a2a4a';
-const GOLD_C  = '#c9a84c';
-const GREEN_C = '#2d7a3a';
-const RED_C   = '#a63228';
-const AMBER_C = '#b07d00';
-const LGRAY_C = '#ddd8cc';
-const labels  = runs.map(r => r.run_label || r.run_date);
+const NAVY_C   = '#1a2a4a';
+const GOLD_C   = '#c9a84c';
+const GREEN_C  = '#2d7a3a';
+const RED_C    = '#a63228';
+const AMBER_C  = '#b07d00';
+const LGRAY_C  = '#ddd8cc';
+
+const labels = runs.map(r => r.run_label || r.run_date);
 
 // ── RATE CHART ────────────────────────────────────────────────────────────────
+// Y-axis floor is dynamic — 5 points below the lowest recorded rate,
+// rounded down to nearest 5, so week-over-week movement is visible.
 const rates = runs.map(r => r.placement_rate);
 const rateFloor = Math.floor((Math.min(...rates) - 5) / 5) * 5;
+const rateCeil  = 100;
 
 new Chart(document.getElementById('rateChart'), {
   type: 'line',
@@ -382,14 +520,25 @@ new Chart(document.getElementById('rateChart'), {
       tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%' } }
     },
     scales: {
-      y: { min: rateFloor, max: 100, grid: { color: LGRAY_C }, ticks: { callback: v => v + '%', font: { size: 10 } } },
+      y: {
+        min: rateFloor, max: rateCeil,
+        grid: { color: LGRAY_C },
+        ticks: { callback: v => v + '%', font: { size: 10 } }
+      },
       x: { grid: { display: false }, ticks: { font: { size: 10 } } }
     }
   }
 });
 
-// ── GAP CHART ─────────────────────────────────────────────────────────────────
-const allGapVals = [...runs.map(r => r.gap_no_match), ...runs.map(r => r.gap_duplicates)];
+// ── GAP TREND LINE CHART ──────────────────────────────────────────────────────
+// Shows no_match and duplicates as separate lines over time.
+// Y-axis is dynamic so dropping no_match counts are clearly visible.
+// Duplicates are a GIS data quality item (flat until DC polygons fixed).
+// No_match drops as crosswalk entries are added and AD data improves.
+const allGapVals = [
+  ...runs.map(r => r.gap_no_match),
+  ...runs.map(r => r.gap_duplicates)
+];
 const gapFloor = Math.floor((Math.min(...allGapVals) - 10) / 10) * 10;
 const gapCeil  = Math.ceil((Math.max(...allGapVals) + 10) / 10) * 10;
 
@@ -429,7 +578,12 @@ new Chart(document.getElementById('gapChart'), {
       tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y } }
     },
     scales: {
-      y: { min: Math.max(0, gapFloor), max: gapCeil, grid: { color: LGRAY_C }, ticks: { font: { size: 10 } } },
+      y: {
+        min: Math.max(0, gapFloor),
+        max: gapCeil,
+        grid: { color: LGRAY_C },
+        ticks: { font: { size: 10 } }
+      },
       x: { grid: { display: false }, ticks: { font: { size: 10 } } }
     }
   }
