@@ -131,7 +131,7 @@
 
     // Load alerts (called on init, then on a refresh interval)
     function loadAlerts() {
-      var nowStr = new Date().toISOString().split('T')[0];
+      var nowStr = new Date().toISOString().replace('T',' ').substring(0,19);
       var where = encodeURIComponent(
         "Active=1 AND Start_Date <= DATE '" + nowStr + "' AND (End_Date IS NULL OR End_Date >= DATE '" + nowStr + "')"
       );
