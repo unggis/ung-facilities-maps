@@ -103,6 +103,9 @@
       }
     }).addTo(map);
 
+    // Alerts live in their own featureGroup so we can clear + redraw on refresh
+    var alertsLayer = L.featureGroup().addTo(map);
+
     // Alert helpers
     function makeAlertIcon(alertType) {
       var color = ALERT_COLORS[alertType] || '#999';
@@ -126,22 +129,27 @@
         + '<div class="cz-popup-footer">⏱ Expires: ' + expires + '</div></div>';
     }
 
-    // Load alerts on init
+    // Load alerts (called on init, then on a refresh interval)
     function loadAlerts() {
-      var q = '?where=' + encodeURIComponent('Active=1') + '&outFields=*&f=geojson&returnGeometry=true';
+      var nowStr = new Date().toISOString().split('T')[0];
+      var where = encodeURIComponent(
+        "Active=1 AND Start_Date <= DATE '" + nowStr + "' AND (End_Date IS NULL OR End_Date >= DATE '" + nowStr + "')"
+      );
+      var q = '?where=' + where + '&outFields=*&f=geojson&returnGeometry=true';
       Promise.all([
         fetch(POLYGON_ALERTS + '/query' + q).then(function(r) { return r.json(); }),
         fetch(LINEAR_ALERTS  + '/query' + q).then(function(r) { return r.json(); })
       ]).then(function(results) {
+        alertsLayer.clearLayers(); // drop expired/stale alerts from a prior cycle
         (results[0].features || []).forEach(function(f) {
           var p = f.properties;
           var color = ALERT_COLORS[p.Alert_Type] || '#999';
           var popup = buildAlertPopup(p);
           var layer = L.geoJSON(f, { style: { color:color, weight:2.5, fillColor:color, fillOpacity:0.28, pane:'alerts' } })
             .bindPopup(popup, { maxWidth: 275 });
-          layer.addTo(map);
+          layer.addTo(alertsLayer);
           L.marker(layer.getBounds().getCenter(), { icon: makeAlertIcon(p.Alert_Type), zIndexOffset: 900 })
-            .bindPopup(popup, { maxWidth: 275 }).addTo(map);
+            .bindPopup(popup, { maxWidth: 275 }).addTo(alertsLayer);
         });
         (results[1].features || []).forEach(function(f) {
           var p = f.properties;
@@ -150,9 +158,9 @@
           if (ls[2]) style.dashArray = ls[2];
           var popup = buildAlertPopup(p);
           var layer = L.geoJSON(f, { style: style }).bindPopup(popup, { maxWidth: 275 });
-          layer.addTo(map);
+          layer.addTo(alertsLayer);
           L.marker(layer.getBounds().getCenter(), { icon: makeAlertIcon(p.Alert_Type), zIndexOffset: 900 })
-            .bindPopup(popup, { maxWidth: 275 }).addTo(map);
+            .bindPopup(popup, { maxWidth: 275 }).addTo(alertsLayer);
         });
       }).catch(function(e) { console.warn('[Alerts] Fetch failed:', e); });
     }
@@ -287,6 +295,7 @@
 
     // Init
     loadAlerts();
+    setInterval(loadAlerts, 120000); // refresh every 2 min — drops expired alerts automatically
   </script>
 </body>
 </html>
