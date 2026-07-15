@@ -203,7 +203,7 @@
         var props = feature.properties;
         var deviceLabel = deviceTypes[props.DeviceType] || 'Life Safety Device';
         var popup = '<strong>' + deviceLabel;
-        if (props.Name) popup += ' - ' + props.Name;
+        if (props.DeviceName) popup += ' - ' + props.DeviceName;
         popup += '</strong>';
         if (props.Building) popup += '<br>Building: ' + props.Building;
         if (props.Floor !== null && props.Floor !== undefined)
