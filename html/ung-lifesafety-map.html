@@ -202,7 +202,9 @@
       onEachFeature: function(feature, layer) {
         var props = feature.properties;
         var deviceLabel = deviceTypes[props.DeviceType] || 'Life Safety Device';
-        var popup = '<strong>' + deviceLabel + '</strong>';
+        var popup = '<strong>' + deviceLabel;
+        if (props.DeviceName) popup += ' - ' + props.DeviceName;
+        popup += '</strong>';
         if (props.Building) popup += '<br>Building: ' + props.Building;
         if (props.Floor !== null && props.Floor !== undefined)
           popup += '<br>Floor: ' + (floorTypes[props.Floor] || props.Floor);
