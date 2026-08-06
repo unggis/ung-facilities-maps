@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SF Alignment — Banner ↔ GIS Reconciliation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16324F;
+    --navy-deep:#0F2439;
+    --navy-mid:#2E567E;
+    --gold:#C6A030;
+    --gold-dim:#A9832E;
+    --cream:#F6F3EA;
+    --card:#FFFFFF;
+    --rust:#A8382B;
+    --green:#4C7A52;
+    --line:#E4DFD1;
+    --text:#1F2937;
+    --dim:#6B7280;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+  .serif{font-family:'Playfair Display',serif;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px 90px;}
+
+  /* ===== Header ===== */
+  header.top{background:var(--navy);border-bottom:3px solid var(--gold);}
+  .top-inner{max-width:1040px;margin:0 auto;padding:26px 24px 24px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;}
+  .eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:0 0 6px;}
+  h1{font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(26px,3.6vw,34px);color:#fff;margin:0 0 6px;}
+  .subhead{font-size:14px;color:#C7D2DE;margin:0;}
+  .latest-block{text-align:right;}
+  .latest-label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#9FB2C6;margin:0 0 3px;}
+  .latest-date{font-family:'Playfair Display',serif;font-style:italic;font-weight:600;font-size:19px;color:#fff;}
+
+  /* ===== About accordion ===== */
+  details.about{background:var(--card);border:1px solid var(--line);border-radius:6px;margin:22px 0 40px;box-shadow:0 1px 2px rgba(15,36,57,0.04);}
+  details.about summary{list-style:none;cursor:pointer;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dim);font-weight:600;}
+  details.about summary::-webkit-details-marker{display:none;}
+  details.about summary .hint{color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0;font-size:12.5px;}
+  details.about summary::after{content:"⌄";font-size:16px;color:var(--dim);transition:transform .2s;}
+  details.about[open] summary::after{transform:rotate(180deg);}
+  .about-body{padding:0 20px 20px;font-size:13.5px;line-height:1.7;color:var(--dim);border-top:1px solid var(--line);margin-top:0;padding-top:16px;}
+  .about-body p{margin:0 0 12px;}
+  .about-body code{font-family:monospace;background:var(--cream);padding:1px 5px;border-radius:3px;color:var(--navy-mid);}
+
+  /* ===== Section label ===== */
+  .sec-label{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-dim);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:10px;margin:0 0 18px;}
+
+  section{margin-bottom:44px;}
+
+  /* ===== Hero card ===== */
+  .hero-card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:26px 28px 22px;box-shadow:0 1px 3px rgba(15,36,57,0.05);}
+  .hero-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:18px;}
+  .hero-num{font-family:'Playfair Display',serif;font-weight:700;font-size:44px;color:var(--navy);line-height:1;}
+  .hero-desc{font-size:13.5px;color:var(--dim);margin-top:6px;max-width:340px;}
+  .goal-block{text-align:right;}
+  .goal-label{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:2px;}
+  .goal-num{font-family:'Playfair Display',serif;font-weight:700;font-style:italic;font-size:26px;color:var(--gold-dim);}
+  .bar-track{position:relative;height:9px;border-radius:5px;background:#E8E4D6;margin:6px 0 6px;overflow:hidden;}
+  .bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:linear-gradient(90deg, var(--navy-deep), var(--navy-mid));transition:width .6s ease;}
+  .bar-ticks{display:flex;justify-content:space-between;font-size:10.5px;color:#A9A38F;margin-bottom:20px;}
+  .hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;border-top:1px solid var(--line);padding-top:16px;}
+  .hstat-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;}
+  .hstat-value{font-size:19px;font-weight:700;color:var(--text);}
+  .delta{font-size:13px;font-weight:600;}
+  .delta.up{color:var(--rust);}
+  .delta.down{color:var(--green);}
+  .delta.flat{color:var(--dim);font-weight:500;}
+
+  /* ===== Trend charts ===== */
+  .trend-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  .chart-card{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--navy);border-radius:4px;padding:18px 18px 10px;box-shadow:0 1px 3px rgba(15,36,57,0.05);}
+  .chart-title{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);font-weight:700;margin-bottom:14px;}
+  .legend{display:flex;gap:18px;font-size:11.5px;color:var(--dim);margin-top:8px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .sw{width:12px;height:2.5px;display:inline-block;border-radius:1px;}
+
+  /* ===== Gap cards ===== */
+  .gap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .gap-card{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--gold);border-radius:4px;padding:18px 20px 20px;box-shadow:0 1px 3px rgba(15,36,57,0.05);}
+  .gap-card.red{border-top-color:var(--rust);}
+  .gap-card.green{border-top-color:var(--green);}
+  .gap-num{font-family:'Playfair Display',serif;font-weight:700;font-size:34px;color:var(--navy);}
+  .gap-label{font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;color:var(--text);margin:8px 0 6px;}
+  .gap-desc{font-size:12.5px;color:var(--dim);line-height:1.55;margin-bottom:10px;}
+
+  /* ===== Tables ===== */
+  table{width:100%;border-collapse:collapse;background:var(--card);border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(15,36,57,0.05);}
+  thead tr{background:var(--navy);}
+  th{text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#fff;font-weight:600;padding:11px 14px;}
+  th.num, td.num{text-align:right;}
+  tbody tr{border-bottom:1px solid var(--line);}
+  tbody tr:nth-child(even){background:#FAF8F2;}
+  tbody tr.total{background:#EFEADA;font-weight:700;}
+  td{padding:11px 14px;font-size:13px;color:var(--text);}
+  td.date{color:var(--navy-mid);font-weight:600;}
+  .badge{background:var(--gold);color:#fff;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-left:8px;font-weight:700;}
+  .flag{color:var(--rust);font-weight:600;}
+
+  footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+
+  @media (max-width:760px){
+    .trend-grid,.gap-grid{grid-template-columns:1fr;}
+    .hero-stats{grid-template-columns:repeat(2,1fr);}
+    table{font-size:12px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div>
+      <p class="eyebrow">University of North Georgia · Facilities Planning &amp; GIS</p>
+      <h1>SF Alignment · Banner ↔ GIS Reconciliation</h1>
+      <p class="subhead">Square footage reconciliation across all five campuses</p>
+    </div>
+    <div class="latest-block">
+      <p class="latest-label">Latest Run</p>
+      <p class="latest-date" id="latest-date">—</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <details class="about">
+    <summary>About This Dashboard <span class="hint">— click to expand</span></summary>
+    <div class="about-body">
+      <p>This page reads the output of <code>GIS_Banner_Alignment_Check.py</code>, which compares every UNG building's Banner Action List against its GIS floor plan record. <strong>SF Alignment</strong> is the share of total GIS room square footage that matches Banner's reported square footage — weighted by area, so a handful of large buildings dominate the number. <strong>Building Score</strong> is the plainer count: the share of in-scope buildings with zero open ADD/REMOVE/UPDATE actions.</p>
+      <p>Some buildings are handled specially before scoring: <strong>known-noise</strong> buildings have symmetric ADD/REMOVE counts traced to a room-numbering convention mismatch and are excluded until resolved; <strong>Banner-only</strong> buildings have no GIS polygon and only REMOVE actions, almost always a retired building still in Banner; <strong>institutional splits</strong> are buildings where GIS and Banner deliberately code the same physical space differently (e.g. Cumming's J378/UC0124 pairing), and both sides count as clean.</p>
+      <p>Companion to the <code>ad_gis_pipeline</code> placement-rate dashboard — that one tracks whether people are mapped to the right room; this one tracks whether the room itself is described the same way in both systems.</p>
+    </div>
+  </details>
+
+  <section>
+    <p class="sec-label">SF Alignment — Progress Toward 100%</p>
+    <div class="hero-card">
+      <div class="hero-top">
+        <div>
+          <div class="hero-num" id="sf-num">—%</div>
+          <div class="hero-desc">of GIS square footage reconciled with Banner's records</div>
+        </div>
+        <div class="goal-block">
+          <div class="goal-label">Goal</div>
+          <div class="goal-num">100%</div>
+        </div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="sf-bar"></div></div>
+      <div class="bar-ticks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+      <div class="hero-stats">
+        <div><div class="hstat-label">vs Previous Run</div><div class="hstat-value" id="sf-delta">—</div></div>
+        <div><div class="hstat-label">GIS SF Reconciled</div><div class="hstat-value" id="sf-clean-sf">—</div></div>
+        <div><div class="hstat-label">Total GIS SF</div><div class="hstat-value" id="sf-total-sf">—</div></div>
+        <div><div class="hstat-label">Runs Recorded</div><div class="hstat-value" id="sf-runs">—</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">Building Score — Progress Toward 100%</p>
+    <div class="hero-card">
+      <div class="hero-top">
+        <div>
+          <div class="hero-num" id="bldg-num">—%</div>
+          <div class="hero-desc">of in-scope buildings fully clean — zero open actions</div>
+        </div>
+        <div class="goal-block">
+          <div class="goal-label">Goal</div>
+          <div class="goal-num">100%</div>
+        </div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="bldg-bar"></div></div>
+      <div class="bar-ticks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
+      <div class="hero-stats">
+        <div><div class="hstat-label">vs Previous Run</div><div class="hstat-value" id="bldg-delta">—</div></div>
+        <div><div class="hstat-label">Buildings Clean</div><div class="hstat-value" id="bldg-clean">—</div></div>
+        <div><div class="hstat-label">Buildings In Scope</div><div class="hstat-value" id="bldg-scope">—</div></div>
+        <div><div class="hstat-label">Open Actions</div><div class="hstat-value" id="bldg-actions">—</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">Trend — All Recorded Runs</p>
+    <div class="trend-grid">
+      <div class="chart-card">
+        <div class="chart-title">Building Score %</div>
+        <svg id="chart1" viewBox="0 0 430 220" style="width:100%;height:auto;display:block;"></svg>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Gap Trend — Actions &amp; Duplicate Buildings</div>
+        <svg id="chart2" viewBox="0 0 430 220" style="width:100%;height:auto;display:block;"></svg>
+        <div class="legend">
+          <span><span class="sw" style="background:var(--gold);"></span>Open Actions</span>
+          <span><span class="sw" style="background:var(--rust);border-top:2px dashed var(--rust);background:none;"></span>Duplicate Bldgs</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">Current Gap — Accounted For</p>
+    <div class="gap-grid">
+      <div class="gap-card">
+        <div class="gap-num" id="g-actions">—</div>
+        <div class="gap-label">Open Actions</div>
+        <div class="gap-desc">Remaining ADD / REMOVE / UPDATE actions needed to bring Banner and GIS into agreement.</div>
+        <div class="delta" id="g-actions-delta">—</div>
+      </div>
+      <div class="gap-card red">
+        <div class="gap-num" id="g-dup">—</div>
+        <div class="gap-label">Duplicate-Room Buildings</div>
+        <div class="gap-desc">Buildings with duplicate GIS room numbers — a data-quality issue, not a Banner mismatch.</div>
+        <div class="delta" id="g-dup-delta">—</div>
+      </div>
+      <div class="gap-card green">
+        <div class="gap-num" id="g-togo">—</div>
+        <div class="gap-label">Buildings To Goal</div>
+        <div class="gap-desc">Additional buildings needed at zero open actions to reach a 100% building score.</div>
+        <div class="delta" id="g-togo-delta">—</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-label">Campus Summary — Latest Run</p>
+    <table id="campus-table">
+      <thead><tr>
+        <th>Campus</th><th class="num">SF Align %</th><th class="num">Building Score %</th>
+        <th class="num">Scope</th><th class="num">Clean</th><th class="num">Actions</th><th class="num">Dup</th>
+      </tr></thead>
+      <tbody id="campus-tbody"></tbody>
+    </table>
+  </section>
+
+  <section>
+    <p class="sec-label">Run History</p>
+    <table id="history-table">
+      <thead><tr>
+        <th>Run Date</th><th class="num">SF Align %</th><th class="num">Building Score %</th>
+        <th class="num">Actions</th><th class="num">Dup Bldgs</th>
+      </tr></thead>
+      <tbody id="history-tbody"></tbody>
+    </table>
+  </section>
+
+  <footer>
+    <span>UNG Facilities GIS</span>
+    <span id="foot-src">Source: GIS_Banner_Alignment_History.csv</span>
+  </footer>
+
+</div>
+
+<script>
+const CAMPUS_ORDER = ['blue_ridge','cumming','dahlonega','gainesville','oconee'];
+const CAMPUS_LABEL = {blue_ridge:'Blue Ridge',cumming:'Cumming',dahlonega:'Dahlonega',gainesville:'Gainesville',oconee:'Oconee'};
+
+const FALLBACK_LATEST = {
+  run_date:'2026-08-06', ent_sf_pct:99.8, ent_bldg_pct:87.9, ent_in_scope:107, ent_clean:94,
+  ent_total_sf:3001148, ent_clean_sf:2994988, ent_actions:682, ent_add:462, ent_remove:209, ent_update:11,
+  ent_dup_bldgs:0, ent_banner_only:26, ent_noise_bldgs:4, ent_split_bldgs:2,
+  blue_ridge_sf_pct:100.0, blue_ridge_bldg_pct:100.0, blue_ridge_actions:0, blue_ridge_dup_bldgs:0, blue_ridge_scope:3, blue_ridge_clean:3,
+  cumming_sf_pct:100.0, cumming_bldg_pct:100.0, cumming_actions:0, cumming_dup_bldgs:0, cumming_scope:4, cumming_clean:4,
+  dahlonega_sf_pct:99.7, dahlonega_bldg_pct:76.4, dahlonega_actions:682, dahlonega_dup_bldgs:0, dahlonega_scope:55, dahlonega_clean:42,
+  gainesville_sf_pct:100.0, gainesville_bldg_pct:100.0, gainesville_actions:0, gainesville_dup_bldgs:0, gainesville_scope:37, gainesville_clean:37,
+  oconee_sf_pct:100.0, oconee_bldg_pct:100.0, oconee_actions:0, oconee_dup_bldgs:0, oconee_scope:8, oconee_clean:8,
+};
+
+const FALLBACK_TREND = [
+  {run_date:'2026-06-22', ent_sf_pct:99.8, ent_bldg_pct:57.1, ent_actions:2055, ent_dup_bldgs:7},
+  {run_date:'2026-06-30', ent_sf_pct:99.8, ent_bldg_pct:57.1, ent_actions:1034, ent_dup_bldgs:2},
+  {run_date:'2026-07-13', ent_sf_pct:99.8, ent_bldg_pct:56.6, ent_actions:1044, ent_dup_bldgs:1},
+  {run_date:'2026-07-30', ent_sf_pct:99.8, ent_bldg_pct:69.8, ent_actions:2066, ent_dup_bldgs:2},
+  {run_date:'2026-08-03', ent_sf_pct:99.8, ent_bldg_pct:72.6, ent_actions:802,  ent_dup_bldgs:1},
+];
+const FALLBACK_TOTAL_RUNS = 8;
+
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/);
+  const headers = lines[0].split(',');
+  return lines.slice(1).map(line=>{
+    const cells = line.split(',');
+    const row = {};
+    headers.forEach((h,i)=>{
+      const v = cells[i];
+      row[h] = (v!==undefined && v!=='' && !isNaN(v)) ? parseFloat(v) : v;
+    });
+    return row;
+  });
+}
+function fmt(n){ return Number(n).toLocaleString(); }
+function deltaEl(curr, prev, higherIsBetter, suffix){
+  suffix = suffix||'';
+  if(prev===undefined || prev===null) return '<span class="delta flat">—</span>';
+  const d = curr - prev;
+  const rounded = Math.round(d*10)/10;
+  if(rounded===0) return '<span class="delta flat">→ no change</span>';
+  const goingUp = rounded>0;
+  const good = higherIsBetter ? goingUp : !goingUp;
+  const arrow = goingUp?'↑':'↓';
+  return `<span class="delta ${good?'down':'up'}">${arrow} ${goingUp?'+':''}${rounded}${suffix}</span>`;
+}
+
+function render(rows, totalRuns){
+  const latest = rows[rows.length-1];
+  const prev = rows.length>1 ? rows[rows.length-2] : null;
+
+  document.getElementById('latest-date').textContent = new Date(latest.run_date+'T00:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'2-digit'});
+
+  // SF hero
+  document.getElementById('sf-num').textContent = latest.ent_sf_pct.toFixed(1)+'%';
+  document.getElementById('sf-bar').style.width = latest.ent_sf_pct+'%';
+  document.getElementById('sf-delta').innerHTML = deltaEl(latest.ent_sf_pct, prev? prev.ent_sf_pct:undefined, true, '%');
+  document.getElementById('sf-clean-sf').textContent = fmt(latest.ent_clean_sf);
+  document.getElementById('sf-total-sf').textContent = fmt(latest.ent_total_sf);
+  document.getElementById('sf-runs').textContent = totalRuns;
+
+  // Building score hero
+  document.getElementById('bldg-num').textContent = latest.ent_bldg_pct.toFixed(1)+'%';
+  document.getElementById('bldg-bar').style.width = latest.ent_bldg_pct+'%';
+  document.getElementById('bldg-delta').innerHTML = deltaEl(latest.ent_bldg_pct, prev? prev.ent_bldg_pct:undefined, true, '%');
+  document.getElementById('bldg-clean').textContent = latest.ent_clean;
+  document.getElementById('bldg-scope').textContent = latest.ent_in_scope;
+  document.getElementById('bldg-actions').textContent = fmt(latest.ent_actions);
+
+  // Gap cards
+  document.getElementById('g-actions').textContent = fmt(latest.ent_actions);
+  document.getElementById('g-actions-delta').innerHTML = deltaEl(latest.ent_actions, prev?prev.ent_actions:undefined, false, ' vs previous run').replace('</span>', ' vs previous run</span>').replace(/ vs previous run vs previous run/,' vs previous run');
+  document.getElementById('g-dup').textContent = latest.ent_dup_bldgs;
+  document.getElementById('g-dup-delta').innerHTML = deltaEl(latest.ent_dup_bldgs, prev?prev.ent_dup_bldgs:undefined, false, '').replace('</span>','  vs previous run</span>');
+  const togo = latest.ent_in_scope - latest.ent_clean;
+  document.getElementById('g-togo').textContent = togo;
+  if(prev){
+    const prevScope = prev.ent_in_scope || latest.ent_in_scope;
+    const prevClean = prev.ent_clean!==undefined ? prev.ent_clean : Math.round(prev.ent_bldg_pct/100*prevScope);
+    const prevTogo = prevScope - prevClean;
+    document.getElementById('g-togo-delta').innerHTML = deltaEl(togo, prevTogo, false, '').replace('</span>',' vs previous run (est.)</span>');
+  } else {
+    document.getElementById('g-togo-delta').innerHTML = '<span class="delta flat">—</span>';
+  }
+
+  // Campus table
+  const ctbody = document.getElementById('campus-tbody');
+  ctbody.innerHTML = '';
+  CAMPUS_ORDER.forEach(key=>{
+    const sf=latest[key+'_sf_pct'], bldg=latest[key+'_bldg_pct'], actions=latest[key+'_actions'], dup=latest[key+'_dup_bldgs'];
+    const scope=latest[key+'_scope'], clean=latest[key+'_clean'];
+    if(sf===undefined) return;
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td>${CAMPUS_LABEL[key]}</td><td class="num">${sf.toFixed(1)}%</td><td class="num">${bldg.toFixed(1)}%</td>
+      <td class="num">${scope!==undefined?scope:'—'}</td><td class="num">${clean!==undefined?clean:'—'}</td>
+      <td class="num">${fmt(actions)}</td><td class="num">${dup>0?'<span class="flag">'+dup+'</span>':'0'}</td>`;
+    ctbody.appendChild(tr);
+  });
+  const totalTr = document.createElement('tr');
+  totalTr.className='total';
+  totalTr.innerHTML = `<td>ENTERPRISE</td><td class="num">${latest.ent_sf_pct.toFixed(1)}%</td><td class="num">${latest.ent_bldg_pct.toFixed(1)}%</td>
+    <td class="num">${latest.ent_in_scope}</td><td class="num">${latest.ent_clean}</td>
+    <td class="num">${fmt(latest.ent_actions)}</td><td class="num">${latest.ent_dup_bldgs>0?'<span class="flag">'+latest.ent_dup_bldgs+'</span>':'0'}</td>`;
+  ctbody.appendChild(totalTr);
+
+  // Run history table (most recent first)
+  const htbody = document.getElementById('history-tbody');
+  htbody.innerHTML = '';
+  const reversed = [...rows].reverse();
+  reversed.forEach((r,i)=>{
+    const next = reversed[i+1]; // chronologically previous
+    const tr = document.createElement('tr');
+    const dateLabel = new Date(r.run_date+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'2-digit',year:'numeric'});
+    tr.innerHTML = `
+      <td class="date">${dateLabel}${i===0?'<span class="badge">Latest</span>':''}</td>
+      <td class="num">${r.ent_sf_pct.toFixed(1)}% ${next? deltaEl(r.ent_sf_pct,next.ent_sf_pct,true,'') : ''}</td>
+      <td class="num">${r.ent_bldg_pct.toFixed(1)}% ${next? deltaEl(r.ent_bldg_pct,next.ent_bldg_pct,true,'') : ''}</td>
+      <td class="num">${fmt(r.ent_actions)} ${next? deltaEl(r.ent_actions,next.ent_actions,false,'') : ''}</td>
+      <td class="num">${r.ent_dup_bldgs} ${next? deltaEl(r.ent_dup_bldgs,next.ent_dup_bldgs,false,'') : ''}</td>
+    `;
+    htbody.appendChild(tr);
+  });
+
+  // Chart 1: Building Score % line with goal dashed line
+  drawLineChart('chart1', rows, r=>r.ent_bldg_pct, {color:'var(--navy)'.replace('var(--navy)','#16324F'), goal:100});
+  // Chart 2: dual series Actions (gold) + Dup buildings (rust dashed), separate scales normalized
+  drawDualChart('chart2', rows);
+}
+
+function scaleFns(n, W,H,padL,padR,padT,padB){
+  const x = i => padL + (W-padL-padR) * (n===1?0:i/(n-1));
+  return x;
+}
+
+function drawLineChart(id, rows, accessor, opts){
+  const svg = document.getElementById(id);
+  const W=430,H=220,padL=34,padR=10,padT=14,padB=34;
+  const n = rows.length;
+  const x = scaleFns(n,W,H,padL,padR,padT,padB);
+  const y = v => H - padB - (v/100)*(H-padT-padB);
+  let s='';
+  [0,25,50,75,100].forEach(v=>{
+    const yy=y(v);
+    s+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#E4DFD1" stroke-width="1"/>`;
+    s+=`<text x="${padL-6}" y="${yy+3}" text-anchor="end" font-family="Inter" font-size="9" fill="#9CA3AF">${v}</text>`;
+  });
+  s+=`<line x1="${padL}" y1="${y(100)}" x2="${W-padR}" y2="${y(100)}" stroke="#C6A030" stroke-width="1" stroke-dasharray="4,3"/>`;
+  const pts = rows.map((r,i)=>`${x(i)},${y(accessor(r))}`).join(' ');
+  s+=`<polyline points="${pts}" fill="none" stroke="#16324F" stroke-width="2"/>`;
+  rows.forEach((r,i)=>{
+    s+=`<circle cx="${x(i)}" cy="${y(accessor(r))}" r="4" fill="#16324F"/>`;
+    s+=`<text x="${x(i)}" y="${H-14}" text-anchor="middle" font-family="Inter" font-size="8.5" fill="#9CA3AF" transform="rotate(-35 ${x(i)} ${H-14})">${r.run_date.slice(5)}</text>`;
+  });
+  svg.innerHTML = s;
+}
+
+function drawDualChart(id, rows){
+  const svg = document.getElementById(id);
+  const W=430,H=220,padL=30,padR=30,padT=14,padB=34;
+  const n = rows.length;
+  const x = scaleFns(n,W,H,padL,padR,padT,padB);
+  const maxActions = Math.max(...rows.map(r=>r.ent_actions), 10);
+  const maxDup = Math.max(...rows.map(r=>r.ent_dup_bldgs), 4);
+  const yA = v => H - padB - (v/maxActions)*(H-padT-padB);
+  const yD = v => H - padB - (v/maxDup)*(H-padT-padB);
+  let s='';
+  [0,0.5,1].forEach(f=>{
+    const yy = padT + f*(H-padT-padB);
+    s+=`<line x1="${padL}" y1="${yy}" x2="${W-padR}" y2="${yy}" stroke="#E4DFD1" stroke-width="1"/>`;
+  });
+  const aPts = rows.map((r,i)=>`${x(i)},${yA(r.ent_actions)}`).join(' ');
+  const dPts = rows.map((r,i)=>`${x(i)},${yD(r.ent_dup_bldgs)}`).join(' ');
+  s+=`<polyline points="${aPts}" fill="none" stroke="#C6A030" stroke-width="2"/>`;
+  s+=`<polyline points="${dPts}" fill="none" stroke="#A8382B" stroke-width="1.5" stroke-dasharray="4,3"/>`;
+  rows.forEach((r,i)=>{
+    s+=`<circle cx="${x(i)}" cy="${yA(r.ent_actions)}" r="4" fill="#C6A030"/>`;
+    s+=`<circle cx="${x(i)}" cy="${yD(r.ent_dup_bldgs)}" r="3" fill="#A8382B"/>`;
+    s+=`<text x="${x(i)}" y="${H-14}" text-anchor="middle" font-family="Inter" font-size="8.5" fill="#9CA3AF" transform="rotate(-35 ${x(i)} ${H-14})">${r.run_date.slice(5)}</text>`;
+  });
+  s+=`<text x="${padL}" y="10" font-family="Inter" font-size="9" fill="#C6A030">actions: 0–${maxActions}</text>`;
+  s+=`<text x="${W-padR}" y="10" text-anchor="end" font-family="Inter" font-size="9" fill="#A8382B">dup bldgs: 0–${maxDup}</text>`;
+  svg.innerHTML = s;
+}
+
+async function init(){
+  try{
+    const res = await fetch('./GIS_Banner_Alignment_History.csv');
+    if(!res.ok) throw new Error('no csv');
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if(!rows.length) throw new Error('empty csv');
+    render(rows, rows.length);
+    document.getElementById('foot-src').textContent = 'Source: GIS_Banner_Alignment_History.csv ('+rows.length+' runs)';
+  }catch(e){
+    const rows = [...FALLBACK_TREND, FALLBACK_LATEST];
+    render(rows, FALLBACK_TOTAL_RUNS);
+    document.getElementById('foot-src').textContent = 'Source: latest run (place GIS_Banner_Alignment_History.csv alongside this page to load full history — '+FALLBACK_TOTAL_RUNS+' runs on record)';
+  }
+}
+init();
+</script>
+</body>
+</html>
