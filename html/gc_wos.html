@@ -442,6 +442,12 @@ table.honoree-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
 .modal-footer { padding:8px 20px; border-top:1px solid rgba(201,168,76,0.15); font-size:0.68rem; color:var(--sand); flex-shrink:0; }
 
 /* ── Brick labels (zoom 27+) ── */
+:root {
+  /* Real-world row-direction angle, converted to a screen (CSS) rotation.
+     Computed from actual brick geometry -- see build script / geojson.
+     Set to 0deg to keep labels screen-horizontal instead. */
+  --brick-label-rotation: -50.41deg;
+}
 .brick-label {
   background: transparent !important;
   border: none !important;
@@ -450,6 +456,13 @@ table.honoree-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
   pointer-events: none;
 }
 .brick-label::before { display: none !important; } /* hide tooltip arrow */
+.brick-label-inner {
+  transform: rotate(var(--brick-label-rotation));
+  display: inline-block;
+}
+body.labels-horizontal .brick-label-inner {
+  transform: rotate(0deg);
+}
 .brick-label-name {
   font-family: 'Lato', sans-serif;
   font-weight: 700;
@@ -473,6 +486,7 @@ table.honoree-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
 </style>
 </head>
 <body>
+
 
 <header>
   <div>
@@ -655,10 +669,17 @@ function updateBrickColors() {
   });
 }
 
-// ── Brick labels (zoom 27+) ───────────────────────────────────────────────────
+// ── Brick labels (zoom 27+ shown; rotated to match brick angle until
+//    zoom LABEL_HORIZONTAL_ZOOM, then flip to horizontal since labels
+//    fit comfortably inside each brick at that scale) ────────────────────────
+const LABEL_SHOW_ZOOM       = 26;
+const LABEL_HORIZONTAL_ZOOM = 28;  // tweak to taste once you see it live
+
 function updateBrickLabels() {
   if (!geoLayer) return;
-  const show = map.getZoom() >= 26;
+  const zoom = map.getZoom();
+  const show = zoom >= LABEL_SHOW_ZOOM;
+  document.body.classList.toggle('labels-horizontal', zoom >= LABEL_HORIZONTAL_ZOOM);
   geoLayer.eachLayer(layer => {
     const tt = layer.getTooltip();
     if (!tt) return;
@@ -796,7 +817,7 @@ function showDetail(props) {
 
 // ── Load GeoJSON ──────────────────────────────────────────────────────────────
 // TODO: update path once the Gainesville GeoJSON is exported/hosted
-fetch('https://unggis.github.io/ung-facilities-maps/data/GC_WoS.geojson')
+fetch('https://unggis.github.io/ung-facilities-maps/data/GC_WoS_wgs84.geojson')
   .then(r => r.json())
   .then(WALKWAY_DATA => {
 
@@ -835,8 +856,10 @@ fetch('https://unggis.github.io/ung-facilities-maps/data/GC_WoS.geojson')
           const nameLine = [fname ? fname[0]+'.' : '', lname].filter(Boolean).join(' ');
           const dateLine = df && dt ? df + '–' + dt : df || dt || '';
           const content  =
+            '<div class="brick-label-inner">' +
             '<div class="brick-label-name">' + nameLine + '</div>' +
-            (dateLine ? '<div class="brick-label-dates">' + dateLine + '</div>' : '');
+            (dateLine ? '<div class="brick-label-dates">' + dateLine + '</div>' : '') +
+            '</div>';
 
           layer.bindTooltip(content, {
             permanent:   true,
