@@ -270,5 +270,22 @@
     "gap_no_match": 35,
     "gap_duplicates": 0,
     "gap_gis_duplicates": 1
+  },
+  {
+    "run_date": "2026-08-25",
+    "run_label": "August 25, 2026",
+    "total_ad": 2525,
+    "mappable": 1797,
+    "lookup_ready": 1463,
+    "suspect": 727,
+    "online_blank": 235,
+    "missing_location": 308,
+    "no_gis_bldg": 309,
+    "no_room_excluded": 25,
+    "gis_populated": 1427,
+    "placement_rate": 79.4,
+    "gap_no_match": 35,
+    "gap_duplicates": 0,
+    "gap_gis_duplicates": 1
   }
 ]
