@@ -81,7 +81,15 @@ header p {
 }
 .osm-tiles { filter: sepia(0.4) brightness(0.95) contrast(0.9); }
 #map {
-  flex: 1;
+  /* Absolute + oversized (inset -75% = 2.5x panel size in each dimension)
+     so that after rotating, #map's corners still fully cover the
+     rectangular panel instead of exposing the page background at the
+     corners. TODO: 2.5x covers typical wide-panel aspect ratios up to
+     ~60deg rotation with margin; if the panel is unusually short/wide,
+     recompute against its actual aspect ratio (rotated bounding box =
+     W*|cos| + H*|sin| by W*|sin| + H*|cos|) and adjust the inset. */
+  position: absolute;
+  inset: -75%;
   background: linear-gradient(160deg, #e8e0d0 0%, #ddd4c0 50%, #d4cab8 100%);
   transition: transform 0.6s ease;
   transform-origin: 50% 50%;
@@ -90,7 +98,9 @@ header p {
    MAP_ROTATE_ZOOM, straighten the entire map view so the diamond-angled
    brick grid reads as a level grid. --map-unrotate is the inverse of
    --brick-label-rotation below -- keep them in sync if the survey angle
-   is ever recomputed. */
+   is ever recomputed. Labels need NO separate counter-rotation: their
+   own fixed tilt (--brick-label-rotation) plus this map rotation cancel
+   out to exactly level, automatically, once both apply together. */
 :root { --map-unrotate: 50.41deg; }
 body.map-rotated #map { transform: rotate(var(--map-unrotate)); }
 
@@ -490,9 +500,11 @@ table.honoree-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
   transform: rotate(var(--brick-label-rotation));
   display: inline-block;
 }
-body.labels-horizontal .brick-label-inner {
-  transform: rotate(0deg);
-}
+/* No body.labels-horizontal override here anymore -- this fixed tilt is
+   what cancels out cleanly against the whole-map rotation (see
+   --map-unrotate above) once zoom crosses MAP_ROTATE_ZOOM. Toggling it
+   to 0deg independently double-compensated and left labels visibly
+   tilted the wrong way. */
 .brick-label-name {
   font-family: 'Lato', sans-serif;
   font-weight: 700;
@@ -701,21 +713,17 @@ function updateBrickColors() {
   });
 }
 
-// ── Brick labels (zoom 27+ shown; rotated to match brick angle until
-//    zoom LABEL_HORIZONTAL_ZOOM, then flip to horizontal since labels
-//    fit comfortably inside each brick at that scale) ────────────────────────
-const LABEL_SHOW_ZOOM       = 26;
-const LABEL_HORIZONTAL_ZOOM = 28;  // tweak to taste once you see it live
-
-// Whole-map straightening (Option A) kicks in at the same threshold as
-// the label flip -- both changes read as one "things get level" moment.
-const MAP_ROTATE_ZOOM = LABEL_HORIZONTAL_ZOOM;
+// ── Brick labels (shown at LABEL_SHOW_ZOOM, tilted to match brick angle;
+//    they land level on their own once MAP_ROTATE_ZOOM straightens the
+//    whole map -- see updateBrickLabels below) ─────────────────────────────
+const LABEL_SHOW_ZOOM  = 26;  // labels appear, tilted to match the bricks
+const MAP_ROTATE_ZOOM  = 28;  // whole map straightens -- bricks AND labels
+                               // land level together as one side effect;
+                               // tweak to taste once you see it live
 
 function updateBrickLabels() {
   if (!geoLayer) return;
-  const zoom = map.getZoom();
-  const show = zoom >= LABEL_SHOW_ZOOM;
-  document.body.classList.toggle('labels-horizontal', zoom >= LABEL_HORIZONTAL_ZOOM);
+  const show = map.getZoom() >= LABEL_SHOW_ZOOM;
   geoLayer.eachLayer(layer => {
     const tt = layer.getTooltip();
     if (!tt) return;
