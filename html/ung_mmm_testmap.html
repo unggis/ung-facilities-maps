@@ -169,6 +169,23 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 .poi-popup-title { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:600; color:var(--gold); margin-bottom:4px; line-height:1.2; }
 .poi-popup-honoree { font-size:0.7rem; color:var(--gold-lt); font-style:italic; margin-bottom:8px; }
 .poi-popup-desc { font-size:0.76rem; color:var(--sand); line-height:1.5; margin-bottom:10px; }
+.poi-popup-link {
+  display:inline-block; font-size:0.68rem; font-weight:700; letter-spacing:0.04em;
+  text-transform:uppercase; color:var(--navy); background:var(--gold);
+  padding:5px 12px; border-radius:2px; text-decoration:none; margin-bottom:10px;
+}
+.poi-popup-link:hover { background:var(--gold-lt); }
+.poi-popup-toggle {
+  font-size:0.66rem; letter-spacing:0.04em; text-transform:uppercase;
+  color:var(--gold-lt); cursor:pointer; margin-bottom:6px; user-select:none;
+}
+.poi-popup-toggle:hover { color:var(--gold); }
+.poi-popup-fulltext {
+  font-size:0.72rem; color:var(--sand); line-height:1.55;
+  max-height:200px; overflow-y:auto; margin-bottom:10px;
+  padding:8px 10px; background:rgba(0,0,0,0.18);
+  border:0.5px solid rgba(201,168,76,0.2); border-radius:2px;
+}
 .poi-popup-photo {
   width:100%; height:120px; object-fit:cover; border-radius:2px;
   border:1px solid rgba(201,168,76,0.4); margin-bottom:8px; display:block;
@@ -297,8 +314,8 @@ const MOUNT_META = {
    (matches CAMPUSES[key].campusCode above)
 
    Field names come straight from the FGDB schema as published:
-     Name, Notes, Category, Mount, Confidence, CaptureDate,
-     Honoree, Status, Campus, ID (custom GUID), GlobalID, OBJECTID
+     Name, Notes, Text, Category, Mount, Confidence, CaptureDate,
+     Honoree, Status, Campus, WebURL, ID (custom GUID), GlobalID, OBJECTID
 
    There is no PhotoURL field — photos ride as geodatabase attachments
    (hasAttachments: true). Rather than querying every feature's
@@ -318,6 +335,10 @@ const MOUNT_META = {
 ====================================================================== */
 const MMM_SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Monuments_Markers_Memorials_Points/FeatureServer';
 
+function esc(str) {
+  return String(str || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
 function esriFeatureToMapFeature(f) {
   const p = f.properties;
   return {
@@ -329,8 +350,10 @@ function esriFeatureToMapFeature(f) {
       Category: p.Category || DEFAULT_CATEGORY,
       Honoree: p.Honoree || '',
       Description: p.Notes || '',
+      Text: p.Text || '',
       Status: p.Status || '',
       Mount: p.Mount || '',
+      WebURL: p.WebURL || '',
       DateAdded: p.CaptureDate ? new Date(p.CaptureDate).toLocaleDateString() : '',
     },
   };
@@ -489,19 +512,33 @@ function poiPopupHtml(props) {
   const statusLabel = STATUS_META[props.Status] || props.Status || '';
   const mountLabel = MOUNT_META[props.Mount] || props.Mount || '';
   const honoreeHtml = props.Honoree
-    ? `<div class="poi-popup-honoree">Named for ${props.Honoree}</div>` : '';
+    ? `<div class="poi-popup-honoree">Named for ${esc(props.Honoree)}</div>` : '';
   const photoHtml = `<div class="poi-popup-nophoto" id="poi-photo-${props.OBJECTID}">No photo on file</div>`;
   const metaParts = [statusLabel || 'Active', mountLabel, props.DateAdded ? 'added ' + props.DateAdded : '']
     .filter(Boolean).join(' &middot; ');
+  const linkHtml = props.WebURL
+    ? `<a class="poi-popup-link" href="${esc(props.WebURL)}" target="_blank" rel="noopener">Learn More &#8599;</a>` : '';
+  const fullTextHtml = props.Text
+    ? `<div class="poi-popup-toggle" onclick="toggleFullText(this,'ft-${props.OBJECTID}')">Read full marker text &#9662;</div>
+       <div class="poi-popup-fulltext" id="ft-${props.OBJECTID}" style="display:none;">${esc(props.Text).replace(/\n/g,'<br>')}</div>` : '';
   return `
     <div class="poi-popup">
       <span class="poi-popup-cat">${meta.label}</span>
-      <div class="poi-popup-title">${props.Title || 'Untitled'}</div>
+      <div class="poi-popup-title">${esc(props.Title) || 'Untitled'}</div>
       ${honoreeHtml}
       ${photoHtml}
-      <div class="poi-popup-desc">${props.Description || ''}</div>
+      <div class="poi-popup-desc">${esc(props.Description)}</div>
+      ${fullTextHtml}
+      ${linkHtml}
       <div class="poi-popup-meta">${metaParts}</div>
     </div>`;
+}
+
+function toggleFullText(el, targetId) {
+  const box = document.getElementById(targetId);
+  const showing = box.style.display !== 'none';
+  box.style.display = showing ? 'none' : 'block';
+  el.innerHTML = showing ? 'Read full marker text &#9662;' : 'Hide full marker text &#9652;';
 }
 
 function buildClusterGroup(features) {
