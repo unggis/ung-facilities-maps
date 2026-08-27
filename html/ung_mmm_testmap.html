@@ -104,25 +104,25 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 
 /* ── Top-level campus markers ── */
 .campus-marker { display:flex; flex-direction:column; align-items:center; }
-.marker-dot { width:28px; height:28px; border-radius:50%; position:relative; z-index:2; box-shadow:0 3px 12px rgba(0,0,0,0.6); }
-.marker-dot.active  { background:radial-gradient(circle at 35% 35%,#fff8dc,#C9A84C 60%,#a07830); border:2.5px solid #fff8dc; }
-.marker-dot.inactive{ background:radial-gradient(circle at 35% 35%,#9a8a6a,#5a4a30); border:2px solid #a09070; }
-.marker-pulse { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:28px; height:28px; border-radius:50%; z-index:1; }
+.marker-dot { width:20px; height:20px; border-radius:50%; position:relative; z-index:2; box-shadow:0 3px 12px rgba(0,0,0,0.6); }
+.marker-dot.active  { background:radial-gradient(circle at 35% 35%,#fff8dc,#C9A84C 60%,#a07830); border:2px solid #fff8dc; }
+.marker-dot.inactive{ background:radial-gradient(circle at 35% 35%,#9a8a6a,#5a4a30); border:1.5px solid #a09070; }
+.marker-pulse { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:20px; height:20px; border-radius:50%; z-index:1; }
 .marker-pulse.active   { animation:pulseGold   1.8s ease-out infinite; }
 .marker-pulse.inactive { animation:pulseBronze 2.8s ease-out infinite; }
-.marker-label { margin-top:6px; font-family:'Lato',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; white-space:nowrap; padding:3px 9px; border-radius:2px; }
+.marker-label { margin-top:4px; font-family:'Lato',sans-serif; font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap; padding:2px 6px; border-radius:2px; }
 .marker-label.active   { color:#fff8dc; background:rgba(0,20,60,0.92); border:1px solid rgba(201,168,76,0.8); text-shadow:0 1px 4px rgba(0,0,0,0.9); box-shadow:0 2px 8px rgba(0,0,0,0.5),0 0 12px rgba(201,168,76,0.2); }
 .marker-label.inactive { color:#c9b99a; background:rgba(0,15,40,0.88); border:1px solid rgba(120,100,70,0.5); text-shadow:0 1px 3px rgba(0,0,0,0.8); }
 
 @keyframes pulseGold {
   0%   { box-shadow:0 0 0 0 rgba(201,168,76,0.9); opacity:1; }
-  50%  { box-shadow:0 0 0 28px rgba(201,168,76,0.15); opacity:0.6; }
-  100% { box-shadow:0 0 0 40px rgba(201,168,76,0); opacity:0; }
+  50%  { box-shadow:0 0 0 18px rgba(201,168,76,0.15); opacity:0.6; }
+  100% { box-shadow:0 0 0 28px rgba(201,168,76,0); opacity:0; }
 }
 @keyframes pulseBronze {
   0%   { box-shadow:0 0 0 0 rgba(160,140,100,0.7); opacity:1; }
-  50%  { box-shadow:0 0 0 20px rgba(160,140,100,0.1); opacity:0.5; }
-  100% { box-shadow:0 0 0 30px rgba(160,140,100,0); opacity:0; }
+  50%  { box-shadow:0 0 0 14px rgba(160,140,100,0.1); opacity:0.5; }
+  100% { box-shadow:0 0 0 20px rgba(160,140,100,0); opacity:0; }
 }
 
 /* ── PoI badges (MMM points) ── */
@@ -525,7 +525,8 @@ const SAMPLE_POI_DATA = {
    MAP SETUP
 ====================================================================== */
 const map = L.map('map', {
-  center:[34.3408,-83.9439], zoom:8, minZoom:7, maxZoom:19,
+  center:[34.3408,-83.9439], zoom:8.5, minZoom:7, maxZoom:19,
+  zoomSnap:0.25, zoomDelta:0.25, // allows fractional zoom levels, e.g. 8.5
   attributionControl:true, scrollWheelZoom:false,
 });
 map.once('focus', () => map.scrollWheelZoom.enable());
@@ -549,7 +550,7 @@ function updateCampusMarkerVisibility() {
 map.on('zoomend', updateCampusMarkerVisibility);
 
 function updateZoomLevelDisplay() {
-  document.getElementById('zoomLevel').textContent = `Z${Math.round(map.getZoom())}`;
+  document.getElementById('zoomLevel').textContent = `Z${Math.round(map.getZoom() * 10) / 10}`;
 }
 map.on('zoom', updateZoomLevelDisplay);
 updateZoomLevelDisplay();
@@ -576,7 +577,7 @@ CAMPUS_ORDER.forEach((key) => {
       </div>
       <div class="marker-label ${cls}">${shortName}</div>
     </div>`,
-    className:'', iconSize:[120,56], iconAnchor:[60,14], popupAnchor:[0,-18],
+    className:'', iconSize:[100,44], iconAnchor:[50,10], popupAnchor:[0,-14],
   });
 
   const marker = L.marker([c.lat, c.lng], { icon }).addTo(map);
@@ -753,7 +754,7 @@ function showOverview() {
   document.getElementById('backBtn').classList.remove('show');
   document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
   renderLegendOverview();
-  map.flyTo([34.3408,-83.9439], 9, { animate:true, duration:1.0 });
+  map.flyTo([34.3408,-83.9439], 8.5, { animate:true, duration:1.0 });
 }
 
 renderLegendOverview();
