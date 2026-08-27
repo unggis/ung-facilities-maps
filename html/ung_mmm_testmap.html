@@ -273,6 +273,19 @@ const STATUS_META = {
   PP:  'Proposed/Planned',
 };
 
+/* Mount domain — mirrors the shared MOUNTING_TYPE coded-value domain
+   (also used on access points; only FS/WM/GS are expected on MMM) */
+const MOUNT_META = {
+  FS: 'Freestanding',
+  WM: 'Wall-Mounted',
+  GS: 'Ground-Set',
+  SUR: 'Surface Mount - Ceiling',
+  SUR_W: 'Surface Mount - Wall',
+  SA: 'Stand Alone',
+  RM: 'Rack Mount',
+  PL: 'Placed on Surface',
+};
+
 
 
 /* ======================================================================
@@ -317,6 +330,7 @@ function esriFeatureToMapFeature(f) {
       Honoree: p.Honoree || '',
       Description: p.Notes || '',
       Status: p.Status || '',
+      Mount: p.Mount || '',
       DateAdded: p.CaptureDate ? new Date(p.CaptureDate).toLocaleDateString() : '',
     },
   };
@@ -473,9 +487,12 @@ function categoryBadgeIcon(code) {
 function poiPopupHtml(props) {
   const meta = CATEGORY_META[props.Category] || CATEGORY_META[DEFAULT_CATEGORY];
   const statusLabel = STATUS_META[props.Status] || props.Status || '';
+  const mountLabel = MOUNT_META[props.Mount] || props.Mount || '';
   const honoreeHtml = props.Honoree
     ? `<div class="poi-popup-honoree">Named for ${props.Honoree}</div>` : '';
   const photoHtml = `<div class="poi-popup-nophoto" id="poi-photo-${props.OBJECTID}">No photo on file</div>`;
+  const metaParts = [statusLabel || 'Active', mountLabel, props.DateAdded ? 'added ' + props.DateAdded : '']
+    .filter(Boolean).join(' &middot; ');
   return `
     <div class="poi-popup">
       <span class="poi-popup-cat">${meta.label}</span>
@@ -483,7 +500,7 @@ function poiPopupHtml(props) {
       ${honoreeHtml}
       ${photoHtml}
       <div class="poi-popup-desc">${props.Description || ''}</div>
-      <div class="poi-popup-meta">${statusLabel || 'Active'}${props.DateAdded ? ' &middot; added ' + props.DateAdded : ''}</div>
+      <div class="poi-popup-meta">${metaParts}</div>
     </div>`;
 }
 
