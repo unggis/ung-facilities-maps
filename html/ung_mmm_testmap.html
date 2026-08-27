@@ -21,16 +21,13 @@
   --sand:   #c9b99a;
   --stone:  #8a7a6a;
 
-  /* Category palette — keyed to the MMM_Category coded-value domain */
+  /* Category palette — keyed to the finalized MMM_Category coded-value domain */
   --cat-MON:    #C9A84C; /* Monument */
+  --cat-MRK:    #A08558; /* Marker */
   --cat-MEM:    #8B3A3A; /* Memorial */
-  --cat-MRK:    #A08558; /* Historical Marker */
-  --cat-MIL_EQ: #5B6770; /* Military Equipment / Ordnance */
-  --cat-PLQ:    #B08D3E; /* Plaque */
-  --cat-STAT:   #C9C2B3; /* Statue */
-  --cat-RM:     #3D6B6B; /* Named Room */
-  --cat-NM_BLDG:#3D5A80; /* Named Building */
-  --cat-NM_FAC: #56682F; /* Named Facility / Field */
+  --cat-MIL_EQ: #5B6770; /* Military Equipment */
+  --cat-NM_BLDG:#3D5A80; /* Named Building/Space */
+  --cat-OTH:    #6b6156; /* Other */
 }
 html, body { height:100%; overflow:hidden; }
 body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); }
@@ -202,21 +199,21 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
    CAMPUS OVERVIEW DATA
 ====================================================================== */
 const CAMPUSES = {
-  dahlonega:   { name:'Dahlonega Campus',   lat:34.5297,  lng:-83.9849,  zoom:16, poiZoom:18, active:true,
+  dahlonega:   { name:'Dahlonega Campus',   lat:34.5297,  lng:-83.9849,  zoom:16, poiZoom:18, active:true, campusCode:2,
     tags:['Walkway of Service','Monuments','Historic Markers'],
     desc:'The main campus in the foothills of the Blue Ridge Mountains. Home to Price Memorial Hall and the Walkway of Service.',
     btnText:'Open Walkway Viewer', btnUrl:'https://unggis.github.io/ung-facilities-maps/walkway.html' },
-  gainesville: { name:'Gainesville Campus', lat:34.23474, lng:-83.86722, zoom:16, poiZoom:18, active:true,
+  gainesville: { name:'Gainesville Campus', lat:34.23474, lng:-83.86722, zoom:16, poiZoom:18, active:true, campusCode:3,
     tags:['Walkway of Service','Monuments','Historic Markers'],
     desc:'Walkway of Service is live and additional MMM documentation for the Gainesville campus is currently in progress.',
     btnText:'Open Walkway Viewer', btnUrl:'https://unggis.github.io/ung-facilities-maps/html/gc_wos.html' },
-  cumming:     { name:'Cumming Campus',     lat:34.22394, lng:-84.10806, zoom:16, poiZoom:18, active:false,
+  cumming:     { name:'Cumming Campus',     lat:34.22394, lng:-84.10806, zoom:16, poiZoom:18, active:false, campusCode:1,
     tags:['Documentation in progress'],
     desc:'Documentation for the Cumming campus is currently in progress.' },
-  blueridge:   { name:'Blue Ridge Campus',  lat:34.88866, lng:-84.29174, zoom:16, poiZoom:18, active:false,
+  blueridge:   { name:'Blue Ridge Campus',  lat:34.88866, lng:-84.29174, zoom:16, poiZoom:18, active:false, campusCode:0,
     tags:['Documentation in progress'],
     desc:'Documentation for the Blue Ridge campus is currently in progress.' },
-  oconee:      { name:'Oconee Campus',      lat:33.86621, lng:-83.42595, zoom:16, poiZoom:18, active:false,
+  oconee:      { name:'Oconee Campus',      lat:33.86621, lng:-83.42595, zoom:16, poiZoom:18, active:false, campusCode:4,
     tags:['Documentation in progress'],
     desc:'Documentation for the Oconee campus is currently in progress.' },
 };
@@ -229,42 +226,103 @@ const CAMPUS_ORDER = ['blueridge','cumming','dahlonega','gainesville','oconee'];
    straight in without a translation layer.
 ====================================================================== */
 const CATEGORY_META = {
-  MON:     { label:'Monument',                 color:'#C9A84C' },
-  MEM:     { label:'Memorial',                  color:'#8B3A3A' },
-  MRK:     { label:'Historical Marker',         color:'#A08558' },
-  MIL_EQ:  { label:'Military Equipment',        color:'#5B6770' },
-  PLQ:     { label:'Plaque',                    color:'#B08D3E' },
-  STAT:    { label:'Statue',                    color:'#C9C2B3' },
-  RM:      { label:'Named Room',                color:'#3D6B6B' },
-  NM_BLDG: { label:'Named Building',            color:'#3D5A80' },
-  NM_FAC:  { label:'Named Facility / Field',    color:'#56682F' },
+  MON:     { label:'Monument',            color:'#C9A84C' },
+  MRK:     { label:'Marker',              color:'#A08558' },
+  MEM:     { label:'Memorial',            color:'#8B3A3A' },
+  MIL_EQ:  { label:'Military Equipment',  color:'#5B6770' },
+  NM_BLDG: { label:'Named Building/Space',color:'#3D5A80' },
+  OTH:     { label:'Other',               color:'#6b6156' },
+};
+const DEFAULT_CATEGORY = 'OTH'; // fallback bucket for features with a null/unrecognized Category
+
+/* Status domain — mirrors the Status coded-value domain on MMM_Point */
+const STATUS_META = {
+  ACT: 'Active',
+  REM: 'Removed',
+  REL: 'Relocated',
+  DMG: 'Damaged',
+  UR:  'Under Restoration',
+  PP:  'Proposed/Planned',
 };
 
+
+
 /* ======================================================================
-   DATA LOADING
+   DATA SOURCE — live ArcGIS Online hosted feature service
    ----------------------------------------------------------------------
-   For each active campus this map first tries to fetch a GeoJSON file
-   exported from the MMM feature classes:
+   Single service, single point layer ("MMM", layer id 0), shared across
+   all five campuses via the Campus coded-value field:
+     0 Blue Ridge · 1 Cumming · 2 Dahlonega · 3 Gainesville · 4 Oconee
+   (matches CAMPUSES[key].campusCode above)
 
-       data/dahlonega_mmm.geojson
-       data/gainesville_mmm.geojson
+   Field names come straight from the FGDB schema as published:
+     Name, Notes, Category, Mount, Confidence, CaptureDate,
+     Honoree, Status, Campus, ID (custom GUID), GlobalID, OBJECTID
 
-   IMPORTANT — coordinate system: the FGDB is authored in Georgia State
-   Plane West (NAD83 2011). When exporting (Feature Class To GeoJSON /
-   JSON, or Project first), the OUTPUT must be projected to WGS84
-   (EPSG:4326) — Leaflet only understands geographic WGS84 lat/lng.
-   Reprojecting on export, not in this file, keeps the FGDB itself in
-   GASPW as the system of record.
+   There is no PhotoURL field — photos ride as geodatabase attachments
+   (hasAttachments: true). Rather than querying every feature's
+   attachments up front, each PoI marker fetches its own attachment
+   list lazily, the moment its popup is opened (see wireAttachmentPhoto
+   below) — cheap for a walkway with dozens of points, versus dozens of
+   extra requests on every campus load.
 
-   Expected feature properties (match these to your PoI schema):
-     Title, Category (domain code above), Honoree, Description,
-     PhotoURL, Status, DateAdded
+   f=geojson output from the ArcGIS REST API is always reprojected to
+   WGS84 (EPSG:4326) by the service itself, regardless of the layer's
+   native GASPW storage SR — so no client-side reprojection is needed
+   here; that's handled entirely on Esri's end for this query format.
 
-   If no file is found yet (this repo has no /data folder), the map
-   falls back to the small SAMPLE data below so the layer is visible
-   and testable before real exports exist. Swap it out with zero code
-   changes once the real files are published alongside this HTML.
+   If the service is unreachable (offline, sharing reverted, network
+   restrictions) the map falls back to the SAMPLE data below so the
+   layer stays visible and testable either way.
 ====================================================================== */
+const MMM_SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Monuments_Markers_Memorials_Points/FeatureServer';
+
+function esriFeatureToMapFeature(f) {
+  const p = f.properties;
+  return {
+    type:'Feature',
+    geometry:f.geometry,
+    properties:{
+      OBJECTID: p.OBJECTID,
+      Title: p.Name || 'Untitled',
+      Category: p.Category || DEFAULT_CATEGORY,
+      Honoree: p.Honoree || '',
+      Description: p.Notes || '',
+      Status: p.Status || '',
+      DateAdded: p.CaptureDate ? new Date(p.CaptureDate).toLocaleDateString() : '',
+    },
+  };
+}
+
+async function fetchServicePOIs(campusCode) {
+  const url = `${MMM_SERVICE_URL}/0/query?where=Campus=${campusCode}&outFields=*&f=geojson`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Service query failed: ${res.status}`);
+  const geojson = await res.json();
+  if (geojson.error) throw new Error(geojson.error.message || 'Service returned an error');
+  return {
+    type:'FeatureCollection',
+    features: (geojson.features || []).map(esriFeatureToMapFeature),
+  };
+}
+
+/* Lazily fetch and inject the first photo attachment when a PoI popup opens */
+function wireAttachmentPhoto(marker, objectId) {
+  marker.on('popupopen', async () => {
+    const el = document.getElementById(`poi-photo-${objectId}`);
+    if (!el || el.dataset.loaded) return;
+    el.dataset.loaded = '1';
+    try {
+      const res = await fetch(`${MMM_SERVICE_URL}/0/${objectId}/attachments?f=json`);
+      const data = await res.json();
+      const first = (data.attachmentInfos || [])[0];
+      if (first) {
+        el.outerHTML = `<img id="poi-photo-${objectId}" class="poi-popup-photo" src="${MMM_SERVICE_URL}/0/${objectId}/attachments/${first.id}" alt="">`;
+      }
+    } catch (e) { /* leave the no-photo placeholder in place */ }
+  });
+}
+
 const SAMPLE_POI_DATA = {
   dahlonega: { type:'FeatureCollection', features: [
     { type:'Feature', geometry:{ type:'Point', coordinates:[-83.9847, 34.5301] },
@@ -280,11 +338,11 @@ const SAMPLE_POI_DATA = {
         Description:'Named in recognition of Mike Cottrell\u2019s benefaction to the university.',
         PhotoURL:'', Status:'Active', DateAdded:'2022-01-15' } },
     { type:'Feature', geometry:{ type:'Point', coordinates:[-83.9861, 34.5289] },
-      properties:{ Title:'Cottrell Field', Category:'NM_FAC', Honoree:'Mike Cottrell',
-        Description:'Athletic field named for Mike Cottrell. Represented here as a point; the FGDB source is a polygon feature.',
+      properties:{ Title:'Cottrell Field', Category:'NM_BLDG', Honoree:'Mike Cottrell',
+        Description:'Athletic field named for Mike Cottrell. Filed under Named Building/Space; represented here as a point, the FGDB source is a polygon feature.',
         PhotoURL:'', Status:'Active', DateAdded:'2022-01-15' } },
     { type:'Feature', geometry:{ type:'Point', coordinates:[-83.9845, 34.5310] },
-      properties:{ Title:'Price Memorial Hall Plaque', Category:'PLQ', Honoree:'',
+      properties:{ Title:'Price Memorial Hall Plaque', Category:'MRK', Honoree:'',
         Description:'Wall-mounted dedication plaque at the building entrance.',
         PhotoURL:'', Status:'Active', DateAdded:'2021-11-04' } },
   ]},
@@ -298,7 +356,7 @@ const SAMPLE_POI_DATA = {
         Description:'Historical marker noting the founding of the Gainesville campus.',
         PhotoURL:'', Status:'Active', DateAdded:'2022-08-30' } },
     { type:'Feature', geometry:{ type:'Point', coordinates:[-83.8668, 34.2343] },
-      properties:{ Title:'Cadet Leadership Room', Category:'RM', Honoree:'',
+      properties:{ Title:'Cadet Leadership Room', Category:'NM_BLDG', Honoree:'',
         Description:'Named interior space; point placed at the building since no indoor floorplan geometry exists yet.',
         PhotoURL:'', Status:'Pending Verification', DateAdded:'2024-02-01' } },
   ]},
@@ -364,20 +422,20 @@ let campusFeatureCache = {};   // key -> feature array (after fetch/sample)
 let activeFilters = new Set(); // category codes currently visible
 
 function categoryBadgeIcon(code) {
-  const meta = CATEGORY_META[code] || { label:code, color:'#C9A84C' };
+  const meta = CATEGORY_META[code] || CATEGORY_META[DEFAULT_CATEGORY];
+  const label = (code || DEFAULT_CATEGORY).replace('_','');
   return L.divIcon({
-    html:`<div class="poi-badge" style="background:${meta.color};">${code.replace('_','')}</div>`,
+    html:`<div class="poi-badge" style="background:${meta.color};">${label}</div>`,
     className:'', iconSize:[22,22], iconAnchor:[11,11], popupAnchor:[0,-10],
   });
 }
 
 function poiPopupHtml(props) {
-  const meta = CATEGORY_META[props.Category] || { label:props.Category, color:'#C9A84C' };
+  const meta = CATEGORY_META[props.Category] || CATEGORY_META[DEFAULT_CATEGORY];
+  const statusLabel = STATUS_META[props.Status] || props.Status || '';
   const honoreeHtml = props.Honoree
     ? `<div class="poi-popup-honoree">Named for ${props.Honoree}</div>` : '';
-  const photoHtml = props.PhotoURL
-    ? `<img class="poi-popup-photo" src="${props.PhotoURL}" alt="${props.Title}">`
-    : `<div class="poi-popup-nophoto">No photo on file</div>`;
+  const photoHtml = `<div class="poi-popup-nophoto" id="poi-photo-${props.OBJECTID}">No photo on file</div>`;
   return `
     <div class="poi-popup">
       <span class="poi-popup-cat">${meta.label}</span>
@@ -385,7 +443,7 @@ function poiPopupHtml(props) {
       ${honoreeHtml}
       ${photoHtml}
       <div class="poi-popup-desc">${props.Description || ''}</div>
-      <div class="poi-popup-meta">${props.Status || 'Active'}${props.DateAdded ? ' &middot; added ' + props.DateAdded : ''}</div>
+      <div class="poi-popup-meta">${statusLabel || 'Active'}${props.DateAdded ? ' &middot; added ' + props.DateAdded : ''}</div>
     </div>`;
 }
 
@@ -403,6 +461,7 @@ function buildClusterGroup(features) {
       const [lng, lat] = f.geometry.coordinates;
       const marker = L.marker([lat, lng], { icon: categoryBadgeIcon(f.properties.Category) });
       marker.bindPopup(poiPopupHtml(f.properties), { maxWidth:280 });
+      wireAttachmentPhoto(marker, f.properties.OBJECTID);
       group.addLayer(marker);
     });
   return group;
@@ -416,10 +475,10 @@ function renderLegendOverview() {
 }
 
 function renderLegendCampus(campusName, features) {
-  const present = [...new Set(features.map(f => f.properties.Category))];
+  const present = [...new Set(features.map(f => f.properties.Category || DEFAULT_CATEGORY))];
   const rows = present.map(code => {
-    const meta = CATEGORY_META[code] || { label:code, color:'#C9A84C' };
-    const count = features.filter(f => f.properties.Category === code).length;
+    const meta = CATEGORY_META[code] || CATEGORY_META[DEFAULT_CATEGORY];
+    const count = features.filter(f => (f.properties.Category || DEFAULT_CATEGORY) === code).length;
     const isOn = activeFilters.has(code);
     return `
       <div class="legend-row filterable ${isOn ? '' : 'off'}" onclick="toggleCategory('${code}')">
@@ -444,13 +503,14 @@ function toggleCategory(code) {
 }
 
 async function loadCampusPOIs(key) {
+  const c = CAMPUSES[key];
   let geojson;
   try {
-    const res = await fetch(`data/${key}_mmm.geojson`);
-    if (!res.ok) throw new Error('not found');
-    geojson = await res.json();
+    geojson = await fetchServicePOIs(c.campusCode);
+    if (!geojson.features.length) throw new Error('no features returned for this campus yet');
   } catch (e) {
-    geojson = SAMPLE_POI_DATA[key]; // fallback until real export exists
+    console.warn(`MMM service unavailable for ${key}, using sample data:`, e.message);
+    geojson = SAMPLE_POI_DATA[key]; // fallback until the service has real data / is reachable
   }
   if (!geojson || !geojson.features || !geojson.features.length) return;
 
