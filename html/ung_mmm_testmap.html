@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNG Campus MMM Map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --navy:   #003366;
+  --navy-dk:#001e40;
+  --gold:   #C9A84C;
+  --gold-lt:#e8d49a;
+  --parch:  #faf7f2;
+  --sand:   #c9b99a;
+  --stone:  #8a7a6a;
+
+  /* Category palette — keyed to the MMM_Category coded-value domain */
+  --cat-MON:    #C9A84C; /* Monument */
+  --cat-MEM:    #8B3A3A; /* Memorial */
+  --cat-MRK:    #A08558; /* Historical Marker */
+  --cat-MIL_EQ: #5B6770; /* Military Equipment / Ordnance */
+  --cat-PLQ:    #B08D3E; /* Plaque */
+  --cat-STAT:   #C9C2B3; /* Statue */
+  --cat-RM:     #3D6B6B; /* Named Room */
+  --cat-NM_BLDG:#3D5A80; /* Named Building */
+  --cat-NM_FAC: #56682F; /* Named Facility / Field */
+}
+html, body { height:100%; overflow:hidden; }
+body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); }
+#map { width:100%; height:100vh; background:#e8e0d0; }
+.osm-tiles { filter: sepia(0.3) brightness(0.97) contrast(0.92); }
+
+/* ── Campus panel ── */
+.campus-panel {
+  position:absolute; top:12px; left:12px; z-index:1000;
+  background:rgba(0,30,70,0.94);
+  border:1px solid rgba(201,168,76,0.4);
+  border-radius:3px; padding:10px 10px 8px; min-width:120px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.4);
+}
+.campus-panel-title {
+  font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--sand); margin-bottom:8px; padding-bottom:6px;
+  border-bottom:0.5px solid rgba(201,168,76,0.25);
+}
+.campus-btn {
+  display:block; width:100%; background:var(--navy);
+  border:1px solid rgba(201,168,76,0.3); border-radius:2px;
+  color:var(--parch); padding:6px 12px; font-size:0.78rem;
+  font-family:'Lato', sans-serif; cursor:pointer; margin-bottom:5px;
+  text-align:left; letter-spacing:0.02em;
+  transition:background 0.15s, border-color 0.15s;
+}
+.campus-btn:last-child { margin-bottom:0; }
+.campus-btn:hover { background:rgba(201,168,76,0.15); border-color:var(--gold); color:var(--gold-lt); }
+.campus-btn.active { background:var(--gold); border-color:var(--gold); color:var(--navy); font-weight:700; }
+
+.back-btn {
+  display:none; align-items:center; gap:6px;
+  background:var(--navy); border:1px solid rgba(201,168,76,0.5);
+  border-radius:2px; color:var(--gold-lt); padding:6px 12px;
+  font-size:0.72rem; font-family:'Lato',sans-serif; letter-spacing:0.05em;
+  text-transform:uppercase; cursor:pointer; margin-top:8px; width:100%;
+}
+.back-btn:hover { background:rgba(201,168,76,0.15); }
+.back-btn.show { display:flex; }
+
+/* ── Legend / filter panel ── */
+.legend {
+  position:absolute; bottom:20px; right:12px; z-index:1000;
+  background:rgba(0,30,70,0.92);
+  border:1px solid rgba(201,168,76,0.3); border-radius:3px;
+  padding:10px 14px; font-size:0.72rem; color:var(--sand);
+  max-width:230px;
+}
+.legend-title {
+  font-family:'Cormorant Garamond', serif; color:var(--gold);
+  font-size:0.88rem; margin-bottom:8px; font-weight:600;
+}
+.legend-sub { font-size:0.62rem; color:var(--stone); margin:-4px 0 8px; letter-spacing:0.03em; }
+.legend-row {
+  display:flex; align-items:center; gap:8px; margin-bottom:5px;
+  cursor:default; user-select:none;
+}
+.legend-row:last-child { margin-bottom:0; }
+.legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; border:1.5px solid rgba(255,255,255,0.3); }
+.legend-row.filterable { cursor:pointer; padding:2px 4px; margin:0 -4px 3px; border-radius:2px; }
+.legend-row.filterable:hover { background:rgba(201,168,76,0.08); }
+.legend-row.off { opacity:0.35; }
+.legend-count { margin-left:auto; font-size:0.64rem; color:var(--stone); }
+.legend-badge {
+  width:18px; height:18px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:7px; font-weight:700; letter-spacing:0.01em;
+  border:1.5px solid rgba(255,255,255,0.35); color:var(--navy-dk);
+  font-family:'Lato',sans-serif;
+}
+
+/* ── Top-level campus markers ── */
+.campus-marker { display:flex; flex-direction:column; align-items:center; }
+.marker-dot { width:28px; height:28px; border-radius:50%; position:relative; z-index:2; box-shadow:0 3px 12px rgba(0,0,0,0.6); }
+.marker-dot.active  { background:radial-gradient(circle at 35% 35%,#fff8dc,#C9A84C 60%,#a07830); border:2.5px solid #fff8dc; }
+.marker-dot.inactive{ background:radial-gradient(circle at 35% 35%,#9a8a6a,#5a4a30); border:2px solid #a09070; }
+.marker-pulse { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:28px; height:28px; border-radius:50%; z-index:1; }
+.marker-pulse.active   { animation:pulseGold   1.8s ease-out infinite; }
+.marker-pulse.inactive { animation:pulseBronze 2.8s ease-out infinite; }
+.marker-label { margin-top:6px; font-family:'Lato',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; white-space:nowrap; padding:3px 9px; border-radius:2px; }
+.marker-label.active   { color:#fff8dc; background:rgba(0,20,60,0.92); border:1px solid rgba(201,168,76,0.8); text-shadow:0 1px 4px rgba(0,0,0,0.9); box-shadow:0 2px 8px rgba(0,0,0,0.5),0 0 12px rgba(201,168,76,0.2); }
+.marker-label.inactive { color:#c9b99a; background:rgba(0,15,40,0.88); border:1px solid rgba(120,100,70,0.5); text-shadow:0 1px 3px rgba(0,0,0,0.8); }
+
+@keyframes pulseGold {
+  0%   { box-shadow:0 0 0 0 rgba(201,168,76,0.9); opacity:1; }
+  50%  { box-shadow:0 0 0 28px rgba(201,168,76,0.15); opacity:0.6; }
+  100% { box-shadow:0 0 0 40px rgba(201,168,76,0); opacity:0; }
+}
+@keyframes pulseBronze {
+  0%   { box-shadow:0 0 0 0 rgba(160,140,100,0.7); opacity:1; }
+  50%  { box-shadow:0 0 0 20px rgba(160,140,100,0.1); opacity:0.5; }
+  100% { box-shadow:0 0 0 30px rgba(160,140,100,0); opacity:0; }
+}
+
+/* ── PoI badges (MMM points) ── */
+.poi-badge {
+  width:22px; height:22px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Lato',sans-serif; font-size:7.5px; font-weight:700;
+  color:var(--navy-dk); border:2px solid rgba(255,255,255,0.55);
+  box-shadow:0 2px 8px rgba(0,0,0,0.55);
+  letter-spacing:0.01em;
+}
+
+/* Cluster styling to match theme */
+.mmm-cluster {
+  background:radial-gradient(circle at 35% 35%, #fff8dc, var(--gold) 65%, #a07830);
+  border:2px solid #fff8dc;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--navy-dk); font-weight:700; font-family:'Lato',sans-serif;
+  box-shadow:0 3px 10px rgba(0,0,0,0.55);
+}
+
+/* ── Popup (campus-level) ── */
+.leaflet-popup-content-wrapper { background:var(--navy); border:1px solid var(--gold); border-radius:3px; padding:0; box-shadow:0 4px 20px rgba(0,0,0,0.5); min-width:220px; }
+.leaflet-popup-content { margin:0; }
+.leaflet-popup-tip { background:var(--gold); }
+.leaflet-popup-close-button { color:var(--gold) !important; top:6px !important; right:8px !important; }
+.popup-inner { padding:14px 16px 12px; }
+.popup-campus { font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--sand); margin-bottom:4px; }
+.popup-title  { font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:600; color:var(--gold); margin-bottom:6px; }
+.popup-desc   { font-size:0.78rem; color:var(--sand); line-height:1.5; margin-bottom:12px; }
+.popup-btn { display:inline-block; background:var(--gold); color:var(--navy); padding:6px 14px; border-radius:2px; font-size:0.72rem; font-weight:700; font-family:'Lato',sans-serif; letter-spacing:0.05em; text-decoration:none; text-transform:uppercase; }
+.popup-btn:hover { background:var(--gold-lt); }
+.popup-btn-disabled { display:inline-block; color:var(--stone); padding:6px 14px; border:0.5px solid rgba(138,122,106,0.3); border-radius:2px; font-size:0.72rem; font-family:'Lato',sans-serif; letter-spacing:0.05em; text-transform:uppercase; cursor:not-allowed; }
+.popup-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
+.popup-tag  { font-size:0.62rem; padding:2px 7px; border-radius:20px; background:rgba(201,168,76,0.1); color:var(--gold-lt); border:0.5px solid rgba(201,168,76,0.2); }
+
+/* ── Popup (PoI-level) ── */
+.poi-popup { padding:0; min-width:230px; max-width:260px; }
+.poi-popup-cat {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--navy); background:var(--gold-lt); padding:2px 8px;
+  border-radius:20px; margin-bottom:8px; font-weight:700;
+}
+.poi-popup-title { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:600; color:var(--gold); margin-bottom:4px; line-height:1.2; }
+.poi-popup-honoree { font-size:0.7rem; color:var(--gold-lt); font-style:italic; margin-bottom:8px; }
+.poi-popup-desc { font-size:0.76rem; color:var(--sand); line-height:1.5; margin-bottom:10px; }
+.poi-popup-photo { width:100%; height:120px; object-fit:cover; border-radius:2px; border:1px solid rgba(201,168,76,0.3); margin-bottom:8px; display:block; }
+.poi-popup-nophoto {
+  width:100%; height:60px; display:flex; align-items:center; justify-content:center;
+  border:1px dashed rgba(201,168,76,0.25); border-radius:2px; color:var(--stone);
+  font-size:0.62rem; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:8px;
+}
+.poi-popup-meta { font-size:0.62rem; color:var(--stone); border-top:0.5px solid rgba(201,168,76,0.2); padding-top:6px; }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="campus-panel">
+  <div class="campus-panel-title">Campus</div>
+  <button class="campus-btn" onclick="flyTo('blueridge')">Blue Ridge</button>
+  <button class="campus-btn" onclick="flyTo('cumming')">Cumming</button>
+  <button class="campus-btn" onclick="flyTo('dahlonega')">Dahlonega</button>
+  <button class="campus-btn" onclick="flyTo('gainesville')">Gainesville</button>
+  <button class="campus-btn" onclick="flyTo('oconee')">Oconee</button>
+  <button class="back-btn" id="backBtn" onclick="showOverview()">&#8249; All Campuses</button>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<script>
+/* ======================================================================
+   CAMPUS OVERVIEW DATA
+====================================================================== */
+const CAMPUSES = {
+  dahlonega:   { name:'Dahlonega Campus',   lat:34.5297,  lng:-83.9849,  zoom:16, poiZoom:18, active:true,
+    tags:['Walkway of Service','Monuments','Historic Markers'],
+    desc:'The main campus in the foothills of the Blue Ridge Mountains. Home to Price Memorial Hall and the Walkway of Service.',
+    btnText:'Open Walkway Viewer', btnUrl:'https://unggis.github.io/ung-facilities-maps/walkway.html' },
+  gainesville: { name:'Gainesville Campus', lat:34.23474, lng:-83.86722, zoom:16, poiZoom:18, active:true,
+    tags:['Walkway of Service','Monuments','Historic Markers'],
+    desc:'Walkway of Service is live and additional MMM documentation for the Gainesville campus is currently in progress.',
+    btnText:'Open Walkway Viewer', btnUrl:'https://unggis.github.io/ung-facilities-maps/html/gc_wos.html' },
+  cumming:     { name:'Cumming Campus',     lat:34.22394, lng:-84.10806, zoom:16, poiZoom:18, active:false,
+    tags:['Documentation in progress'],
+    desc:'Documentation for the Cumming campus is currently in progress.' },
+  blueridge:   { name:'Blue Ridge Campus',  lat:34.88866, lng:-84.29174, zoom:16, poiZoom:18, active:false,
+    tags:['Documentation in progress'],
+    desc:'Documentation for the Blue Ridge campus is currently in progress.' },
+  oconee:      { name:'Oconee Campus',      lat:33.86621, lng:-83.42595, zoom:16, poiZoom:18, active:false,
+    tags:['Documentation in progress'],
+    desc:'Documentation for the Oconee campus is currently in progress.' },
+};
+const CAMPUS_ORDER = ['blueridge','cumming','dahlonega','gainesville','oconee'];
+
+/* ======================================================================
+   MMM CATEGORY DOMAIN — mirrors the MMM_Category coded-value domain
+   used on the MMM_Point / MMM_Polygon feature classes in the FGDB.
+   Keep these codes identical to the GIS domain so field data drops
+   straight in without a translation layer.
+====================================================================== */
+const CATEGORY_META = {
+  MON:     { label:'Monument',                 color:'#C9A84C' },
+  MEM:     { label:'Memorial',                  color:'#8B3A3A' },
+  MRK:     { label:'Historical Marker',         color:'#A08558' },
+  MIL_EQ:  { label:'Military Equipment',        color:'#5B6770' },
+  PLQ:     { label:'Plaque',                    color:'#B08D3E' },
+  STAT:    { label:'Statue',                    color:'#C9C2B3' },
+  RM:      { label:'Named Room',                color:'#3D6B6B' },
+  NM_BLDG: { label:'Named Building',            color:'#3D5A80' },
+  NM_FAC:  { label:'Named Facility / Field',    color:'#56682F' },
+};
+
+/* ======================================================================
+   DATA LOADING
+   ----------------------------------------------------------------------
+   For each active campus this map first tries to fetch a GeoJSON file
+   exported from the MMM feature classes:
+
+       data/dahlonega_mmm.geojson
+       data/gainesville_mmm.geojson
+
+   IMPORTANT — coordinate system: the FGDB is authored in Georgia State
+   Plane West (NAD83 2011). When exporting (Feature Class To GeoJSON /
+   JSON, or Project first), the OUTPUT must be projected to WGS84
+   (EPSG:4326) — Leaflet only understands geographic WGS84 lat/lng.
+   Reprojecting on export, not in this file, keeps the FGDB itself in
+   GASPW as the system of record.
+
+   Expected feature properties (match these to your PoI schema):
+     Title, Category (domain code above), Honoree, Description,
+     PhotoURL, Status, DateAdded
+
+   If no file is found yet (this repo has no /data folder), the map
+   falls back to the small SAMPLE data below so the layer is visible
+   and testable before real exports exist. Swap it out with zero code
+   changes once the real files are published alongside this HTML.
+====================================================================== */
+const SAMPLE_POI_DATA = {
+  dahlonega: { type:'FeatureCollection', features: [
+    { type:'Feature', geometry:{ type:'Point', coordinates:[-83.9847, 34.5301] },
+      properties:{ Title:'105mm Howitzer, M101', Category:'MIL_EQ', Honoree:'',
+        Description:'Static ordnance display donated through a military surplus program; positioned along the Corps of Cadets parade approach.',
+        PhotoURL:'', Status:'Active', DateAdded:'2024-03-11' } },
+    { type:'Feature', geometry:{ type:'Point', coordinates:[-83.9852, 34.5294] },
+      properties:{ Title:'Walkway of Service Dedication Marker', Category:'MRK', Honoree:'',
+        Description:'Interpretive marker at the head of the Walkway of Service, listing the walkway\u2019s founding class.',
+        PhotoURL:'', Status:'Active', DateAdded:'2023-09-02' } },
+    { type:'Feature', geometry:{ type:'Point', coordinates:[-83.9838, 34.5305] },
+      properties:{ Title:'Cottrell Business School', Category:'NM_BLDG', Honoree:'Mike Cottrell',
+        Description:'Named in recognition of Mike Cottrell\u2019s benefaction to the university.',
+        PhotoURL:'', Status:'Active', DateAdded:'2022-01-15' } },
+    { type:'Feature', geometry:{ type:'Point', coordinates:[-83.9861, 34.5289] },
+      properties:{ Title:'Cottrell Field', Category:'NM_FAC', Honoree:'Mike Cottrell',
+        Description:'Athletic field named for Mike Cottrell. Represented here as a point; the FGDB source is a polygon feature.',
+        PhotoURL:'', Status:'Active', DateAdded:'2022-01-15' } },
+    { type:'Feature', geometry:{ type:'Point', coordinates:[-83.9845, 34.5310] },
+      properties:{ Title:'Price Memorial Hall Plaque', Category:'PLQ', Honoree:'',
+        Description:'Wall-mounted dedication plaque at the building entrance.',
+        PhotoURL:'', Status:'Active', DateAdded:'2021-11-04' } },
+  ]},
+  gainesville: { type:'FeatureCollection', features: [
+    { type:'Feature', geometry:{ type:'Point', coordinates:[-83.8670, 34.2350] },
+      properties:{ Title:'Veterans Memorial', Category:'MEM', Honoree:'',
+        Description:'Memorial honoring alumni and community veterans, dedicated on the Gainesville quad.',
+        PhotoURL:'', Status:'Active', DateAdded:'2023-05-20' } },
+    { type:'Feature', geometry:{ type:'Point', coordinates:[-83.8675, 34.2345] },
+      properties:{ Title:'Founders Marker', Category:'MRK', Honoree:'',
+        Description:'Historical marker noting the founding of the Gainesville campus.',
+        PhotoURL:'', Status:'Active', DateAdded:'2022-08-30' } },
+    { type:'Feature', geometry:{ type:'Point', coordinates:[-83.8668, 34.2343] },
+      properties:{ Title:'Cadet Leadership Room', Category:'RM', Honoree:'',
+        Description:'Named interior space; point placed at the building since no indoor floorplan geometry exists yet.',
+        PhotoURL:'', Status:'Pending Verification', DateAdded:'2024-02-01' } },
+  ]},
+};
+
+/* ======================================================================
+   MAP SETUP
+====================================================================== */
+const map = L.map('map', {
+  center:[34.3408,-83.9439], zoom:9, minZoom:7, maxZoom:19,
+  attributionControl:true, scrollWheelZoom:false,
+});
+map.once('focus', () => map.scrollWheelZoom.enable());
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom:19,
+  attribution:'Leaflet | &copy; OpenStreetMap contributors | John Segars, UNG Facilities GIS',
+  className:'osm-tiles',
+}).addTo(map);
+
+/* ---- Campus-level markers ---- */
+const campusMarkers = {};
+
+CAMPUS_ORDER.forEach((key) => {
+  const c = CAMPUSES[key];
+  const cls = c.active ? 'active' : 'inactive';
+  const shortName = c.name.replace(' Campus','');
+
+  const icon = L.divIcon({
+    html:`<div class="campus-marker">
+      <div style="position:relative;width:28px;height:28px;">
+        <div class="marker-pulse ${cls}"></div>
+        <div class="marker-dot ${cls}"></div>
+      </div>
+      <div class="marker-label ${cls}">${shortName}</div>
+    </div>`,
+    className:'', iconSize:[120,56], iconAnchor:[60,14], popupAnchor:[0,-18],
+  });
+
+  const marker = L.marker([c.lat, c.lng], { icon }).addTo(map);
+
+  const tagsHtml = c.tags.map(t => `<span class="popup-tag">${t}</span>`).join('');
+  const btnHtml = c.active
+    ? `<a class="popup-btn" href="${c.btnUrl}" target="_blank">${c.btnText} &#8599;</a>`
+    : `<span class="popup-btn-disabled">Coming Soon</span>`;
+
+  marker.bindPopup(L.popup({ maxWidth:280 }).setContent(`
+    <div class="popup-inner">
+      <div class="popup-campus">University of North Georgia</div>
+      <div class="popup-title">${c.name}</div>
+      <div class="popup-tags">${tagsHtml}</div>
+      <div class="popup-desc">${c.desc}</div>
+      ${btnHtml}
+    </div>`));
+
+  campusMarkers[key] = marker;
+});
+
+/* ---- PoI (MMM) layer state ---- */
+let activeCluster = null;      // current L.markerClusterGroup
+let activeCampusKey = null;    // campus currently in detail view
+let campusFeatureCache = {};   // key -> feature array (after fetch/sample)
+let activeFilters = new Set(); // category codes currently visible
+
+function categoryBadgeIcon(code) {
+  const meta = CATEGORY_META[code] || { label:code, color:'#C9A84C' };
+  return L.divIcon({
+    html:`<div class="poi-badge" style="background:${meta.color};">${code.replace('_','')}</div>`,
+    className:'', iconSize:[22,22], iconAnchor:[11,11], popupAnchor:[0,-10],
+  });
+}
+
+function poiPopupHtml(props) {
+  const meta = CATEGORY_META[props.Category] || { label:props.Category, color:'#C9A84C' };
+  const honoreeHtml = props.Honoree
+    ? `<div class="poi-popup-honoree">Named for ${props.Honoree}</div>` : '';
+  const photoHtml = props.PhotoURL
+    ? `<img class="poi-popup-photo" src="${props.PhotoURL}" alt="${props.Title}">`
+    : `<div class="poi-popup-nophoto">No photo on file</div>`;
+  return `
+    <div class="poi-popup">
+      <span class="poi-popup-cat">${meta.label}</span>
+      <div class="poi-popup-title">${props.Title || 'Untitled'}</div>
+      ${honoreeHtml}
+      ${photoHtml}
+      <div class="poi-popup-desc">${props.Description || ''}</div>
+      <div class="poi-popup-meta">${props.Status || 'Active'}${props.DateAdded ? ' &middot; added ' + props.DateAdded : ''}</div>
+    </div>`;
+}
+
+function buildClusterGroup(features) {
+  const group = L.markerClusterGroup({
+    maxClusterRadius:45,
+    iconCreateFunction: (cluster) => L.divIcon({
+      html:`<div class="mmm-cluster" style="width:36px;height:36px;font-size:0.75rem;">${cluster.getChildCount()}</div>`,
+      className:'', iconSize:[36,36],
+    }),
+  });
+  features
+    .filter(f => activeFilters.has(f.properties.Category))
+    .forEach(f => {
+      const [lng, lat] = f.geometry.coordinates;
+      const marker = L.marker([lat, lng], { icon: categoryBadgeIcon(f.properties.Category) });
+      marker.bindPopup(poiPopupHtml(f.properties), { maxWidth:280 });
+      group.addLayer(marker);
+    });
+  return group;
+}
+
+function renderLegendOverview() {
+  document.getElementById('legend').innerHTML = `
+    <div class="legend-title">Monuments, Markers &amp; Memorials</div>
+    <div class="legend-row"><div class="legend-dot" style="background:#C9A84C;"></div><span>Active &mdash; viewer available</span></div>
+    <div class="legend-row"><div class="legend-dot" style="background:#5a4a30;"></div><span>Coming soon</span></div>`;
+}
+
+function renderLegendCampus(campusName, features) {
+  const present = [...new Set(features.map(f => f.properties.Category))];
+  const rows = present.map(code => {
+    const meta = CATEGORY_META[code] || { label:code, color:'#C9A84C' };
+    const count = features.filter(f => f.properties.Category === code).length;
+    const isOn = activeFilters.has(code);
+    return `
+      <div class="legend-row filterable ${isOn ? '' : 'off'}" onclick="toggleCategory('${code}')">
+        <div class="legend-badge" style="background:${meta.color};">${code.replace('_','')}</div>
+        <span>${meta.label}</span>
+        <span class="legend-count">${count}</span>
+      </div>`;
+  }).join('');
+  document.getElementById('legend').innerHTML = `
+    <div class="legend-title">${campusName}</div>
+    <div class="legend-sub">Tap a category to show/hide</div>
+    ${rows}`;
+}
+
+function toggleCategory(code) {
+  if (activeFilters.has(code)) activeFilters.delete(code); else activeFilters.add(code);
+  const features = campusFeatureCache[activeCampusKey] || [];
+  if (activeCluster) map.removeLayer(activeCluster);
+  activeCluster = buildClusterGroup(features);
+  activeCluster.addTo(map);
+  renderLegendCampus(CAMPUSES[activeCampusKey].name, features);
+}
+
+async function loadCampusPOIs(key) {
+  let geojson;
+  try {
+    const res = await fetch(`data/${key}_mmm.geojson`);
+    if (!res.ok) throw new Error('not found');
+    geojson = await res.json();
+  } catch (e) {
+    geojson = SAMPLE_POI_DATA[key]; // fallback until real export exists
+  }
+  if (!geojson || !geojson.features || !geojson.features.length) return;
+
+  const features = geojson.features;
+  campusFeatureCache[key] = features;
+  activeFilters = new Set(features.map(f => f.properties.Category)); // all on by default
+
+  if (activeCluster) map.removeLayer(activeCluster);
+  activeCluster = buildClusterGroup(features);
+  activeCluster.addTo(map);
+
+  renderLegendCampus(CAMPUSES[key].name, features);
+}
+
+/* ---- Mode switching ---- */
+function flyTo(key) {
+  const c = CAMPUSES[key];
+  if (!c) return;
+
+  document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
+  const idx = CAMPUS_ORDER.indexOf(key);
+  if (idx >= 0) document.querySelectorAll('.campus-btn')[idx].classList.add('active');
+
+  const targetZoom = c.active ? c.poiZoom : c.zoom;
+  map.flyTo([c.lat, c.lng], targetZoom, { animate:true, duration:1.2 });
+
+  if (c.active) {
+    activeCampusKey = key;
+    document.getElementById('backBtn').classList.add('show');
+    // fade the big campus marker once its PoIs take over the view
+    campusMarkers[key].setOpacity(0.35);
+    setTimeout(() => loadCampusPOIs(key), 600);
+  } else {
+    setTimeout(() => campusMarkers[key].openPopup(), 1300);
+  }
+}
+
+function showOverview() {
+  if (activeCluster) { map.removeLayer(activeCluster); activeCluster = null; }
+  if (activeCampusKey) campusMarkers[activeCampusKey].setOpacity(1);
+  activeCampusKey = null;
+  document.getElementById('backBtn').classList.remove('show');
+  document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
+  renderLegendOverview();
+  map.flyTo([34.3408,-83.9439], 9, { animate:true, duration:1.0 });
+}
+
+renderLegendOverview();
+</script>
+</body>
+</html>
