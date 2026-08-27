@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UNG Campus Monuments Markers and Memorials Map</title>
+<title>UNG Campus MMM Map</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
@@ -43,10 +43,12 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
   box-shadow:0 2px 12px rgba(0,0,0,0.4);
 }
 .campus-panel-title {
+  display:flex; justify-content:space-between; align-items:baseline;
   font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase;
   color:var(--sand); margin-bottom:8px; padding-bottom:6px;
   border-bottom:0.5px solid rgba(201,168,76,0.25);
 }
+.zoom-level { color:var(--gold); font-weight:700; letter-spacing:0.02em; }
 .campus-btn {
   display:block; width:100%; background:var(--navy);
   border:1px solid rgba(201,168,76,0.3); border-radius:2px;
@@ -255,7 +257,7 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 </div>
 
 <div class="campus-panel">
-  <div class="campus-panel-title">Campus</div>
+  <div class="campus-panel-title">Campus <span class="zoom-level" id="zoomLevel"></span></div>
   <button class="campus-btn" onclick="flyTo('blueridge')">Blue Ridge</button>
   <button class="campus-btn" onclick="flyTo('cumming')">Cumming</button>
   <button class="campus-btn" onclick="flyTo('dahlonega')">Dahlonega</button>
@@ -275,9 +277,9 @@ const CAMPUSES = {
     tags:['Walkway of Service','Monuments','Historic Markers'],
     desc:'The main campus in the foothills of the Blue Ridge Mountains. Home to Price Memorial Hall and the Walkway of Service.',
     btnText:'Open Walkway Viewer', btnUrl:'https://unggis.github.io/ung-facilities-maps/walkway.html' },
-  gainesville: { name:'Gainesville Campus', lat:34.23474, lng:-83.86722, zoom:16, poiZoom:16, active:true, campusCode:3,
+  gainesville: { name:'Gainesville Campus', lat:34.23474, lng:-83.86722, zoom:16, poiZoom:18, active:true, campusCode:3,
     tags:['Walkway of Service','Monuments','Historic Markers'],
-    desc:'Walkway of Service is live and additional Monuments, Markers, and Memorials documentation for the Gainesville campus is currently in progress.',
+    desc:'Walkway of Service is live and additional MMM documentation for the Gainesville campus is currently in progress.',
     btnText:'Open Walkway Viewer', btnUrl:'https://unggis.github.io/ung-facilities-maps/html/gc_wos.html' },
   cumming:     { name:'Cumming Campus',     lat:34.22394, lng:-84.10806, zoom:16, poiZoom:18, active:false, campusCode:1,
     tags:['Documentation in progress'],
@@ -545,6 +547,12 @@ function updateCampusMarkerVisibility() {
   });
 }
 map.on('zoomend', updateCampusMarkerVisibility);
+
+function updateZoomLevelDisplay() {
+  document.getElementById('zoomLevel').textContent = `Z${Math.round(map.getZoom())}`;
+}
+map.on('zoom', updateZoomLevelDisplay);
+updateZoomLevelDisplay();
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom:19,
