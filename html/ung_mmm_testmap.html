@@ -192,6 +192,15 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
   cursor:zoom-in; transition:opacity 0.15s, border-color 0.15s;
 }
 .poi-popup-photo:hover { opacity:0.88; border-color:var(--gold); }
+.poi-popup-gallery {
+  display:flex; gap:5px; overflow-x:auto; margin-bottom:8px; padding-bottom:2px;
+}
+.poi-popup-thumb {
+  width:54px; height:54px; flex-shrink:0; object-fit:cover; border-radius:2px;
+  border:1px solid rgba(201,168,76,0.4); cursor:zoom-in;
+  transition:opacity 0.15s, border-color 0.15s;
+}
+.poi-popup-thumb:hover { opacity:0.85; border-color:var(--gold); }
 .poi-popup-nophoto {
   width:100%; height:60px; display:flex; align-items:center; justify-content:center;
   border:1px dashed rgba(201,168,76,0.25); border-radius:2px; color:var(--stone);
@@ -216,6 +225,21 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
   font-size:1.8rem; font-family:'Lato',sans-serif; line-height:1;
   cursor:pointer; background:none; border:none;
 }
+.mmm-lightbox-nav {
+  position:absolute; top:50%; transform:translateY(-50%);
+  color:var(--gold-lt); font-size:2.4rem; font-family:'Lato',sans-serif;
+  line-height:1; cursor:pointer; background:rgba(0,20,60,0.5);
+  border:1px solid rgba(201,168,76,0.4); border-radius:50%;
+  width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+}
+.mmm-lightbox-nav:hover { background:rgba(0,20,60,0.85); border-color:var(--gold); }
+.mmm-lightbox-nav.prev { left:18px; }
+.mmm-lightbox-nav.next { right:18px; }
+.mmm-lightbox-counter {
+  position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+  color:var(--sand); font-size:0.72rem; letter-spacing:0.05em;
+  background:rgba(0,20,60,0.7); padding:3px 12px; border-radius:20px;
+}
 </style>
 </head>
 <body>
@@ -224,7 +248,10 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 
 <div class="mmm-lightbox" id="mmmLightbox" onclick="closeLightbox()">
   <button class="mmm-lightbox-close" onclick="closeLightbox(event)">&times;</button>
-  <img id="mmmLightboxImg" src="" alt="">
+  <button class="mmm-lightbox-nav prev" id="mmmLightboxPrev" onclick="navLightbox(event,-1)">&#8249;</button>
+  <img id="mmmLightboxImg" src="" alt="" onclick="event.stopPropagation()">
+  <button class="mmm-lightbox-nav next" id="mmmLightboxNext" onclick="navLightbox(event,1)">&#8250;</button>
+  <div class="mmm-lightbox-counter" id="mmmLightboxCounter" style="display:none;"></div>
 </div>
 
 <div class="campus-panel">
@@ -386,7 +413,9 @@ async function fetchServicePOIs(campusCode) {
   };
 }
 
-/* Lazily fetch and inject the first photo attachment when a PoI popup opens */
+/* Lazily fetch and inject photo attachment(s) when a PoI popup opens.
+   Single image -> same inline photo as before. Multiple -> thumbnail
+   strip, each opening the lightbox with prev/next navigation. */
 function wireAttachmentPhoto(marker, objectId) {
   marker.on('popupopen', async () => {
     const el = document.getElementById(`poi-photo-${objectId}`);
@@ -396,24 +425,59 @@ function wireAttachmentPhoto(marker, objectId) {
       const layerId = await resolveMmmLayerId();
       const res = await fetch(`${MMM_SERVICE_URL}/${layerId}/${objectId}/attachments?f=json`);
       const data = await res.json();
-      const first = (data.attachmentInfos || [])[0];
-      if (first) {
-        const src = `${MMM_SERVICE_URL}/${layerId}/${objectId}/attachments/${first.id}`;
-        el.outerHTML = `<img id="poi-photo-${objectId}" class="poi-popup-photo" src="${src}" alt="" onclick="openLightbox('${src}')">`;
+      const images = (data.attachmentInfos || []).filter(a => (a.contentType || '').startsWith('image/'));
+      if (!images.length) return; // leave the no-photo placeholder in place
+
+      const urls = images.map(a => `${MMM_SERVICE_URL}/${layerId}/${objectId}/attachments/${a.id}`);
+      mmmGalleries[objectId] = urls;
+
+      if (urls.length === 1) {
+        el.outerHTML = `<img id="poi-photo-${objectId}" class="poi-popup-photo" src="${urls[0]}" alt="" onclick="openLightbox(${objectId},0)">`;
+      } else {
+        const thumbs = urls.map((u, i) =>
+          `<img class="poi-popup-thumb" src="${u}" alt="" onclick="openLightbox(${objectId},${i})">`).join('');
+        el.outerHTML = `<div class="poi-popup-gallery" id="poi-photo-${objectId}">${thumbs}</div>`;
       }
     } catch (e) { /* leave the no-photo placeholder in place */ }
   });
 }
 
-function openLightbox(src) {
-  document.getElementById('mmmLightboxImg').src = src;
+const mmmGalleries = {};
+let lightboxState = { objectId:null, index:0 };
+
+function renderLightbox() {
+  const urls = mmmGalleries[lightboxState.objectId] || [];
+  document.getElementById('mmmLightboxImg').src = urls[lightboxState.index] || '';
+  const multi = urls.length > 1;
+  document.getElementById('mmmLightboxPrev').style.display = multi ? 'flex' : 'none';
+  document.getElementById('mmmLightboxNext').style.display = multi ? 'flex' : 'none';
+  const counter = document.getElementById('mmmLightboxCounter');
+  counter.style.display = multi ? 'block' : 'none';
+  if (multi) counter.textContent = `${lightboxState.index + 1} / ${urls.length}`;
+}
+
+function openLightbox(objectId, index) {
+  lightboxState = { objectId, index: index || 0 };
+  renderLightbox();
   document.getElementById('mmmLightbox').classList.add('show');
 }
 function closeLightbox(e) {
   if (e) e.stopPropagation();
   document.getElementById('mmmLightbox').classList.remove('show');
 }
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+function navLightbox(e, delta) {
+  e.stopPropagation();
+  const urls = mmmGalleries[lightboxState.objectId] || [];
+  if (!urls.length) return;
+  lightboxState.index = (lightboxState.index + delta + urls.length) % urls.length;
+  renderLightbox();
+}
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('mmmLightbox').classList.contains('show')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') navLightbox(new Event('key'), -1);
+  if (e.key === 'ArrowRight') navLightbox(new Event('key'), 1);
+});
 
 
 const SAMPLE_POI_DATA = {
