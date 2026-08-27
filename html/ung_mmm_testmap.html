@@ -335,6 +335,20 @@ const MOUNT_META = {
 ====================================================================== */
 const MMM_SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Monuments_Markers_Memorials_Points/FeatureServer';
 
+/* The hosted layer's numeric id can shift on republish/overwrite in AGOL
+   (it isn't guaranteed to stay 0), so resolve it once at runtime and
+   cache it rather than hardcoding a layer index that can go stale. */
+let mmmLayerIdPromise = null;
+function resolveMmmLayerId() {
+  if (!mmmLayerIdPromise) {
+    mmmLayerIdPromise = fetch(`${MMM_SERVICE_URL}?f=json`)
+      .then(res => res.json())
+      .then(data => (data.layers && data.layers.length ? data.layers[0].id : 0))
+      .catch(() => 0); // last-resort fallback if the service is briefly unreachable
+  }
+  return mmmLayerIdPromise;
+}
+
 function esc(str) {
   return String(str || '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
@@ -360,7 +374,8 @@ function esriFeatureToMapFeature(f) {
 }
 
 async function fetchServicePOIs(campusCode) {
-  const url = `${MMM_SERVICE_URL}/0/query?where=Campus=${campusCode}&outFields=*&f=geojson`;
+  const layerId = await resolveMmmLayerId();
+  const url = `${MMM_SERVICE_URL}/${layerId}/query?where=Campus=${campusCode}&outFields=*&f=geojson`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Service query failed: ${res.status}`);
   const geojson = await res.json();
@@ -378,11 +393,12 @@ function wireAttachmentPhoto(marker, objectId) {
     if (!el || el.dataset.loaded) return;
     el.dataset.loaded = '1';
     try {
-      const res = await fetch(`${MMM_SERVICE_URL}/0/${objectId}/attachments?f=json`);
+      const layerId = await resolveMmmLayerId();
+      const res = await fetch(`${MMM_SERVICE_URL}/${layerId}/${objectId}/attachments?f=json`);
       const data = await res.json();
       const first = (data.attachmentInfos || [])[0];
       if (first) {
-        const src = `${MMM_SERVICE_URL}/0/${objectId}/attachments/${first.id}`;
+        const src = `${MMM_SERVICE_URL}/${layerId}/${objectId}/attachments/${first.id}`;
         el.outerHTML = `<img id="poi-photo-${objectId}" class="poi-popup-photo" src="${src}" alt="" onclick="openLightbox('${src}')">`;
       }
     } catch (e) { /* leave the no-photo placeholder in place */ }
