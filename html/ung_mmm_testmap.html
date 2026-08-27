@@ -464,6 +464,24 @@ const map = L.map('map', {
 });
 map.once('focus', () => map.scrollWheelZoom.enable());
 
+/* Campus-level pulsing markers disappear entirely once zoomed in past
+   this level — at that point the PoI badges are the focus, and this
+   applies on ANY zoom change (button, marker click, or manual scroll).
+   Only active campuses hide this way; inactive "coming soon" campuses
+   have nothing else to show at that zoom, so their marker stays put. */
+const MARKER_HIDE_ZOOM = 15;
+function updateCampusMarkerVisibility() {
+  const hide = map.getZoom() >= MARKER_HIDE_ZOOM;
+  CAMPUS_ORDER.forEach((key) => {
+    if (!CAMPUSES[key].active) return;
+    const m = campusMarkers[key];
+    if (!m) return;
+    if (hide && map.hasLayer(m)) map.removeLayer(m);
+    else if (!hide && !map.hasLayer(m)) m.addTo(map);
+  });
+}
+map.on('zoomend', updateCampusMarkerVisibility);
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom:19,
   attribution:'Leaflet | &copy; OpenStreetMap contributors | John Segars, UNG Facilities GIS',
@@ -651,8 +669,6 @@ function flyTo(key) {
     activeCampusKey = key;
     document.getElementById('backBtn').classList.add('show');
     campusMarkers[key].closePopup();
-    // fade the big campus marker once its PoIs take over the view
-    campusMarkers[key].setOpacity(0.35);
     setTimeout(() => loadCampusPOIs(key), 600);
   } else {
     setTimeout(() => campusMarkers[key].openPopup(), 1300);
@@ -661,7 +677,6 @@ function flyTo(key) {
 
 function showOverview() {
   if (activeCluster) { map.removeLayer(activeCluster); activeCluster = null; }
-  if (activeCampusKey) campusMarkers[activeCampusKey].setOpacity(1);
   activeCampusKey = null;
   document.getElementById('backBtn').classList.remove('show');
   document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
