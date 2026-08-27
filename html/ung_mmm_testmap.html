@@ -152,7 +152,7 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 .popup-campus { font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--sand); margin-bottom:4px; }
 .popup-title  { font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:600; color:var(--gold); margin-bottom:6px; }
 .popup-desc   { font-size:0.78rem; color:var(--sand); line-height:1.5; margin-bottom:12px; }
-.popup-btn { display:inline-block; background:var(--gold); color:var(--navy); padding:6px 14px; border-radius:2px; font-size:0.72rem; font-weight:700; font-family:'Lato',sans-serif; letter-spacing:0.05em; text-decoration:none; text-transform:uppercase; }
+.popup-btn { display:inline-block; background:var(--gold); color:var(--navy); padding:6px 14px; border:none; border-radius:2px; font-size:0.72rem; font-weight:700; font-family:'Lato',sans-serif; letter-spacing:0.05em; text-decoration:none; text-transform:uppercase; cursor:pointer; }
 .popup-btn:hover { background:var(--gold-lt); }
 .popup-btn-disabled { display:inline-block; color:var(--stone); padding:6px 14px; border:0.5px solid rgba(138,122,106,0.3); border-radius:2px; font-size:0.72rem; font-family:'Lato',sans-serif; letter-spacing:0.05em; text-transform:uppercase; cursor:not-allowed; }
 .popup-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
@@ -246,11 +246,11 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 const CAMPUSES = {
   dahlonega:   { name:'Dahlonega Campus',   lat:34.5297,  lng:-83.9849,  zoom:16, poiZoom:18, active:true, campusCode:2,
     tags:['Walkway of Service','Monuments','Historic Markers'],
-    desc:'The main campus in the foothills of the Blue Ridge Mountains. Home to Price Memorial Hall and the Dahlonega Walkway of Service.',
+    desc:'The main campus in the foothills of the Blue Ridge Mountains. Home to Price Memorial Hall and the Walkway of Service.',
     btnText:'Open Walkway Viewer', btnUrl:'https://unggis.github.io/ung-facilities-maps/walkway.html' },
   gainesville: { name:'Gainesville Campus', lat:34.23474, lng:-83.86722, zoom:16, poiZoom:18, active:true, campusCode:3,
     tags:['Walkway of Service','Monuments','Historic Markers'],
-    desc:'Walkway of Service is live and additional documentation for the Gainesville campus is currently in progress.',
+    desc:'Walkway of Service is live and additional MMM documentation for the Gainesville campus is currently in progress.',
     btnText:'Open Walkway Viewer', btnUrl:'https://unggis.github.io/ung-facilities-maps/html/gc_wos.html' },
   cumming:     { name:'Cumming Campus',     lat:34.22394, lng:-84.10806, zoom:16, poiZoom:18, active:false, campusCode:1,
     tags:['Documentation in progress'],
@@ -493,7 +493,7 @@ CAMPUS_ORDER.forEach((key) => {
 
   const tagsHtml = c.tags.map(t => `<span class="popup-tag">${t}</span>`).join('');
   const btnHtml = c.active
-    ? `<a class="popup-btn" href="${c.btnUrl}" target="_blank">${c.btnText} &#8599;</a>`
+    ? `<button class="popup-btn" onclick="flyTo('${key}')">Zoom to Markers &amp; Memorials</button>`
     : `<span class="popup-btn-disabled">Coming Soon</span>`;
 
   marker.bindPopup(L.popup({ maxWidth:280 }).setContent(`
@@ -650,6 +650,7 @@ function flyTo(key) {
   if (c.active) {
     activeCampusKey = key;
     document.getElementById('backBtn').classList.add('show');
+    campusMarkers[key].closePopup();
     // fade the big campus marker once its PoIs take over the view
     campusMarkers[key].setOpacity(0.35);
     setTimeout(() => loadCampusPOIs(key), 600);
