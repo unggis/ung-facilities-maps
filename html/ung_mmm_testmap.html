@@ -287,9 +287,10 @@ const CAMPUSES = {
   blueridge:   { name:'Blue Ridge Campus',  lat:34.88866, lng:-84.29174, zoom:16, poiZoom:18, active:false, campusCode:0,
     tags:['Documentation in progress'],
     desc:'Documentation for the Blue Ridge campus is currently in progress.' },
-  oconee:      { name:'Oconee Campus',      lat:33.86621, lng:-83.42595, zoom:16, poiZoom:18, active:false, campusCode:4,
-    tags:['Documentation in progress'],
-    desc:'Documentation for the Oconee campus is currently in progress.' },
+  oconee: { name:'Oconee Campus', lat:33.86621, lng:-83.42595, zoom:16, poiZoom:18, active:true, campusCode:4,
+  tags:['Monuments','Markers'],  // or whatever fits what's actually catalogued there
+  desc:'UNG\'s Oconee Campus in Watkinsville, the Artland of Georgia, offers a small-campus environment just south of Athens, fostering close connections between students and faculty.',
+  btnText:'Open Walkway Viewer', btnUrl:'...' },  // only if Oconee has its own walkway page; drop this line if not
 };
 const CAMPUS_ORDER = ['blueridge','cumming','dahlonega','gainesville','oconee'];
 
