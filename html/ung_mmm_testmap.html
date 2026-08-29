@@ -39,7 +39,7 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
   position:absolute; top:12px; left:12px; z-index:1000;
   background:rgba(0,30,70,0.94);
   border:1px solid rgba(201,168,76,0.4);
-  border-radius:3px; padding:10px 10px 8px; min-width:120px;
+  border-radius:3px; padding:10px 10px 8px; min-width:150px;
   box-shadow:0 2px 12px rgba(0,0,0,0.4);
 }
 .campus-panel-title {
@@ -50,7 +50,8 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 }
 .zoom-level { color:var(--gold); font-weight:700; letter-spacing:0.02em; }
 .campus-btn {
-  display:block; width:100%; background:var(--navy);
+  display:flex; justify-content:space-between; align-items:center;
+  width:100%; background:var(--navy);
   border:1px solid rgba(201,168,76,0.3); border-radius:2px;
   color:var(--parch); padding:6px 12px; font-size:0.78rem;
   font-family:'Lato', sans-serif; cursor:pointer; margin-bottom:5px;
@@ -60,6 +61,8 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 .campus-btn:last-child { margin-bottom:0; }
 .campus-btn:hover { background:rgba(201,168,76,0.15); border-color:var(--gold); color:var(--gold-lt); }
 .campus-btn.active { background:var(--gold); border-color:var(--gold); color:var(--navy); font-weight:700; }
+.campus-count { font-size:0.68rem; color:var(--sand); font-weight:400; margin-left:8px; }
+.campus-btn.active .campus-count { color:var(--navy-dk); }
 
 .back-btn {
   display:none; align-items:center; gap:6px;
@@ -71,7 +74,7 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 .back-btn:hover { background:rgba(201,168,76,0.15); }
 .back-btn.show { display:flex; }
 
-/* ── Legend / filter panel ── */
+/* ── Legend / filter panel (shown only in campus-detail view) ── */
 .legend {
   position:absolute; bottom:20px; right:12px; z-index:1000;
   background:rgba(0,30,70,0.92);
@@ -79,6 +82,7 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
   padding:10px 14px; font-size:0.72rem; color:var(--sand);
   max-width:230px;
 }
+.legend:empty { display:none; }
 .legend-title {
   font-family:'Cormorant Garamond', serif; color:var(--gold);
   font-size:0.88rem; margin-bottom:8px; font-weight:600;
@@ -89,7 +93,6 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
   cursor:default; user-select:none;
 }
 .legend-row:last-child { margin-bottom:0; }
-.legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; border:1.5px solid rgba(255,255,255,0.3); }
 .legend-row.filterable { cursor:pointer; padding:2px 4px; margin:0 -4px 3px; border-radius:2px; }
 .legend-row.filterable:hover { background:rgba(201,168,76,0.08); }
 .legend-row.off { opacity:0.35; }
@@ -258,11 +261,11 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 
 <div class="campus-panel">
   <div class="campus-panel-title">Campus <span class="zoom-level" id="zoomLevel"></span></div>
-  <button class="campus-btn" onclick="flyTo('blueridge')">Blue Ridge</button>
-  <button class="campus-btn" onclick="flyTo('cumming')">Cumming</button>
-  <button class="campus-btn" onclick="flyTo('dahlonega')">Dahlonega</button>
-  <button class="campus-btn" onclick="flyTo('gainesville')">Gainesville</button>
-  <button class="campus-btn" onclick="flyTo('oconee')">Oconee</button>
+  <button class="campus-btn" onclick="flyTo('blueridge')">Blue Ridge <span class="campus-count" id="count-blueridge"></span></button>
+  <button class="campus-btn" onclick="flyTo('cumming')">Cumming <span class="campus-count" id="count-cumming"></span></button>
+  <button class="campus-btn" onclick="flyTo('dahlonega')">Dahlonega <span class="campus-count" id="count-dahlonega"></span></button>
+  <button class="campus-btn" onclick="flyTo('gainesville')">Gainesville <span class="campus-count" id="count-gainesville"></span></button>
+  <button class="campus-btn" onclick="flyTo('oconee')">Oconee <span class="campus-count" id="count-oconee"></span></button>
   <button class="back-btn" id="backBtn" onclick="showOverview()">&#8249; All Campuses</button>
 </div>
 
@@ -275,23 +278,19 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 const CAMPUSES = {
   dahlonega:   { name:'Dahlonega Campus',   lat:34.5297,  lng:-83.9849,  zoom:16, poiZoom:18, active:true, campusCode:2,
     tags:['Walkway of Service','Monuments','Historic Markers'],
-    desc:'The main campus in the foothills of the Blue Ridge Mountains. Home to Price Memorial Hall and the Walkway of Service.',
-    btnText:'Open Walkway Viewer', btnUrl:'https://unggis.github.io/ung-facilities-maps/walkway.html' },
+    desc:'The main campus in the foothills of the Blue Ridge Mountains. Home to Price Memorial Hall and the Walkway of Service.' },
   gainesville: { name:'Gainesville Campus', lat:34.236050, lng:-83.867558, zoom:14, poiZoom:15, active:true, campusCode:3,
     tags:['Walkway of Service','Monuments','Historic Markers'],
-    desc:'Monuments, Markers and Memorials for the Gainesville campus are currently being updated!',
-    btnText:'Open Walkway Viewer', btnUrl:'https://unggis.github.io/ung-facilities-maps/html/gc_wos.html' },
+    desc:'Monuments, Markers and Memorials for the Gainesville campus are currently being updated!' },
   cumming:     { name:'Cumming Campus',     lat:34.22394, lng:-84.10806, zoom:16, poiZoom:18, active:false, campusCode:1,
     tags:['Documentation in progress'],
     desc:'Documentation for the Cumming campus is currently in progress.' },
-  blueridge: { name:'Blue Ridge Campus', lat:34.88866, lng:-84.29174, zoom:16, poiZoom:18, active:true, campusCode:0,
-    tags:['Markers','Memorials'],
-    desc:'A mountain-town campus in Blue Ridge, home to the new David E. Ralston Hall, named for the UNG alumnus who served as Georgia\'s longest-tenured House Speaker.',
-    btnText:'Open Walkway Viewer', btnUrl:'...' },  // remove this line — Blue Ridge has no walkway viewer page
-  oconee: { name:'Oconee Campus', lat:33.86621, lng:-83.42595, zoom:16, poiZoom:18, active:true, campusCode:4,
-  tags:['Monuments','Markers'],  // or whatever fits what's actually catalogued there
-  desc:'UNG\'s Oconee Campus in Watkinsville, the Artland of Georgia, offers a small-campus environment just south of Athens, fostering close connections between students and faculty.',
-  btnText:'Open Walkway Viewer', btnUrl:'...' },  // only if Oconee has its own walkway page; drop this line if not
+  blueridge:   { name:'Blue Ridge Campus',  lat:34.88866, lng:-84.29174, zoom:16, poiZoom:18, active:true, campusCode:0,
+    tags:['Ralston Hall','Memorials','New Campus'],
+    desc:'A mountain-town campus in Blue Ridge, home to the new David E. Ralston Hall, named for the UNG alumnus who served as Georgia\u2019s longest-tenured House Speaker.' },
+  oconee:      { name:'Oconee Campus',      lat:33.86621, lng:-83.42595, zoom:16, poiZoom:18, active:true, campusCode:4,
+    tags:['Monuments','Markers'],
+    desc:'UNG\u2019s Oconee Campus in Watkinsville, the Artland of Georgia, offers a small-campus environment just south of Athens, fostering close connections between students and faculty.' },
 };
 const CAMPUS_ORDER = ['blueridge','cumming','dahlonega','gainesville','oconee'];
 
@@ -339,8 +338,8 @@ const MOUNT_META = {
 /* ======================================================================
    DATA SOURCE — live ArcGIS Online hosted feature service
    ----------------------------------------------------------------------
-   Single service, single point layer ("MMM", layer id 0), shared across
-   all five campuses via the Campus coded-value field:
+   Single service, single point layer ("MMM"), shared across all five
+   campuses via the Campus coded-value field:
      0 Blue Ridge · 1 Cumming · 2 Dahlonega · 3 Gainesville · 4 Oconee
    (matches CAMPUSES[key].campusCode above)
 
@@ -415,6 +414,37 @@ async function fetchServicePOIs(campusCode) {
     type:'FeatureCollection',
     features: (geojson.features || []).map(esriFeatureToMapFeature),
   };
+}
+
+/* Per-campus feature counts for the campus button badges. One grouped
+   stats query gets all five campuses' counts in a single round trip,
+   same efficiency pattern as the Hub category-count cards. Campuses
+   with zero results (or campus mismatched) show an em dash rather than
+   "0", reading as "nothing here yet" rather than a confirmed zero. */
+async function loadCampusCounts() {
+  try {
+    const layerId = await resolveMmmLayerId();
+    const statsUrl = `${MMM_SERVICE_URL}/${layerId}/query?where=1=1&groupByFieldsForStatistics=Campus&outStatistics=` +
+      encodeURIComponent(JSON.stringify([{ statisticType:'count', onStatisticField:'Campus', outStatisticFieldName:'cnt' }])) +
+      `&f=json`;
+    const res = await fetch(statsUrl);
+    const data = await res.json();
+
+    const countsByCode = {};
+    (data.features || []).forEach(f => {
+      countsByCode[f.attributes.Campus] = f.attributes.cnt;
+    });
+
+    CAMPUS_ORDER.forEach((key) => {
+      const el = document.getElementById(`count-${key}`);
+      if (!el) return;
+      const count = countsByCode[CAMPUSES[key].campusCode];
+      el.textContent = count ? count : '\u2014';
+    });
+  } catch (e) {
+    console.warn('Campus counts unavailable:', e.message);
+    // leave badges blank rather than showing misleading zeros
+  }
 }
 
 /* Lazily fetch and inject photo attachment(s) when a PoI popup opens.
@@ -670,13 +700,6 @@ function buildClusterGroup(features) {
   return group;
 }
 
-function renderLegendOverview() {
-  document.getElementById('legend').innerHTML = `
-    <div class="legend-title">Monuments, Markers &amp; Memorials</div>
-    <div class="legend-row"><div class="legend-dot" style="background:#C9A84C;"></div><span>Active &mdash; viewer available</span></div>
-    <div class="legend-row"><div class="legend-dot" style="background:#5a4a30;"></div><span>Coming soon</span></div>`;
-}
-
 function renderLegendCampus(campusName, features) {
   const present = [...new Set(features.map(f => f.properties.Category || DEFAULT_CATEGORY))];
   const rows = present.map(code => {
@@ -755,11 +778,11 @@ function showOverview() {
   activeCampusKey = null;
   document.getElementById('backBtn').classList.remove('show');
   document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
-  renderLegendOverview();
+  document.getElementById('legend').innerHTML = ''; // category legend only applies in campus-detail view
   map.flyTo([34.3408,-83.9439], 8.5, { animate:true, duration:1.0 });
 }
 
-renderLegendOverview();
+loadCampusCounts();
 </script>
 </body>
 </html>
