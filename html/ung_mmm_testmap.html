@@ -34,6 +34,24 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 #map { width:100%; height:100vh; background:#e8e0d0; }
 .osm-tiles { filter: sepia(0.3) brightness(0.97) contrast(0.92); }
 
+/* ── Accessibility: visible keyboard focus on every interactive control ── */
+.campus-btn:focus-visible,
+.back-btn:focus-visible,
+.popup-btn:focus-visible,
+.mmm-lightbox-close:focus-visible,
+.mmm-lightbox-nav:focus-visible,
+.poi-popup-toggle:focus-visible,
+.poi-popup-link:focus-visible,
+.legend-row.filterable:focus-visible {
+  outline: 2px solid var(--gold-lt);
+  outline-offset: 2px;
+}
+
+/* ── Accessibility: respect reduced-motion preference ── */
+@media (prefers-reduced-motion: reduce) {
+  .marker-pulse { animation: none !important; }
+}
+
 /* ── Campus panel ── */
 .campus-panel {
   position:absolute; top:12px; left:12px; z-index:1000;
@@ -93,7 +111,13 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
   cursor:default; user-select:none;
 }
 .legend-row:last-child { margin-bottom:0; }
-.legend-row.filterable { cursor:pointer; padding:2px 4px; margin:0 -4px 3px; border-radius:2px; }
+/* .legend-row.filterable is now a real <button> — reset native button chrome
+   so it still looks like the plain row it always did, but is keyboard-operable */
+.legend-row.filterable {
+  cursor:pointer; padding:2px 4px; margin:0 -4px 3px; border-radius:2px;
+  border:none; background:none; font:inherit; color:inherit;
+  width:calc(100% + 8px); text-align:left;
+}
 .legend-row.filterable:hover { background:rgba(201,168,76,0.08); }
 .legend-row.off { opacity:0.35; }
 .legend-count { margin-left:auto; font-size:0.64rem; color:var(--stone); }
@@ -180,9 +204,11 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
   padding:5px 12px; border-radius:2px; text-decoration:none; margin-bottom:10px;
 }
 .poi-popup-link:hover { background:var(--gold-lt); }
+/* .poi-popup-toggle is now a real <button> — reset native chrome */
 .poi-popup-toggle {
   font-size:0.66rem; letter-spacing:0.04em; text-transform:uppercase;
   color:var(--gold-lt); cursor:pointer; margin-bottom:6px; user-select:none;
+  border:none; background:none; font-family:inherit; padding:0; display:block;
 }
 .poi-popup-toggle:hover { color:var(--gold); }
 .poi-popup-fulltext {
@@ -252,10 +278,10 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 <div id="map"></div>
 
 <div class="mmm-lightbox" id="mmmLightbox" onclick="closeLightbox()">
-  <button class="mmm-lightbox-close" onclick="closeLightbox(event)">&times;</button>
-  <button class="mmm-lightbox-nav prev" id="mmmLightboxPrev" onclick="navLightbox(event,-1)">&#8249;</button>
+  <button class="mmm-lightbox-close" onclick="closeLightbox(event)" aria-label="Close photo">&times;</button>
+  <button class="mmm-lightbox-nav prev" id="mmmLightboxPrev" onclick="navLightbox(event,-1)" aria-label="Previous photo">&#8249;</button>
   <img id="mmmLightboxImg" src="" alt="" onclick="event.stopPropagation()">
-  <button class="mmm-lightbox-nav next" id="mmmLightboxNext" onclick="navLightbox(event,1)">&#8250;</button>
+  <button class="mmm-lightbox-nav next" id="mmmLightboxNext" onclick="navLightbox(event,1)" aria-label="Next photo">&#8250;</button>
   <div class="mmm-lightbox-counter" id="mmmLightboxCounter" style="display:none;"></div>
 </div>
 
@@ -449,8 +475,10 @@ async function loadCampusCounts() {
 
 /* Lazily fetch and inject photo attachment(s) when a PoI popup opens.
    Single image -> same inline photo as before. Multiple -> thumbnail
-   strip, each opening the lightbox with prev/next navigation. */
-function wireAttachmentPhoto(marker, objectId) {
+   strip, each opening the lightbox with prev/next navigation.
+   `title` is used to build meaningful alt text on the injected images,
+   and is cached alongside each gallery for the lightbox's alt text too. */
+function wireAttachmentPhoto(marker, objectId, title) {
   marker.on('popupopen', async () => {
     const el = document.getElementById(`poi-photo-${objectId}`);
     if (!el || el.dataset.loaded) return;
@@ -464,12 +492,13 @@ function wireAttachmentPhoto(marker, objectId) {
 
       const urls = images.map(a => `${MMM_SERVICE_URL}/${layerId}/${objectId}/attachments/${a.id}`);
       mmmGalleries[objectId] = urls;
+      mmmGalleryTitles[objectId] = title || 'Untitled';
 
       if (urls.length === 1) {
-        el.outerHTML = `<img id="poi-photo-${objectId}" class="poi-popup-photo" src="${urls[0]}" alt="" onclick="openLightbox(${objectId},0)">`;
+        el.outerHTML = `<img id="poi-photo-${objectId}" class="poi-popup-photo" src="${urls[0]}" alt="${esc(title)} photograph" onclick="openLightbox(${objectId},0)">`;
       } else {
         const thumbs = urls.map((u, i) =>
-          `<img class="poi-popup-thumb" src="${u}" alt="" onclick="openLightbox(${objectId},${i})">`).join('');
+          `<img class="poi-popup-thumb" src="${u}" alt="${esc(title)} photograph ${i + 1} of ${urls.length}" onclick="openLightbox(${objectId},${i})">`).join('');
         el.outerHTML = `<div class="poi-popup-gallery" id="poi-photo-${objectId}">${thumbs}</div>`;
       }
     } catch (e) { /* leave the no-photo placeholder in place */ }
@@ -477,11 +506,15 @@ function wireAttachmentPhoto(marker, objectId) {
 }
 
 const mmmGalleries = {};
+const mmmGalleryTitles = {};
 let lightboxState = { objectId:null, index:0 };
 
 function renderLightbox() {
   const urls = mmmGalleries[lightboxState.objectId] || [];
-  document.getElementById('mmmLightboxImg').src = urls[lightboxState.index] || '';
+  const title = mmmGalleryTitles[lightboxState.objectId] || '';
+  const img = document.getElementById('mmmLightboxImg');
+  img.src = urls[lightboxState.index] || '';
+  img.alt = title ? `${title} photograph` : '';
   const multi = urls.length > 1;
   document.getElementById('mmmLightboxPrev').style.display = multi ? 'flex' : 'none';
   document.getElementById('mmmLightboxNext').style.display = multi ? 'flex' : 'none';
@@ -658,7 +691,7 @@ function poiPopupHtml(props) {
   const linkHtml = props.WebURL
     ? `<a class="poi-popup-link" href="${esc(props.WebURL)}" target="_blank" rel="noopener">Learn More &#8599;</a>` : '';
   const fullTextHtml = props.Text
-    ? `<div class="poi-popup-toggle" onclick="toggleFullText(this,'ft-${props.OBJECTID}')">Read full marker text &#9662;</div>
+    ? `<button class="poi-popup-toggle" onclick="toggleFullText(this,'ft-${props.OBJECTID}')" aria-expanded="false">Read full marker text &#9662;</button>
        <div class="poi-popup-fulltext" id="ft-${props.OBJECTID}" style="display:none;">${esc(props.Text).replace(/\n/g,'<br>')}</div>` : '';
   return `
     <div class="poi-popup">
@@ -678,6 +711,7 @@ function toggleFullText(el, targetId) {
   const showing = box.style.display !== 'none';
   box.style.display = showing ? 'none' : 'block';
   el.innerHTML = showing ? 'Read full marker text &#9662;' : 'Hide full marker text &#9652;';
+  el.setAttribute('aria-expanded', showing ? 'false' : 'true');
 }
 
 function buildClusterGroup(features) {
@@ -694,7 +728,7 @@ function buildClusterGroup(features) {
       const [lng, lat] = f.geometry.coordinates;
       const marker = L.marker([lat, lng], { icon: categoryBadgeIcon(f.properties.Category) });
       marker.bindPopup(poiPopupHtml(f.properties), { maxWidth:280 });
-      wireAttachmentPhoto(marker, f.properties.OBJECTID);
+      wireAttachmentPhoto(marker, f.properties.OBJECTID, f.properties.Title);
       group.addLayer(marker);
     });
   return group;
@@ -707,11 +741,11 @@ function renderLegendCampus(campusName, features) {
     const count = features.filter(f => (f.properties.Category || DEFAULT_CATEGORY) === code).length;
     const isOn = activeFilters.has(code);
     return `
-      <div class="legend-row filterable ${isOn ? '' : 'off'}" onclick="toggleCategory('${code}')">
+      <button class="legend-row filterable ${isOn ? '' : 'off'}" onclick="toggleCategory('${code}')" aria-pressed="${isOn}">
         <div class="legend-badge" style="background:${meta.color};">${code.replace('_','')}</div>
         <span>${meta.label}</span>
         <span class="legend-count">${count}</span>
-      </div>`;
+      </button>`;
   }).join('');
   document.getElementById('legend').innerHTML = `
     <div class="legend-title">${campusName}</div>
