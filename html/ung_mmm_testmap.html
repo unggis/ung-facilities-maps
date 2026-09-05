@@ -363,44 +363,16 @@ const MOUNT_META = {
 
 /* ======================================================================
    DATA SOURCE — live ArcGIS Online hosted feature service
-   ----------------------------------------------------------------------
-   Single service, single point layer ("MMM"), shared across all five
-   campuses via the Campus coded-value field:
-     0 Blue Ridge · 1 Cumming · 2 Dahlonega · 3 Gainesville · 4 Oconee
-   (matches CAMPUSES[key].campusCode above)
-
-   Field names come straight from the FGDB schema as published:
-     Name, Notes, Text, Category, Mount, Confidence, CaptureDate,
-     Honoree, Status, Campus, WebURL, ID (custom GUID), GlobalID, OBJECTID
-
-   There is no PhotoURL field — photos ride as geodatabase attachments
-   (hasAttachments: true). Rather than querying every feature's
-   attachments up front, each PoI marker fetches its own attachment
-   list lazily, the moment its popup is opened (see wireAttachmentPhoto
-   below) — cheap for a walkway with dozens of points, versus dozens of
-   extra requests on every campus load.
-
-   f=geojson output from the ArcGIS REST API is always reprojected to
-   WGS84 (EPSG:4326) by the service itself, regardless of the layer's
-   native GASPW storage SR — so no client-side reprojection is needed
-   here; that's handled entirely on Esri's end for this query format.
-
-   If the service is unreachable (offline, sharing reverted, network
-   restrictions) the map falls back to the SAMPLE data below so the
-   layer stays visible and testable either way.
 ====================================================================== */
 const MMM_SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Monuments_Markers_Memorials_Points/FeatureServer';
 
-/* The hosted layer's numeric id can shift on republish/overwrite in AGOL
-   (it isn't guaranteed to stay 0), so resolve it once at runtime and
-   cache it rather than hardcoding a layer index that can go stale. */
 let mmmLayerIdPromise = null;
 function resolveMmmLayerId() {
   if (!mmmLayerIdPromise) {
     mmmLayerIdPromise = fetch(`${MMM_SERVICE_URL}?f=json`)
       .then(res => res.json())
       .then(data => (data.layers && data.layers.length ? data.layers[0].id : 0))
-      .catch(() => 0); // last-resort fallback if the service is briefly unreachable
+      .catch(() => 0);
   }
   return mmmLayerIdPromise;
 }
@@ -442,11 +414,6 @@ async function fetchServicePOIs(campusCode) {
   };
 }
 
-/* Per-campus feature counts for the campus button badges. One grouped
-   stats query gets all five campuses' counts in a single round trip,
-   same efficiency pattern as the Hub category-count cards. Campuses
-   with zero results (or campus mismatched) show an em dash rather than
-   "0", reading as "nothing here yet" rather than a confirmed zero. */
 async function loadCampusCounts() {
   try {
     const layerId = await resolveMmmLayerId();
@@ -469,15 +436,9 @@ async function loadCampusCounts() {
     });
   } catch (e) {
     console.warn('Campus counts unavailable:', e.message);
-    // leave badges blank rather than showing misleading zeros
   }
 }
 
-/* Lazily fetch and inject photo attachment(s) when a PoI popup opens.
-   Single image -> same inline photo as before. Multiple -> thumbnail
-   strip, each opening the lightbox with prev/next navigation.
-   `title` is used to build meaningful alt text on the injected images,
-   and is cached alongside each gallery for the lightbox's alt text too. */
 function wireAttachmentPhoto(marker, objectId, title) {
   marker.on('popupopen', async () => {
     const el = document.getElementById(`poi-photo-${objectId}`);
@@ -488,7 +449,7 @@ function wireAttachmentPhoto(marker, objectId, title) {
       const res = await fetch(`${MMM_SERVICE_URL}/${layerId}/${objectId}/attachments?f=json`);
       const data = await res.json();
       const images = (data.attachmentInfos || []).filter(a => (a.contentType || '').startsWith('image/'));
-      if (!images.length) return; // leave the no-photo placeholder in place
+      if (!images.length) return;
 
       const urls = images.map(a => `${MMM_SERVICE_URL}/${layerId}/${objectId}/attachments/${a.id}`);
       mmmGalleries[objectId] = urls;
@@ -596,11 +557,22 @@ const map = L.map('map', {
 });
 map.once('focus', () => map.scrollWheelZoom.enable());
 
-/* Campus-level pulsing markers disappear entirely once zoomed in past
-   this level — at that point the PoI badges are the focus, and this
-   applies on ANY zoom change (button, marker click, or manual scroll).
-   Only active campuses hide this way; inactive "coming soon" campuses
-   have nothing else to show at that zoom, so their marker stays put. */
+/* ── Oconee-only overzoom ────────────────────────────────────────────
+   Oconee has several MMM points close enough together that 19 isn't
+   enough to visually separate them. Rather than raising maxZoom for
+   every campus, the ceiling is raised only while Oconee is the active
+   campus (set/cleared in flyTo / showOverview below) — everywhere
+   else keeps the normal 19 cap. maxNativeZoom stays at the tile
+   source's real resolution, so anything past it is Leaflet upscaling
+   the last real tile rather than fetching sharper imagery. */
+const DEFAULT_MAX_ZOOM = 19;
+const OCONEE_MAX_ZOOM = 22;
+function setOconeeOverzoom(enabled) {
+  const z = enabled ? OCONEE_MAX_ZOOM : DEFAULT_MAX_ZOOM;
+  map.setMaxZoom(z);
+  baseTileLayer.options.maxZoom = z; // maxNativeZoom governs actual tile fetches
+}
+
 const MARKER_HIDE_ZOOM = 15;
 function updateCampusMarkerVisibility() {
   const hide = map.getZoom() >= MARKER_HIDE_ZOOM;
@@ -620,8 +592,9 @@ function updateZoomLevelDisplay() {
 map.on('zoom', updateZoomLevelDisplay);
 updateZoomLevelDisplay();
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const baseTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom:19,
+  maxNativeZoom:19, // OSM tiles stop being fetched here regardless of map.maxZoom
   attribution:'Leaflet | &copy; OpenStreetMap contributors | John Segars, UNG Facilities GIS',
   className:'osm-tiles',
 }).addTo(map);
@@ -665,10 +638,10 @@ CAMPUS_ORDER.forEach((key) => {
 });
 
 /* ---- PoI (MMM) layer state ---- */
-let activeCluster = null;      // current L.markerClusterGroup
-let activeCampusKey = null;    // campus currently in detail view
-let campusFeatureCache = {};   // key -> feature array (after fetch/sample)
-let activeFilters = new Set(); // category codes currently visible
+let activeCluster = null;
+let activeCampusKey = null;
+let campusFeatureCache = {};
+let activeFilters = new Set();
 
 function categoryBadgeIcon(code) {
   const meta = CATEGORY_META[code] || CATEGORY_META[DEFAULT_CATEGORY];
@@ -714,9 +687,15 @@ function toggleFullText(el, targetId) {
   el.setAttribute('aria-expanded', showing ? 'false' : 'true');
 }
 
-function buildClusterGroup(features) {
+function buildClusterGroup(features, campusKey) {
+  const isOconee = campusKey === 'oconee';
   const group = L.markerClusterGroup({
-    maxClusterRadius:45,
+    maxClusterRadius: isOconee ? 25 : 45,
+    // Oconee's tight cluster of points breaks apart (spiderfies) once the
+    // user reaches zoom 19, rather than waiting for the full overzoom
+    // ceiling — spiderfyOnMaxZoom is on by default, this just lowers the
+    // zoom at which "max" kicks in, scoped to this one cluster group only.
+    disableClusteringAtZoom: isOconee ? 19 : null,
     iconCreateFunction: (cluster) => L.divIcon({
       html:`<div class="mmm-cluster" style="width:36px;height:36px;font-size:0.75rem;">${cluster.getChildCount()}</div>`,
       className:'', iconSize:[36,36],
@@ -757,7 +736,7 @@ function toggleCategory(code) {
   if (activeFilters.has(code)) activeFilters.delete(code); else activeFilters.add(code);
   const features = campusFeatureCache[activeCampusKey] || [];
   if (activeCluster) map.removeLayer(activeCluster);
-  activeCluster = buildClusterGroup(features);
+  activeCluster = buildClusterGroup(features, activeCampusKey);
   activeCluster.addTo(map);
   renderLegendCampus(CAMPUSES[activeCampusKey].name, features);
 }
@@ -770,16 +749,16 @@ async function loadCampusPOIs(key) {
     if (!geojson.features.length) throw new Error('no features returned for this campus yet');
   } catch (e) {
     console.warn(`MMM service unavailable for ${key}, using sample data:`, e.message);
-    geojson = SAMPLE_POI_DATA[key]; // fallback until the service has real data / is reachable
+    geojson = SAMPLE_POI_DATA[key];
   }
   if (!geojson || !geojson.features || !geojson.features.length) return;
 
   const features = geojson.features;
   campusFeatureCache[key] = features;
-  activeFilters = new Set(features.map(f => f.properties.Category)); // all on by default
+  activeFilters = new Set(features.map(f => f.properties.Category));
 
   if (activeCluster) map.removeLayer(activeCluster);
-  activeCluster = buildClusterGroup(features);
+  activeCluster = buildClusterGroup(features, key);
   activeCluster.addTo(map);
 
   renderLegendCampus(CAMPUSES[key].name, features);
@@ -793,6 +772,8 @@ function flyTo(key) {
   document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
   const idx = CAMPUS_ORDER.indexOf(key);
   if (idx >= 0) document.querySelectorAll('.campus-btn')[idx].classList.add('active');
+
+  setOconeeOverzoom(key === 'oconee');
 
   const targetZoom = c.active ? c.poiZoom : c.zoom;
   map.flyTo([c.lat, c.lng], targetZoom, { animate:true, duration:1.2 });
@@ -808,11 +789,12 @@ function flyTo(key) {
 }
 
 function showOverview() {
+  setOconeeOverzoom(false);
   if (activeCluster) { map.removeLayer(activeCluster); activeCluster = null; }
   activeCampusKey = null;
   document.getElementById('backBtn').classList.remove('show');
   document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('legend').innerHTML = ''; // category legend only applies in campus-detail view
+  document.getElementById('legend').innerHTML = '';
   map.flyTo([34.3408,-83.9439], 8.5, { animate:true, duration:1.0 });
 }
 
