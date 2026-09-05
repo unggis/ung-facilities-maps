@@ -642,6 +642,7 @@ let activeCluster = null;
 let activeCampusKey = null;
 let campusFeatureCache = {};
 let activeFilters = new Set();
+const mmmMarkerIndex = {}; // OBJECTID -> Leaflet marker, rebuilt each time a campus's cluster is built; powers ?campus=&objectid= deep links
 
 function categoryBadgeIcon(code) {
   const meta = CATEGORY_META[code] || CATEGORY_META[DEFAULT_CATEGORY];
@@ -708,6 +709,7 @@ function buildClusterGroup(features, campusKey) {
       const marker = L.marker([lat, lng], { icon: categoryBadgeIcon(f.properties.Category) });
       marker.bindPopup(poiPopupHtml(f.properties), { maxWidth:280 });
       wireAttachmentPhoto(marker, f.properties.OBJECTID, f.properties.Title);
+      mmmMarkerIndex[f.properties.OBJECTID] = marker;
       group.addLayer(marker);
     });
   return group;
@@ -799,6 +801,49 @@ function showOverview() {
 }
 
 loadCampusCounts();
+
+/* ======================================================================
+   DEEP LINKING — ?campus=oconee&objectid=1234
+   ----------------------------------------------------------------------
+   Lets external pages (e.g. the category-counts card's "Map" link)
+   jump straight to one feature instead of an approximate coordinate.
+   flyTo() already does the campus navigation + POI load; this just
+   waits for that feature's marker to land in mmmMarkerIndex (rebuilt
+   fresh each time a campus's cluster group is built) and then uses
+   markercluster's zoomToShowLayer to spiderfy/pan/zoom as needed
+   before opening its popup — so it works whether the feature is
+   sitting alone or buried in a tight cluster.
+====================================================================== */
+function focusOnObjectId(objectId) {
+  const marker = mmmMarkerIndex[objectId];
+  if (!marker || !activeCluster) return false;
+  activeCluster.zoomToShowLayer(marker, () => marker.openPopup());
+  return true;
+}
+
+(function handleDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  const campusParam = (params.get('campus') || '').toLowerCase();
+  const objectIdParam = params.get('objectid');
+  if (!campusParam || !CAMPUSES[campusParam]) return;
+
+  flyTo(campusParam);
+  if (!objectIdParam) return;
+
+  const targetId = Number(objectIdParam);
+  // loadCampusPOIs is kicked off ~600ms into flyTo() and is itself
+  // async (service fetch), so poll briefly rather than assuming timing.
+  let attemptsLeft = 20;
+  const tryFocus = () => {
+    if (focusOnObjectId(targetId)) return;
+    if (--attemptsLeft <= 0) {
+      console.warn(`Deep link: OBJECTID ${targetId} not found on campus "${campusParam}"`);
+      return;
+    }
+    setTimeout(tryFocus, 300);
+  };
+  setTimeout(tryFocus, 700);
+})();
 </script>
 </body>
 </html>
