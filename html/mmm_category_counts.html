@@ -9,7 +9,14 @@
   html, body { background:#F4F4F4; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; width:100%; height:100%; }
   body { padding:12px 10px; }
   .mmm-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; width:100%; }
-  .mmm-card { background:#fff; border:0.5px solid #ddd; border-radius:12px; padding:1.6rem; }
+  .mmm-card {
+    background:#fff; border:0.5px solid #ddd; border-radius:12px; padding:1.6rem;
+    cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit;
+    transition:box-shadow 0.15s, border-color 0.15s;
+  }
+  .mmm-card:hover, .mmm-card:focus-visible {
+    box-shadow:0 4px 16px rgba(0,51,102,0.12); border-color:#003366; outline:none;
+  }
   .mmm-icon { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:16px; font-size:23px; }
   .mmm-count { font-size:34px; font-weight:700; color:#003366; margin-bottom:8px; min-height:40px; }
   .mmm-title { font-size:15px; font-weight:600; margin-bottom:7px; color:#111; }
@@ -17,57 +24,148 @@
   @media (max-width:640px) {
     .mmm-grid { grid-template-columns:1fr; }
   }
+
+  /* ── Modal ── */
+  .mmm-modal-backdrop {
+    display:none; position:fixed; inset:0; z-index:1000;
+    background:rgba(0,20,50,0.55); align-items:flex-start; justify-content:center;
+    padding:4vh 16px; overflow-y:auto;
+  }
+  .mmm-modal-backdrop.show { display:flex; }
+  .mmm-modal {
+    background:#fff; border-radius:12px; width:100%; max-width:760px;
+    box-shadow:0 12px 48px rgba(0,0,0,0.35); overflow:hidden;
+  }
+  .mmm-modal-header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 22px; border-bottom:1px solid #eee;
+  }
+  .mmm-modal-title { font-size:18px; font-weight:700; color:#003366; }
+  .mmm-modal-sub { font-size:12.5px; color:#777; margin-top:2px; }
+  .mmm-modal-close {
+    background:none; border:none; font-size:22px; line-height:1; color:#777;
+    cursor:pointer; padding:4px 8px; border-radius:6px;
+  }
+  .mmm-modal-close:hover, .mmm-modal-close:focus-visible { background:#f2f2f2; color:#111; outline:none; }
+  .mmm-modal-body { padding:0 22px 22px; max-height:60vh; overflow-y:auto; }
+  .mmm-modal-status { padding:28px 0; text-align:center; color:#888; font-size:13.5px; }
+
+  table.mmm-table { width:100%; border-collapse:collapse; margin-top:14px; }
+  table.mmm-table caption { text-align:left; font-size:13px; font-weight:700; color:#003366; padding:14px 0 6px; }
+  table.mmm-table th, table.mmm-table td {
+    text-align:left; padding:9px 10px; font-size:13px; border-bottom:1px solid #f0f0f0; vertical-align:top;
+  }
+  table.mmm-table th {
+    font-size:11px; text-transform:uppercase; letter-spacing:0.04em; color:#888;
+    border-bottom:1px solid #ddd; position:sticky; top:0; background:#fff;
+  }
+  table.mmm-table tr:last-child td { border-bottom:none; }
+  .mmm-feat-name { font-weight:600; color:#111; }
+  .mmm-status-badge {
+    display:inline-block; font-size:10.5px; font-weight:600; padding:2px 8px;
+    border-radius:20px; background:#eef2f6; color:#3D5A80; white-space:nowrap;
+  }
+  .mmm-link-group { display:flex; gap:10px; white-space:nowrap; }
+  .mmm-link {
+    font-size:12px; font-weight:600; color:#003366; text-decoration:none; white-space:nowrap;
+  }
+  .mmm-link:hover { text-decoration:underline; }
 </style>
 </head>
 <body>
 
 <div class="mmm-grid">
-  <div class="mmm-card">
+  <button class="mmm-card" onclick="openCategoryModal('MON')" aria-haspopup="dialog">
     <div class="mmm-icon" style="background:#f5e6e6;">🏅</div>
     <div class="mmm-count" id="mmm-count-MON">&nbsp;</div>
     <div class="mmm-title">Monuments</div>
-    <div class="mmm-desc">Fountains, sculptures, and commemorative dedications across five campuses</div>
-  </div>
-  <div class="mmm-card">
+    <div class="mmm-desc">Statues, sculptures, and commemorative dedications across five campuses</div>
+  </button>
+  <button class="mmm-card" onclick="openCategoryModal('MRK')" aria-haspopup="dialog">
     <div class="mmm-icon" style="background:#e6eaf5;">📜</div>
     <div class="mmm-count" id="mmm-count-MRK">&nbsp;</div>
     <div class="mmm-title">Markers</div>
     <div class="mmm-desc">Historical, dedicatory, and interpretive markers spanning campus traditions, building history, and Georgia's gold rush and Civil War heritage</div>
-  </div>
-  <div class="mmm-card">
+  </button>
+  <button class="mmm-card" onclick="openCategoryModal('MEM')" aria-haspopup="dialog">
     <div class="mmm-icon" style="background:#e8f0e8;">🕊️</div>
     <div class="mmm-count" id="mmm-count-MEM">&nbsp;</div>
     <div class="mmm-title">Memorials</div>
     <div class="mmm-desc">Benches, gardens, and plaques honoring students, faculty, alumni, and community members</div>
-  </div>
-  <div class="mmm-card">
+  </button>
+  <button class="mmm-card" onclick="openCategoryModal('MIL_EQ')" aria-haspopup="dialog">
     <div class="mmm-icon" style="background:#e9edf0;">🎖️</div>
     <div class="mmm-count" id="mmm-count-MIL_EQ">&nbsp;</div>
     <div class="mmm-title">Military Equipment</div>
     <div class="mmm-desc">Static ordnance and equipment displays reflecting UNG's identity as the Military College of Georgia</div>
-  </div>
-  <div class="mmm-card">
+  </button>
+  <button class="mmm-card" onclick="openCategoryModal('NM_BLDG')" aria-haspopup="dialog">
     <div class="mmm-icon" style="background:#eaeef5;">🏛️</div>
     <div class="mmm-count" id="mmm-count-NM_BLDG">&nbsp;</div>
     <div class="mmm-title">Named Buildings/Spaces</div>
     <div class="mmm-desc">Buildings, fields, and rooms named in recognition of benefactors and honorees</div>
-  </div>
-  <div class="mmm-card">
+  </button>
+  <button class="mmm-card" onclick="openCategoryModal('OTH')" aria-haspopup="dialog">
     <div class="mmm-icon" style="background:#eeeeee;">📍</div>
     <div class="mmm-count" id="mmm-count-OTH">&nbsp;</div>
     <div class="mmm-title">Other</div>
     <div class="mmm-desc">Items that don't fit the categories above</div>
+  </button>
+</div>
+
+<!-- ── Category detail modal ─────────────────────────────────────────
+     Populated live from the same MMM feature service the counts and
+     the Hub's Leaflet map both read from. Nothing here is hardcoded —
+     add a record in ArcGIS Pro, republish/overwrite to AGOL, and the
+     next time someone opens this card the new row is just there. -->
+<div class="mmm-modal-backdrop" id="mmmModalBackdrop" onclick="if(event.target===this) closeCategoryModal()">
+  <div class="mmm-modal" role="dialog" aria-modal="true" aria-labelledby="mmmModalTitle">
+    <div class="mmm-modal-header">
+      <div>
+        <div class="mmm-modal-title" id="mmmModalTitle">Category</div>
+        <div class="mmm-modal-sub" id="mmmModalSub"></div>
+      </div>
+      <button class="mmm-modal-close" onclick="closeCategoryModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="mmm-modal-body" id="mmmModalBody">
+      <div class="mmm-modal-status">Loading&hellip;</div>
+    </div>
   </div>
 </div>
 
 <script>
-(async function loadMmmCategoryCounts() {
-  const SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Monuments_Markers_Memorials_Points/FeatureServer';
-  try {
-    const svcRes = await fetch(`${SERVICE_URL}?f=json`);
-    const svc = await svcRes.json();
-    const layerId = (svc.layers && svc.layers.length) ? svc.layers[0].id : 0;
+const SERVICE_URL = 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/Monuments_Markers_Memorials_Points/FeatureServer';
 
+const CATEGORY_LABELS = {
+  MON:'Monuments', MRK:'Markers', MEM:'Memorials',
+  MIL_EQ:'Military Equipment', NM_BLDG:'Named Buildings/Spaces', OTH:'Other',
+};
+// keys must match CAMPUS_ORDER in the Leaflet map (mmm-map.html) exactly —
+// that's what the deep-link ?campus= param is matched against there.
+const CAMPUS_SLUGS = { 0:'blueridge', 1:'cumming', 2:'dahlonega', 3:'gainesville', 4:'oconee' };
+const CAMPUS_LABELS = { 0:'Blue Ridge', 1:'Cumming', 2:'Dahlonega', 3:'Gainesville', 4:'Oconee' };
+const STATUS_LABELS = { ACT:'Active', REM:'Removed', REL:'Relocated', DMG:'Damaged', UR:'Under Restoration', PP:'Proposed/Planned' };
+const MMM_MAP_URL = 'https://unggis.github.io/ung-facilities-maps/html/mmm_map.html';
+
+let mmmLayerIdPromise = null;
+function resolveMmmLayerId() {
+  if (!mmmLayerIdPromise) {
+    mmmLayerIdPromise = fetch(`${SERVICE_URL}?f=json`)
+      .then(res => res.json())
+      .then(data => (data.layers && data.layers.length) ? data.layers[0].id : 0)
+      .catch(() => 0);
+  }
+  return mmmLayerIdPromise;
+}
+
+function esc(str) {
+  return String(str == null ? '' : str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---- Category counts (unchanged behavior) ---- */
+(async function loadMmmCategoryCounts() {
+  try {
+    const layerId = await resolveMmmLayerId();
     const statsUrl = `${SERVICE_URL}/${layerId}/query?where=1=1&groupByFieldsForStatistics=Category&outStatistics=` +
       encodeURIComponent(JSON.stringify([{ statisticType:'count', onStatisticField:'Category', outStatisticFieldName:'cnt' }])) +
       `&f=json`;
@@ -80,7 +178,7 @@
       counts[cat] = (counts[cat] || 0) + f.attributes.cnt;
     });
 
-    ['MON','MRK','MEM','MIL_EQ','NM_BLDG','OTH'].forEach(code => {
+    Object.keys(CATEGORY_LABELS).forEach(code => {
       const el = document.getElementById(`mmm-count-${code}`);
       if (el) el.textContent = counts[code] || 0;
     });
@@ -88,6 +186,95 @@
     console.warn('MMM category counts unavailable:', e.message);
   }
 })();
+
+/* ---- Category detail modal ---- */
+let mmmModalFeatureCache = {}; // code -> features, so re-opening the same card in a session doesn't re-fetch
+
+function mapLink(campusCode, objectId) {
+  const slug = CAMPUS_SLUGS[campusCode];
+  if (!slug) return null; // unknown/unmapped campus code — no safe deep link to build
+  return `${MMM_MAP_URL}?campus=${slug}&objectid=${objectId}`;
+}
+
+function renderModalRows(features) {
+  if (!features.length) {
+    return `<div class="mmm-modal-status">No features on file in this category yet.</div>`;
+  }
+
+  // group by campus, alphabetical within each, so a long list stays scannable
+  const byCampus = {};
+  features.forEach(f => {
+    const campusName = CAMPUS_LABELS[f.properties.Campus] ?? 'Unspecified';
+    (byCampus[campusName] = byCampus[campusName] || []).push(f);
+  });
+
+  return Object.keys(byCampus).sort().map(campusName => {
+    const rows = byCampus[campusName]
+      .sort((a, b) => (a.properties.Name || '').localeCompare(b.properties.Name || ''))
+      .map(f => {
+        const p = f.properties;
+        const statusLabel = STATUS_LABELS[p.Status] || p.Status || 'Active';
+        const links = [];
+        const link = mapLink(p.Campus, p.OBJECTID);
+        if (link) links.push(`<a class="mmm-link" href="${link}" target="_blank" rel="noopener">Map &#8599;</a>`);
+        if (p.WebURL) links.push(`<a class="mmm-link" href="${esc(p.WebURL)}" target="_blank" rel="noopener">More &#8599;</a>`);
+        return `
+          <tr>
+            <td class="mmm-feat-name">${esc(p.Name) || 'Untitled'}</td>
+            <td>${esc(p.Honoree) || '&mdash;'}</td>
+            <td><span class="mmm-status-badge">${esc(statusLabel)}</span></td>
+            <td><div class="mmm-link-group">${links.join('') || '&mdash;'}</div></td>
+          </tr>`;
+      }).join('');
+
+    return `
+      <table class="mmm-table">
+        <caption>${esc(campusName)} &middot; ${byCampus[campusName].length}</caption>
+        <thead>
+          <tr><th>Name</th><th>Honoree</th><th>Status</th><th>Links</th></tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }).join('');
+}
+
+async function openCategoryModal(code) {
+  const backdrop = document.getElementById('mmmModalBackdrop');
+  const body = document.getElementById('mmmModalBody');
+  document.getElementById('mmmModalTitle').textContent = CATEGORY_LABELS[code] || code;
+  document.getElementById('mmmModalSub').textContent = 'Live from the MMM feature service';
+  body.innerHTML = `<div class="mmm-modal-status">Loading&hellip;</div>`;
+  backdrop.classList.add('show');
+  document.addEventListener('keydown', mmmModalEscHandler);
+
+  try {
+    let features = mmmModalFeatureCache[code];
+    if (!features) {
+      const layerId = await resolveMmmLayerId();
+      const url = `${SERVICE_URL}/${layerId}/query?where=Category='${code}'&outFields=OBJECTID,Name,Honoree,Status,Campus,WebURL&f=geojson`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Query failed: ${res.status}`);
+      const geojson = await res.json();
+      if (geojson.error) throw new Error(geojson.error.message || 'Service returned an error');
+      features = geojson.features || [];
+      mmmModalFeatureCache[code] = features;
+    }
+    document.getElementById('mmmModalSub').textContent =
+      `${features.length} feature${features.length === 1 ? '' : 's'} \u00b7 live from the MMM feature service`;
+    body.innerHTML = renderModalRows(features);
+  } catch (e) {
+    console.warn('MMM category detail unavailable:', e.message);
+    body.innerHTML = `<div class="mmm-modal-status">Couldn't load this category right now. Please try again shortly.</div>`;
+  }
+}
+
+function closeCategoryModal() {
+  document.getElementById('mmmModalBackdrop').classList.remove('show');
+  document.removeEventListener('keydown', mmmModalEscHandler);
+}
+function mmmModalEscHandler(e) {
+  if (e.key === 'Escape') closeCategoryModal();
+}
 </script>
 
 </body>
