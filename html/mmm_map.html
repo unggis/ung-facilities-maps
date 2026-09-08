@@ -718,6 +718,22 @@ function buildClusterGroup(features, campusKey) {
       className:'', iconSize:[36,36],
     }),
   });
+
+  /* ── Accessibility: spiderfy moves the cluster's own DOM element out of
+     the way, which silently drops keyboard focus with nowhere obvious to
+     go. Explicitly hand focus to the first revealed pin on expand, and
+     back to the cluster icon on collapse, so Tab keeps working instead
+     of leaving a keyboard/screen-reader user stranded. ── */
+  group.on('spiderfied', (e) => {
+    const first = e.markers && e.markers[0];
+    const el = first && first.getElement && first.getElement();
+    if (el && typeof el.focus === 'function') el.focus();
+  });
+  group.on('unspiderfied', (e) => {
+    const el = e.cluster && e.cluster.getElement && e.cluster.getElement();
+    if (el && typeof el.focus === 'function') el.focus();
+  });
+
   features
     .filter(f => activeFilters.has(f.properties.Category))
     .forEach(f => {
