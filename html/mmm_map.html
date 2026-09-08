@@ -19,7 +19,7 @@
   --gold-lt:#e8d49a;
   --parch:  #faf7f2;
   --sand:   #c9b99a;
-  --stone:  #8a7a6a;
+  --stone:  #a89886;
 
   /* Category palette — keyed to the finalized MMM_Category coded-value domain */
   --cat-MON:    #C9A84C; /* Monument */
@@ -42,7 +42,9 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 .mmm-lightbox-nav:focus-visible,
 .poi-popup-toggle:focus-visible,
 .poi-popup-link:focus-visible,
-.legend-row.filterable:focus-visible {
+.legend-row.filterable:focus-visible,
+.poi-popup-photo-btn:focus-visible,
+.poi-popup-thumb-btn:focus-visible {
   outline: 2px solid var(--gold-lt);
   outline-offset: 2px;
 }
@@ -217,21 +219,28 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
   padding:8px 10px; background:rgba(0,0,0,0.18);
   border:0.5px solid rgba(201,168,76,0.2); border-radius:2px;
 }
+/* ── Popup photo trigger — real <button>, chromeless, wraps the <img> ── */
+.poi-popup-photo-btn,
+.poi-popup-thumb-btn {
+  display:block; border:none; background:none; padding:0; margin:0 0 8px;
+  cursor:zoom-in; font:inherit;
+}
+.poi-popup-thumb-btn { display:inline-block; margin:0; flex-shrink:0; }
 .poi-popup-photo {
   width:100%; height:120px; object-fit:cover; object-position:top; border-radius:2px;
-  border:1px solid rgba(201,168,76,0.4); margin-bottom:8px; display:block;
-  cursor:zoom-in; transition:opacity 0.15s, border-color 0.15s;
+  border:1px solid rgba(201,168,76,0.4); margin-bottom:0; display:block;
+  transition:opacity 0.15s, border-color 0.15s;
 }
-.poi-popup-photo:hover { opacity:0.88; border-color:var(--gold); }
+.poi-popup-photo-btn:hover .poi-popup-photo { opacity:0.88; border-color:var(--gold); }
 .poi-popup-gallery {
   display:flex; gap:5px; overflow-x:auto; margin-bottom:8px; padding-bottom:2px;
 }
 .poi-popup-thumb {
   width:54px; height:54px; flex-shrink:0; object-fit:cover; border-radius:2px;
-  border:1px solid rgba(201,168,76,0.4); cursor:zoom-in;
+  border:1px solid rgba(201,168,76,0.4);
   transition:opacity 0.15s, border-color 0.15s;
 }
-.poi-popup-thumb:hover { opacity:0.85; border-color:var(--gold); }
+.poi-popup-thumb-btn:hover .poi-popup-thumb { opacity:0.85; border-color:var(--gold); }
 .poi-popup-nophoto {
   width:100%; height:60px; display:flex; align-items:center; justify-content:center;
   border:1px dashed rgba(201,168,76,0.25); border-radius:2px; color:var(--stone);
@@ -275,7 +284,7 @@ body { font-family:'Lato', sans-serif; font-weight:300; background:var(--navy); 
 </head>
 <body>
 
-<div id="map"></div>
+<div id="map" role="application" aria-label="Interactive map of UNG monuments, markers, and memorials"></div>
 
 <div class="mmm-lightbox" id="mmmLightbox" onclick="closeLightbox()">
   <button class="mmm-lightbox-close" onclick="closeLightbox(event)" aria-label="Close photo">&times;</button>
@@ -456,10 +465,10 @@ function wireAttachmentPhoto(marker, objectId, title) {
       mmmGalleryTitles[objectId] = title || 'Untitled';
 
       if (urls.length === 1) {
-        el.outerHTML = `<img id="poi-photo-${objectId}" class="poi-popup-photo" src="${urls[0]}" alt="${esc(title)} photograph" onclick="openLightbox(${objectId},0)">`;
+        el.outerHTML = `<button type="button" class="poi-popup-photo-btn" id="poi-photo-${objectId}" onclick="openLightbox(${objectId},0)" aria-label="View ${esc(title)} photograph, full size"><img class="poi-popup-photo" src="${urls[0]}" alt="${esc(title)} photograph"></button>`;
       } else {
         const thumbs = urls.map((u, i) =>
-          `<img class="poi-popup-thumb" src="${u}" alt="${esc(title)} photograph ${i + 1} of ${urls.length}" onclick="openLightbox(${objectId},${i})">`).join('');
+          `<button type="button" class="poi-popup-thumb-btn" onclick="openLightbox(${objectId},${i})" aria-label="View ${esc(title)} photograph ${i + 1} of ${urls.length}, full size"><img class="poi-popup-thumb" src="${u}" alt="${esc(title)} photograph ${i + 1} of ${urls.length}"></button>`).join('');
         el.outerHTML = `<div class="poi-popup-gallery" id="poi-photo-${objectId}">${thumbs}</div>`;
       }
     } catch (e) { /* leave the no-photo placeholder in place */ }
@@ -469,6 +478,7 @@ function wireAttachmentPhoto(marker, objectId, title) {
 const mmmGalleries = {};
 const mmmGalleryTitles = {};
 let lightboxState = { objectId:null, index:0 };
+let lightboxTriggerEl = null;
 
 function renderLightbox() {
   const urls = mmmGalleries[lightboxState.objectId] || [];
@@ -485,13 +495,19 @@ function renderLightbox() {
 }
 
 function openLightbox(objectId, index) {
+  lightboxTriggerEl = document.activeElement;
   lightboxState = { objectId, index: index || 0 };
   renderLightbox();
   document.getElementById('mmmLightbox').classList.add('show');
+  document.getElementById('mmmLightboxClose').focus();
 }
 function closeLightbox(e) {
   if (e) e.stopPropagation();
   document.getElementById('mmmLightbox').classList.remove('show');
+  if (lightboxTriggerEl && typeof lightboxTriggerEl.focus === 'function') {
+    lightboxTriggerEl.focus();
+  }
+  lightboxTriggerEl = null;
 }
 function navLightbox(e, delta) {
   e.stopPropagation();
@@ -618,7 +634,7 @@ CAMPUS_ORDER.forEach((key) => {
     className:'', iconSize:[100,44], iconAnchor:[50,10], popupAnchor:[0,-14],
   });
 
-  const marker = L.marker([c.lat, c.lng], { icon }).addTo(map);
+  const marker = L.marker([c.lat, c.lng], { icon, alt: c.name, title: c.name }).addTo(map);
 
   const tagsHtml = c.tags.map(t => `<span class="popup-tag">${t}</span>`).join('');
   const btnHtml = c.active
@@ -706,7 +722,8 @@ function buildClusterGroup(features, campusKey) {
     .filter(f => activeFilters.has(f.properties.Category))
     .forEach(f => {
       const [lng, lat] = f.geometry.coordinates;
-      const marker = L.marker([lat, lng], { icon: categoryBadgeIcon(f.properties.Category) });
+      const title = f.properties.Title || 'Untitled';
+      const marker = L.marker([lat, lng], { icon: categoryBadgeIcon(f.properties.Category), alt: title, title: title });
       marker.bindPopup(poiPopupHtml(f.properties), { maxWidth:280 });
       wireAttachmentPhoto(marker, f.properties.OBJECTID, f.properties.Title);
       mmmMarkerIndex[f.properties.OBJECTID] = marker;
