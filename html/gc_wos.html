@@ -678,6 +678,7 @@ const map = L.map('map', {
 
 const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 30,
+  maxNativeZoom: 19,   // OSM stops at 19; stretch the last real tile instead of requesting missing ones
   attribution: '&copy; OpenStreetMap contributors',
   className: 'osm-tiles',
 }).addTo(map);
@@ -856,7 +857,7 @@ function showDetail(props) {
 
 // ── Load GeoJSON ──────────────────────────────────────────────────────────────
 // TODO: update path once the Gainesville GeoJSON is exported/hosted
-fetch('https://unggis.github.io/ung-facilities-maps/data/GC_WoS.geojson')
+fetch('../data/GC_WoS.geojson')
   .then(r => r.json())
   .then(WALKWAY_DATA => {
 
