@@ -104,6 +104,17 @@
 
   footer{margin-top:50px;padding-top:18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 
+
+  /* ===== Sign-in gate ===== */
+  [hidden]{display:none !important;}
+  .auth-gate{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--navy);border-radius:6px;padding:36px 32px;text-align:center;margin:48px auto;max-width:520px;box-shadow:0 1px 3px rgba(15,36,57,0.05);}
+  .auth-title{font-family:'Playfair Display',serif;font-weight:700;font-size:22px;color:var(--navy);margin-bottom:10px;}
+  .auth-msg{font-size:14px;color:var(--dim);line-height:1.6;margin-bottom:22px;}
+  .auth-btn{background:var(--navy);color:#fff;border:none;border-bottom:3px solid var(--gold);padding:12px 22px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;border-radius:3px;}
+  .auth-btn:hover{background:var(--navy-mid);}
+  .auth-btn:disabled{opacity:.5;cursor:default;}
+  .signout{color:var(--navy-mid);background:none;border:none;font:inherit;text-decoration:underline;cursor:pointer;padding:0;}
+
   @media (max-width:760px){
     .trend-grid,.gap-grid{grid-template-columns:1fr;}
     .hero-stats{grid-template-columns:repeat(2,1fr);}
@@ -128,6 +139,16 @@
 </header>
 
 <div class="wrap">
+
+  <!-- SIGN-IN GATE (shown until the viewer signs in) -->
+  <div class="auth-gate" id="auth-gate">
+    <div class="auth-title">UNG Staff Sign-In</div>
+    <div class="auth-msg" id="auth-msg">Loading…</div>
+    <button class="auth-btn" id="auth-btn" type="button">Sign in with your UNG account</button>
+  </div>
+
+  <!-- DASHBOARD (hidden until data loads) -->
+  <div id="content" hidden>
 
   <details class="about">
     <summary>About This Dashboard <span class="hint">— click to expand</span></summary>
@@ -252,48 +273,197 @@
 
   <footer>
     <span>UNG Facilities GIS</span>
-    <span id="foot-src">Source: GIS_Banner_Alignment_History.csv</span>
+    <span id="foot-src">Source: SF_ALIGNMENT_HISTORY (ArcGIS Online)</span>
   </footer>
 
+  </div><!-- /content -->
 </div>
 
 <script>
+// ════════════════════════════════════════════════════════════════════════════
+// ARCGIS ONLINE SIGN-IN + DATA LOADING
+// ────────────────────────────────────────────────────────────────────────────
+// This page contains NO data. When someone opens it, they sign in with their
+// UNG ArcGIS Online account, and the page then reads the numbers from the
+// hosted table below. The table is shared to the UNG organization only, so
+// anyone outside UNG sees nothing.
+//
+// The only two settings you ever need to change are in AGOL_CONFIG:
+//   clientId   — from the OAuth app registered in ArcGIS Online
+//   serviceUrl — the hosted table's service address
+// ════════════════════════════════════════════════════════════════════════════
+
+const AGOL_CONFIG = {
+  portal:     'https://www.arcgis.com',
+  clientId:   'VLkOM18oqTiNJJts',
+  serviceUrl: 'https://services3.arcgis.com/4ADpogqF2B4hadEB/arcgis/rest/services/SF_ALIGNMENT_HISTORY/FeatureServer',
+};
+
+// The page's own address, used as the OAuth "redirect URL".
+// It must match one of the redirect URLs registered on the OAuth app.
+const REDIRECT_URI = location.origin + location.pathname;
+const STORE_KEY = 'agol:' + AGOL_CONFIG.clientId + ':' + location.pathname;
+
+function b64url(bytes) {
+  return btoa(String.fromCharCode(...new Uint8Array(bytes)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function readStore(name) {
+  try { return JSON.parse(sessionStorage.getItem(STORE_KEY + ':' + name)); }
+  catch (e) { return null; }
+}
+function writeStore(name, value) {
+  try {
+    if (value === null) sessionStorage.removeItem(STORE_KEY + ':' + name);
+    else sessionStorage.setItem(STORE_KEY + ':' + name, JSON.stringify(value));
+  } catch (e) { /* private window — sign-in just won't persist */ }
+}
+
+// Step 1: send the viewer to ArcGIS Online to sign in (PKCE flow, no secret).
+async function startSignIn() {
+  const verifier  = b64url(crypto.getRandomValues(new Uint8Array(32)));
+  const challenge = b64url(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
+  const state     = b64url(crypto.getRandomValues(new Uint8Array(16)));
+  writeStore('pkce', { verifier, state });
+  const params = new URLSearchParams({
+    client_id: AGOL_CONFIG.clientId,
+    response_type: 'code',
+    redirect_uri: REDIRECT_URI,
+    code_challenge: challenge,
+    code_challenge_method: 'S256',
+    state,
+  });
+  location.assign(AGOL_CONFIG.portal + '/sharing/rest/oauth2/authorize?' + params);
+}
+
+// Step 2: when ArcGIS Online sends them back with ?code=..., trade it for a token.
+async function finishSignInIfReturning() {
+  const q = new URLSearchParams(location.search);
+  if (q.get('error')) {
+    history.replaceState(null, '', REDIRECT_URI);
+    throw Object.assign(new Error('Sign-in was cancelled or refused.'), { kind: 'signin' });
+  }
+  const code = q.get('code');
+  if (!code) return;
+  const pkce = readStore('pkce');
+  writeStore('pkce', null);
+  history.replaceState(null, '', REDIRECT_URI);   // tidy the address bar
+  if (!pkce || pkce.state !== q.get('state')) {
+    throw Object.assign(new Error('Sign-in could not be verified. Please try again.'), { kind: 'signin' });
+  }
+  const res = await fetch(AGOL_CONFIG.portal + '/sharing/rest/oauth2/token', {
+    method: 'POST',
+    body: new URLSearchParams({
+      client_id: AGOL_CONFIG.clientId,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: REDIRECT_URI,
+      code_verifier: pkce.verifier,
+      f: 'json',
+    }),
+  });
+  const j = await res.json();
+  if (!j.access_token) {
+    throw Object.assign(new Error((j.error && (j.error_description || j.error.message)) || 'Sign-in failed.'), { kind: 'signin' });
+  }
+  writeStore('session', {
+    token: j.access_token,
+    username: j.username || '',
+    expires: Date.now() + ((j.expires_in || 1800) - 60) * 1000,
+  });
+}
+
+function currentSession() {
+  const s = readStore('session');
+  return s && s.expires > Date.now() ? s : null;
+}
+
+function signOut() {
+  writeStore('session', null);
+  location.reload();
+}
+
+// Calls an ArcGIS REST endpoint with the viewer's token.
+async function agolJson(url, token) {
+  const sep = url.includes('?') ? '&' : '?';
+  const res = await fetch(url + sep + 'f=json&token=' + encodeURIComponent(token));
+  const j = await res.json();
+  if (j.error) {
+    const code = j.error.code;
+    const kind = (code === 498 || code === 499) ? 'expired' : (code === 403 ? 'denied' : 'other');
+    throw Object.assign(new Error(j.error.message || 'Request failed'), { kind });
+  }
+  return j;
+}
+
+// Reads every row of the hosted table, oldest run first.
+// Field names come back lower-case, and run_date always comes back "YYYY-MM-DD".
+async function loadTableRows(token) {
+  const service = await agolJson(AGOL_CONFIG.serviceUrl, token);
+  const tableId = (service.tables && service.tables.length) ? service.tables[0].id : 0;
+  const result = await agolJson(
+    AGOL_CONFIG.serviceUrl + '/' + tableId +
+    '/query?where=1%3D1&outFields=*&returnGeometry=false&resultRecordCount=5000',
+    token
+  );
+  const rows = (result.features || []).map(f => {
+    const row = {};
+    Object.keys(f.attributes).forEach(k => { row[k.toLowerCase()] = f.attributes[k]; });
+    if (typeof row.run_date === 'number') {           // in case it's a regular Date field
+      row.run_date = new Date(row.run_date).toISOString().slice(0, 10);
+    }
+    return row;
+  });
+  rows.sort((a, b) => String(a.run_date).localeCompare(String(b.run_date)));
+  return rows;
+}
+
+// Shows the sign-in card (or an error) instead of the dashboard.
+function showGate(message, buttonLabel) {
+  document.getElementById('content').hidden = true;
+  const gate = document.getElementById('auth-gate');
+  gate.hidden = false;
+  document.getElementById('auth-msg').textContent = message;
+  const btn = document.getElementById('auth-btn');
+  btn.textContent = buttonLabel || 'Sign in with your UNG account';
+  btn.onclick = startSignIn;
+}
+
+// Runs the whole page: sign in if needed, load rows, hand them to render().
+async function boot(renderFn) {
+  if (AGOL_CONFIG.clientId === 'PASTE_CLIENT_ID_HERE') {
+    showGate('This page is not configured yet: the ArcGIS Online Client ID has not been added.', 'Not configured');
+    document.getElementById('auth-btn').disabled = true;
+    return;
+  }
+  try {
+    await finishSignInIfReturning();
+  } catch (e) {
+    showGate(e.message, 'Try again');
+    return;
+  }
+  const session = currentSession();
+  if (!session) {
+    showGate('This dashboard is for UNG staff. Sign in with your UNG ArcGIS account to view it.');
+    return;
+  }
+  try {
+    const rows = await loadTableRows(session.token);
+    if (!rows.length) throw Object.assign(new Error('The data table is empty.'), { kind: 'other' });
+    document.getElementById('auth-gate').hidden = true;
+    document.getElementById('content').hidden = false;
+    renderFn(rows, session);
+  } catch (e) {
+    if (e.kind === 'expired') { writeStore('session', null); showGate('Your sign-in has expired. Please sign in again.'); }
+    else if (e.kind === 'denied') { showGate('Your account (' + (session.username || 'unknown') + ') does not have access to this data. Contact UNG Facilities GIS.', 'Sign in as someone else'); writeStore('session', null); }
+    else showGate('Could not load the data: ' + e.message, 'Try again');
+  }
+}
+
 const CAMPUS_ORDER = ['blue_ridge','cumming','dahlonega','gainesville','oconee'];
 const CAMPUS_LABEL = {blue_ridge:'Blue Ridge',cumming:'Cumming',dahlonega:'Dahlonega',gainesville:'Gainesville',oconee:'Oconee'};
 
-const FALLBACK_LATEST = {
-  run_date:'2026-08-06', ent_sf_pct:99.8, ent_bldg_pct:87.9, ent_in_scope:107, ent_clean:94,
-  ent_total_sf:3001148, ent_clean_sf:2994988, ent_actions:682, ent_add:462, ent_remove:209, ent_update:11,
-  ent_dup_bldgs:0, ent_banner_only:26, ent_noise_bldgs:4, ent_split_bldgs:2,
-  blue_ridge_sf_pct:100.0, blue_ridge_bldg_pct:100.0, blue_ridge_actions:0, blue_ridge_dup_bldgs:0, blue_ridge_scope:3, blue_ridge_clean:3,
-  cumming_sf_pct:100.0, cumming_bldg_pct:100.0, cumming_actions:0, cumming_dup_bldgs:0, cumming_scope:4, cumming_clean:4,
-  dahlonega_sf_pct:99.7, dahlonega_bldg_pct:76.4, dahlonega_actions:682, dahlonega_dup_bldgs:0, dahlonega_scope:55, dahlonega_clean:42,
-  gainesville_sf_pct:100.0, gainesville_bldg_pct:100.0, gainesville_actions:0, gainesville_dup_bldgs:0, gainesville_scope:37, gainesville_clean:37,
-  oconee_sf_pct:100.0, oconee_bldg_pct:100.0, oconee_actions:0, oconee_dup_bldgs:0, oconee_scope:8, oconee_clean:8,
-};
-
-const FALLBACK_TREND = [
-  {run_date:'2026-06-22', ent_sf_pct:99.8, ent_bldg_pct:57.1, ent_actions:2055, ent_dup_bldgs:7},
-  {run_date:'2026-06-30', ent_sf_pct:99.8, ent_bldg_pct:57.1, ent_actions:1034, ent_dup_bldgs:2},
-  {run_date:'2026-07-13', ent_sf_pct:99.8, ent_bldg_pct:56.6, ent_actions:1044, ent_dup_bldgs:1},
-  {run_date:'2026-07-30', ent_sf_pct:99.8, ent_bldg_pct:69.8, ent_actions:2066, ent_dup_bldgs:2},
-  {run_date:'2026-08-03', ent_sf_pct:99.8, ent_bldg_pct:72.6, ent_actions:802,  ent_dup_bldgs:1},
-];
-const FALLBACK_TOTAL_RUNS = 8;
-
-function parseCSV(text){
-  const lines = text.trim().split(/\r?\n/);
-  const headers = lines[0].split(',');
-  return lines.slice(1).map(line=>{
-    const cells = line.split(',');
-    const row = {};
-    headers.forEach((h,i)=>{
-      const v = cells[i];
-      row[h] = (v!==undefined && v!=='' && !isNaN(v)) ? parseFloat(v) : v;
-    });
-    return row;
-  });
-}
 function fmt(n){ return Number(n).toLocaleString(); }
 function deltaEl(curr, prev, higherIsBetter, suffix){
   suffix = suffix||'';
@@ -444,22 +614,48 @@ function drawDualChart(id, rows){
   svg.innerHTML = s;
 }
 
-async function init(){
-  try{
-    const res = await fetch('./GIS_Banner_Alignment_History.csv');
-    if(!res.ok) throw new Error('no csv');
-    const text = await res.text();
-    const rows = parseCSV(text);
-    if(!rows.length) throw new Error('empty csv');
-    render(rows, rows.length);
-    document.getElementById('foot-src').textContent = 'Source: GIS_Banner_Alignment_History.csv ('+rows.length+' runs)';
-  }catch(e){
-    const rows = [...FALLBACK_TREND, FALLBACK_LATEST];
-    render(rows, FALLBACK_TOTAL_RUNS);
-    document.getElementById('foot-src').textContent = 'Source: latest run (place GIS_Banner_Alignment_History.csv alongside this page to load full history — '+FALLBACK_TOTAL_RUNS+' runs on record)';
-  }
+// ── TABLE → PAGE SHAPE ────────────────────────────────────────────────────────
+// The AGOL table stores each run as six rows (Enterprise + one per campus).
+// The page code below expects one wide row per run, like the old CSV, so
+// this regroups them.
+const SCOPE_KEY = {'Enterprise':'ent','Blue Ridge':'blue_ridge','Cumming':'cumming',
+                   'Dahlonega':'dahlonega','Gainesville':'gainesville','Oconee':'oconee'};
+
+function toWideRuns(rows){
+  const byDate = {};
+  rows.forEach(r=>{
+    const key = SCOPE_KEY[r.scope];
+    if(!key) return;
+    const run = byDate[r.run_date] || (byDate[r.run_date] = {run_date:r.run_date});
+    run[key+'_sf_pct']    = r.sf_pct;
+    run[key+'_bldg_pct']  = r.bldg_pct;
+    run[key+'_actions']   = r.actions;
+    run[key+'_dup_bldgs'] = r.dup_bldgs;
+    if(key==='ent'){
+      run.ent_in_scope    = r.in_scope_bldgs;
+      run.ent_clean       = r.clean_bldgs;
+      run.ent_total_sf    = r.total_sf;
+      run.ent_clean_sf    = r.clean_sf;
+      run.ent_add         = r.actions_add;
+      run.ent_remove      = r.actions_remove;
+      run.ent_update      = r.actions_update;
+      run.ent_banner_only = r.banner_only;
+    }
+  });
+  // keep only runs that have an Enterprise row
+  return Object.values(byDate)
+    .filter(r=>r.ent_sf_pct!==undefined && r.ent_sf_pct!==null)
+    .sort((x,y)=>x.run_date.localeCompare(y.run_date));
 }
-init();
+
+boot((rows, session)=>{
+  const runs = toWideRuns(rows);
+  render(runs, runs.length);
+  document.getElementById('foot-src').innerHTML =
+    'Source: SF_ALIGNMENT_HISTORY (' + runs.length + ' runs) &nbsp;·&nbsp; Signed in as ' +
+    (session.username || 'UNG user') +
+    ' &nbsp;·&nbsp; <button class="signout" type="button" onclick="signOut()">Sign out</button>';
+});
 </script>
 </body>
 </html>
