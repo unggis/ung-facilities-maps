@@ -800,28 +800,62 @@ async function loadCampusPOIs(key) {
 }
 
 /* ---- Mode switching ---- */
+
+// Marks a campus as the active one: highlights its button, shows the Back
+// button, and sets the Oconee overzoom. Shared by the campus buttons
+// (flyTo) and by manual zooming (autoLoadCampusForView below).
+function activateCampus(key) {
+  document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
+  const idx = CAMPUS_ORDER.indexOf(key);
+  if (idx >= 0) document.querySelectorAll('.campus-btn')[idx].classList.add('active');
+  setOconeeOverzoom(key === 'oconee');
+  activeCampusKey = key;
+  document.getElementById('backBtn').classList.add('show');
+  campusMarkers[key].closePopup();
+}
+
 function flyTo(key) {
   const c = CAMPUSES[key];
   if (!c) return;
 
-  document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
-  const idx = CAMPUS_ORDER.indexOf(key);
-  if (idx >= 0) document.querySelectorAll('.campus-btn')[idx].classList.add('active');
-
-  setOconeeOverzoom(key === 'oconee');
-
   const targetZoom = c.active ? c.poiZoom : c.zoom;
-  map.flyTo([c.lat, c.lng], targetZoom, { animate:true, duration:1.2 });
 
   if (c.active) {
-    activeCampusKey = key;
-    document.getElementById('backBtn').classList.add('show');
-    campusMarkers[key].closePopup();
+    activateCampus(key);
+    map.flyTo([c.lat, c.lng], targetZoom, { animate:true, duration:1.2 });
     setTimeout(() => loadCampusPOIs(key), 600);
   } else {
+    document.querySelectorAll('.campus-btn').forEach(b => b.classList.remove('active'));
+    setOconeeOverzoom(false);
+    map.flyTo([c.lat, c.lng], targetZoom, { animate:true, duration:1.2 });
     setTimeout(() => campusMarkers[key].openPopup(), 1300);
   }
 }
+
+/* ── Load landmarks when the user zooms in by hand ─────────────────────
+   Without this, landmarks only appear after clicking a campus button.
+   After any zoom or pan, if the view is zoomed in past the point where
+   the campus dots disappear (MARKER_HIDE_ZOOM) and the center of the
+   map is within AUTO_LOAD_RADIUS_M meters of a campus, that campus's
+   landmarks load exactly as if its button had been clicked. Panning
+   from one campus to another at close zoom switches to the new one. */
+const AUTO_LOAD_RADIUS_M = 4000;
+function autoLoadCampusForView() {
+  if (map.getZoom() < MARKER_HIDE_ZOOM) return;
+  const center = map.getCenter();
+  let nearest = null, nearestDist = Infinity;
+  CAMPUS_ORDER.forEach((key) => {
+    const c = CAMPUSES[key];
+    if (!c.active) return;
+    const d = center.distanceTo([c.lat, c.lng]);
+    if (d < nearestDist) { nearestDist = d; nearest = key; }
+  });
+  if (!nearest || nearestDist > AUTO_LOAD_RADIUS_M) return;
+  if (nearest === activeCampusKey) return;   // already showing this campus
+  activateCampus(nearest);
+  loadCampusPOIs(nearest);
+}
+map.on('moveend', autoLoadCampusForView);
 
 function showOverview() {
   setOconeeOverzoom(false);
