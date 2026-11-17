@@ -174,7 +174,7 @@
       <div class="wc-stats">
         <div>
           <div class="wc-stat-num" id="statBuildings">—</div>
-          <div class="wc-stat-lbl">Existing Buildings</div>
+          <div class="wc-stat-lbl">Mapped Structures</div>
         </div>
         <div>
           <div class="wc-stat-num" id="statFeatures">—</div>
@@ -185,7 +185,7 @@
           <div class="wc-stat-lbl">Campuses</div>
         </div>
       </div>
-      <div class="wc-body">Toggle between the current buildout and the proposed vision plan to explore new construction, renovations, and site changes across all five UNG campuses.</div>
+      <div class="wc-body">Toggle between the current buildout and the proposed vision plan to explore new construction, renovations, and site changes. Most proposed projects are at the Dahlonega and Gainesville campuses.</div>
       <button class="wc-btn" onclick="dismissAndDemo()">Explore the Plan &rsaquo;</button>
       <a class="wc-skip" onclick="dismissOnly()">Skip intro</a>
     </div>
@@ -292,7 +292,15 @@ function popupVision(p) {
 }
 
 // ── LAYERS ───────────────────────────────────────────────────────────────────
+// Leave out features that aren't standing structures yet: STATUS 4 (under
+// construction, e.g., STEM Building) and features with no campus assigned
+// (e.g., Future Innovation Hub Site).
+function isStanding(f){
+  var p = f.properties || {};
+  return p.STATUS !== 4 && p.Campus !== null && p.Campus !== undefined;
+}
 var existingLayer = L.geoJSON(null,{
+  filter:isStanding,
   style:styleExisting,
   onEachFeature:function(f,l){
     l.bindPopup(popupExisting(f.properties));
@@ -301,6 +309,7 @@ var existingLayer = L.geoJSON(null,{
   }
 });
 var contextLayer = L.geoJSON(null,{
+  filter:isStanding,
   style:styleContext,
   onEachFeature:function(f,l){
     l.bindPopup('<div style="font-family:Lato,sans-serif;font-size:12px;color:#333;"><strong>'+(f.properties.Building||'&mdash;')+'</strong><div style="font-size:10px;color:#888;margin-top:2px;">Existing building</div></div>');
@@ -324,8 +333,8 @@ fetch(EXISTING_URL)
     existingLayer.addData(data);
     contextLayer.addData(data);
     exLoaded = true;
-    var n = data.features ? data.features.length : '?';
-    exStatus.textContent = '✓ Buildings loaded ('+n+')';
+    var n = existingLayer.getLayers().length;
+    exStatus.textContent = '✓ Structures loaded ('+n+')';
     exStatus.classList.add('ok');
     existingLayer.addTo(map);
     checkBothLoaded();
